@@ -1,4 +1,4 @@
-namespace BackOffice.ResourceManagement.Domain.Shared
+namespace BackOffice.Domain.Shared
 {
     public abstract class IValueObject
     {

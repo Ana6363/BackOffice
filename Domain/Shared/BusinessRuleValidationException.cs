@@ -1,5 +1,5 @@
 using System;
-namespace BackOffice.ResourceManagement.Domain.Shared
+namespace BackOffice.Domain.Shared
 {
 
     public class BusinessRuleValidationException : Exception
