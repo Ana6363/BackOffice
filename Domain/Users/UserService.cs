@@ -68,7 +68,7 @@ namespace BackOffice.Domain.Users
                 return null;   
 
             // change all fields
-            user.MarkAsInative();
+            user.MarkAsInactive();
             
             await this._unitOfWork.CommitAsync();
 
