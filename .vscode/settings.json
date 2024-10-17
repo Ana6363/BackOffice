@@ -1,0 +1,18 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "vsgate-s1.dei.isep.ipp.pt",
+            "port": 11361,
+            "driver": "MySQL",
+            "name": "db",
+            "password": "K/C0QVM+rsI+",
+            "database": "hospitaldb",
+            "username": "root"
+        }
+    ]
+}

@@ -19,7 +19,7 @@ namespace BackOffice.Domain.Users
         {
             var list = await this._repo.GetAllAsync();
             
-            List<UserDto> listDto = list.ConvertAll<UserDto>(user => new UserDto{Id = user.Id.AsString(), Role = user.Role});
+            List<UserDto> listDto = list.ConvertAll<UserDto>(user => new UserDto{Id = user.Id.AsString(), Role = user.Role, Active = user.Active} );
 
             return listDto;
         }
@@ -68,7 +68,7 @@ namespace BackOffice.Domain.Users
                 return null;   
 
             // change all fields
-            user.MarkAsInative();
+            user.MarkAsInactive();
             
             await this._unitOfWork.CommitAsync();
 
