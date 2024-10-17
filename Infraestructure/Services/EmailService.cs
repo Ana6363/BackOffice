@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mail;
+using BackOffice.Application.Services;
 using BackOffice.Domain.Users;
 
 namespace BackOffice.Infrastructure.Services

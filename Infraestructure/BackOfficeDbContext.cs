@@ -16,10 +16,13 @@ namespace BackOffice.Infrastructure
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySql(
+            optionsBuilder
+            .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information) // Enable SQL logging
+            .UseMySql(
                 "Server=vsgate-s1.dei.isep.ipp.pt;Port=11361;Database=hospitaldb;User=root;Password=K/C0QVM+rsI+;", 
                 new MySqlServerVersion(new Version(8, 0, 5)),
                 mysqlOptions => mysqlOptions.SchemaBehavior(MySqlSchemaBehavior.Ignore)
+                
             );
         }
 
@@ -28,9 +31,8 @@ namespace BackOffice.Infrastructure
             // Apply the UserIdConverter for the UserId property
             modelBuilder.Entity<User>()
                 .Property(u => u.Id)
-                .HasConversion(new UserIdConverter()); // Apply the converter
-
-            // Apply any other entity configurations
+                .HasConversion(new UserIdConverter());
+            
             modelBuilder.ApplyConfiguration(new UsersEntityTypeConfiguration());
         }
 
@@ -38,8 +40,8 @@ namespace BackOffice.Infrastructure
         public class UserIdConverter : ValueConverter<UserId, string>
         {
             public UserIdConverter() : base(
-                id => id.AsString(), // Convert UserId to string for storage
-                str => new UserId(str) // Convert string back to UserId when reading
+                id => id.AsString(), 
+                str => new UserId(str) 
             )
             {
             }

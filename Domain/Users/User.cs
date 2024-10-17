@@ -7,6 +7,9 @@ namespace BackOffice.Domain.Users
         public string Role { get; private set; }
         public bool Active { get;  set; }
 
+        public string? ActivationToken { get;  set; } 
+        public DateTime? TokenExpiration { get;  set; } 
+
         // Private constructor for EF Core
         private User() 
         {
@@ -24,6 +27,17 @@ namespace BackOffice.Domain.Users
             this.Id = new UserId(email); // Set UserId using email
             this.Role = role;
             this.Active = true; // Default to active
+        }
+
+            public void GenerateActivationToken()
+        {
+            this.ActivationToken = Guid.NewGuid().ToString(); // Generate a unique token
+            this.TokenExpiration = DateTime.UtcNow.AddHours(24);
+        }
+
+        public bool IsActivationTokenValid()
+        {
+            return DateTime.UtcNow <= this.TokenExpiration; // Check if the token is still valid
         }
 
         public void ChangeRole(string role)

@@ -4,6 +4,7 @@ using BackOffice.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BackOffice.Migrations
 {
     [DbContext(typeof(BackOfficeDbContext))]
-    partial class BackOfficeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241017093940_AddActivationTokenAndTokenExpiration1")]
+    partial class AddActivationTokenAndTokenExpiration1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,8 +31,8 @@ namespace BackOffice.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("ActivationToken")
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<bool>("Active")
                         .HasColumnType("tinyint(1)");
@@ -38,7 +41,7 @@ namespace BackOffice.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<DateTime?>("TokenExpiration")
+                    b.Property<DateTime>("TokenExpiration")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");

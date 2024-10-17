@@ -1,4 +1,4 @@
-namespace BackOffice.Domain.Users
+namespace BackOffice.Application.Services
 {
     public interface IEmailService
     {

@@ -10,5 +10,9 @@ namespace BackOffice.Domain.Users
         public string Role { get; set; }
 
         public bool Active { get; set;}
+
+        public string? ActivationToken { get; set;}
+
+        public DateTime? TokenExpiration { get;  set; } 
     }
 }

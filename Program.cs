@@ -6,6 +6,7 @@ using BackOffice.Domain.Shared;
 using BackOffice.Infrastructure.Shared;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using BackOffice.Infrastructure.Services;
+using BackOffice.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

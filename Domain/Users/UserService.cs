@@ -19,7 +19,7 @@ namespace BackOffice.Domain.Users
         {
             var list = await this._repo.GetAllAsync();
             
-            List<UserDto> listDto = list.ConvertAll<UserDto>(user => new UserDto{Id = user.Id.AsString(), Role = user.Role, Active = user.Active} );
+            List<UserDto> listDto = list.ConvertAll<UserDto>(user => new UserDto{Id = user.Id.AsString(), Role = user.Role, Active = user.Active, ActivationToken = user.ActivationToken , TokenExpiration = user.TokenExpiration} );
 
             return listDto;
         }
