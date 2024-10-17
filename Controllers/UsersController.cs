@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BackOffice.Controllers
 {
+
+    [ApiController]
+    [Route("[controller]")]
     public class UsersController : Controller
     {
         private readonly ILogger<UsersController> _logger;
@@ -14,14 +17,14 @@ namespace BackOffice.Controllers
             _userService = userService;
         }
 
-        [HttpGet("users")]
+        [HttpGet]
         public async Task<IActionResult> Get()
         {
             var res = await _userService.GetAllAsync();
             return Ok(res);
         }
 
-        [HttpPost("users")]
+        [HttpPost]
         public async Task<IActionResult> Post(UserDto user)
         {
             var res = await _userService.AddAsync(user);
@@ -32,7 +35,7 @@ namespace BackOffice.Controllers
             return Ok();
         }
 
-        [HttpDelete("users")]
+        [HttpDelete]
         public async Task<IActionResult> Delete(UserId id)
         {
             var res = await _userService.DeleteAsync(id);
