@@ -7,6 +7,8 @@ using BackOffice.Infrastructure.Shared;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using BackOffice.Infrastructure.Services;
 using BackOffice.Application.Services;
+using BackOffice.Application.Users;
+using BackOffice.Application.OAuth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,9 @@ builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IUserRepository, UsersRepository>();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<UserActivationService>();
+builder.Services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
+
 
 
 var app = builder.Build();
