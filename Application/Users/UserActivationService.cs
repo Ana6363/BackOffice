@@ -84,6 +84,43 @@ namespace BackOffice.Application.Users
             await _dbContext.SaveChangesAsync();
         }
 
+
+        public async Task<UserDto> RegisterUserAsync(string email, string role)
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(role))
+            {
+                throw new ArgumentException("Email and role must be provided.");
+            }
+
+            // Check if the user already exists
+            var existingUserDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == email);
+            if (existingUserDataModel != null)
+            {
+                throw new Exception("User already exists.");
+            }
+
+            // Create new user
+            var newUser = new User(email, role)
+            {
+                Active = false // User is initially inactive
+            };
+
+            // Generate activation token
+            newUser.GenerateActivationToken();
+
+            // Save user to the database
+            var newUserDataModel = UserMapper.ToDataModel(newUser);
+            _dbContext.Users.Add(newUserDataModel);
+            await _dbContext.SaveChangesAsync();
+
+            // Send activation email using the existing method
+            await SendActivationEmailAsync(email);
+
+            // Return the UserDto representation of the newly created user
+            return UserMapper.ToDto(newUser);
+        }
+        
         public async Task SendActivationEmailAsync(string email)
         {
             var userDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == email);

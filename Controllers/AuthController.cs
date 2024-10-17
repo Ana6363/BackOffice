@@ -1,9 +1,9 @@
+using Microsoft.AspNetCore.Authorization; 
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using BackOffice.Application.Users;
-using System;
 using BackOffice.Domain.Users;
-using BackOffice.Application.OAuth;
+using BackOffice.Application.OAuth; 
 
 namespace BackOffice.Controllers
 {
@@ -13,47 +13,50 @@ namespace BackOffice.Controllers
     {
         private readonly UserActivationService _userActivationService;
         private readonly JwtTokenService _jwtTokenService;
-        
         private readonly UserService _userService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(UserActivationService userActivationService, JwtTokenService jwtTokenService)
+        public AuthController(UserActivationService userActivationService, JwtTokenService jwtTokenService, UserService userService, IConfiguration configuration)
         {
             _userActivationService = userActivationService;
             _jwtTokenService = jwtTokenService;
+            _userService = userService;
+            _configuration = configuration; 
         }
 
         [HttpGet("login")]
         public IActionResult Login()
         {
-            string clientId = "1066153135876-ddrj4ms6r801m49cjun24ut057p95m18.apps.googleusercontent.com";
+            string clientId = _configuration["GoogleIAM:ClientId"];
             string redirectUri = "http://localhost:5184/auth/callback";
             string authorizationUrl = $"https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={clientId}&redirect_uri={redirectUri}&scope=email&access_type=offline";
+
 
             return Redirect(authorizationUrl);
         }
 
         [HttpGet("callback")]
-public async Task<IActionResult> AuthCallback(string code)
-{
-    try
-    {
-        var result = await _userActivationService.HandleOAuthCallbackAsync(code);
-        
-        if (result.IsUserActive)
+        public async Task<IActionResult> AuthCallback(string code)
         {
-            var token = _jwtTokenService.GenerateToken(result.Role);
-            return Ok(new { token });
+            try
+            {
+                var result = await _userActivationService.HandleOAuthCallbackAsync(code);
+                
+                if (result.IsUserActive)
+                {
+                    var token = _jwtTokenService.GenerateToken(result.Role);
+                    return Ok(new { token });
+                }
+                else
+                {
+                    return Unauthorized(new { success = false, message = result.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
-        else
-        {
-            return Unauthorized(new { success = false, message = result.Message });
-        }
-    }
-    catch (Exception ex)
-    {
-        return BadRequest(new { success = false, message = ex.Message });
-    }
-}
 
         [HttpGet("activate")]
         public async Task<IActionResult> ActivateAccount(string token)
@@ -82,5 +85,21 @@ public async Task<IActionResult> AuthCallback(string code)
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
+        
+    [HttpPost("send-conf-admin")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> RegisterUserAsync([FromBody] UserDto userDto)
+    {
+        try
+        {
+            var registeredUser = await _userActivationService.RegisterUserAsync(userDto.Id, userDto.Role);
+            return Ok(new { success = true, user = registeredUser });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
     }
 }
