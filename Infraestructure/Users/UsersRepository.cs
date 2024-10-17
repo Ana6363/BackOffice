@@ -69,6 +69,12 @@ namespace BackOffice.Infrastructure.Users
             throw new NotImplementedException();
         }
 
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            var dataModel = await _context.Users.FirstOrDefaultAsync(u => u.Id == email);
+            return dataModel == null ? null : UserMapper.ToDomain(dataModel);
+        }
+
         Task<User> IRepository<User, UserId>.AddAsync(User obj)
         {
             throw new NotImplementedException();

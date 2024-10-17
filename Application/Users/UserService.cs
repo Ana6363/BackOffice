@@ -18,37 +18,38 @@ namespace BackOffice.Domain.Users
         public async Task<List<UserDto>> GetAllAsync()
         {
             var list = await this._repo.GetAllAsync();
-            
-            List<UserDto> listDto = list.ConvertAll<UserDto>(user => UserMapper.ToDto(user));  // Use the mapper here
-
-            return listDto;
+            return list.ConvertAll(UserMapper.ToDto);  // Use the mapper here
         }
 
         public async Task<UserDto?> GetByIdAsync(UserId id)
         {
             var user = await this._repo.GetByIdAsync(id);
-            
-            if(user == null)
-                return null;
-
-            return new UserDto{Id = user.Id.AsString(), Role = user.Role};
+            return user == null ? null : UserMapper.ToDto(user);
         }
 
         public async Task<UserDto> AddAsync(UserDto dto)
         { 
             var user = new User(dto.Id, dto.Role);
-
             await this._repo.AddAsync(user);
-
             await this._unitOfWork.CommitAsync();
+            return UserMapper.ToDto(user);
+        }
 
-            return new UserDto { Id = user.Id.AsString(), Role = user.Role };
+        public async Task<string> GetUserRoleAsync(string email)
+        {
+            // Assuming IUserRepository has a method to get user by email
+            var user = await _repo.GetByEmailAsync(email); // You need to implement this in the repository
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            return user.Role; 
         }
 
         public async Task<UserDto?> UpdateAsync(UserDto dto)
         {
             var user = await this._repo.GetByIdAsync(new UserId(dto.Id)); 
-
             if (user == null)
                 return null;
 
@@ -59,33 +60,23 @@ namespace BackOffice.Domain.Users
             await this._repo.UpdateAsync(user);
             await this._unitOfWork.CommitAsync();
 
-            return new UserDto { 
-                Id = user.Id.AsString(), 
-                Role = user.Role, 
-                Active = user.Active, 
-                ActivationToken = user.ActivationToken, 
-                TokenExpiration = user.TokenExpiration
-            };
+            return UserMapper.ToDto(user);
         }
 
         public async Task<UserDto> InactivateAsync(UserId id)
         {
             var user = await this._repo.GetByIdAsync(id); 
-
             if (user == null)
                 return null;   
 
             user.MarkAsInactive();
-            
             await this._unitOfWork.CommitAsync();
-
-            return new UserDto { Id = user.Id.AsString(), Role = user.Role };
+            return UserMapper.ToDto(user);
         }
 
-         public async Task<UserDto?> DeleteAsync(UserId id)
+        public async Task<UserDto?> DeleteAsync(UserId id)
         {
             var user = await this._repo.GetByIdAsync(id); 
-
             if (user == null)
                 return null;   
 
@@ -95,7 +86,7 @@ namespace BackOffice.Domain.Users
             this._repo.Delete(user);
             await this._unitOfWork.CommitAsync();
 
-            return new UserDto { Id = user.Id.AsString(), Role = user.Role };
+            return UserMapper.ToDto(user);
         }
     }
 }

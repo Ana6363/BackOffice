@@ -1,4 +1,5 @@
 ﻿using BackOffice.Domain.Users; 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackOffice.Controllers
@@ -18,6 +19,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Patient")]
         public async Task<IActionResult> Get()
         {
             var res = await _userService.GetAllAsync();

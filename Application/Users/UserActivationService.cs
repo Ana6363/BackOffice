@@ -22,43 +22,37 @@ namespace BackOffice.Application.Users
             _googleOAuthService = googleOAuthService;
         }
 
-        public async Task<(bool IsUserActive, string Message)> HandleOAuthCallbackAsync(string code)
+        public async Task<(bool IsUserActive, string Role, string Message)> HandleOAuthCallbackAsync(string code)
+{
+    var tokenResponse = await _googleOAuthService.ExchangeCodeForTokensAsync(code);
+    var payload = await _googleOAuthService.ValidateToken(tokenResponse.IdToken);
+
+    var userDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == payload.Email);
+    var existingUser = userDataModel != null ? UserMapper.ToDomain(userDataModel) : null;
+
+    if (existingUser != null)
+    {
+        if (!existingUser.Active)
         {
-            var tokenResponse = await _googleOAuthService.ExchangeCodeForTokensAsync(code);
-            var payload = await _googleOAuthService.ValidateToken(tokenResponse.IdToken);
-
-            // Query for the user as a data model, then map it to the domain model
-            var userDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == payload.Email);
-            var existingUser = userDataModel != null ? UserMapper.ToDomain(userDataModel) : null;
-
-            if (existingUser != null)
-            {
-                if (!existingUser.Active)
-                {
-                    await SendActivationEmailAsync(existingUser.Id.AsString());
-                    return (false, "User is inactive. An activation email has been sent.");
-                }
-
-                return (true, "User is active");
-            }
-            else
-            {
-                
-                var newUser = new User(payload.Email, "Patient")
-                {
-                    Active = false
-                };
-                newUser.GenerateActivationToken();
-
-                var newUserDataModel = UserMapper.ToDataModel(newUser); 
-                _dbContext.Users.Add(newUserDataModel);
-                await _dbContext.SaveChangesAsync();
-
-                // Send activation email for new user
-                await SendActivationEmailAsync(newUser.Id.AsString());
-                return (false, "User registered but inactive. An activation email has been sent.");
-            }
+            await SendActivationEmailAsync(existingUser.Id.AsString());
+            return (false, null, "User is inactive. An activation email has been sent.");
         }
+
+        return (true, existingUser.Role, "User is active");
+    }
+    else
+    {
+        var newUser = new User(payload.Email, "Patient") { Active = false };
+        newUser.GenerateActivationToken();
+
+        var newUserDataModel = UserMapper.ToDataModel(newUser);
+        _dbContext.Users.Add(newUserDataModel);
+        await _dbContext.SaveChangesAsync();
+
+        await SendActivationEmailAsync(newUser.Id.AsString());
+        return (false, null, "User registered but inactive. An activation email has been sent.");
+    }
+}
 
         public async Task ActivateUserAsync(string token)
         {

@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using BackOffice.Application.Users;
 using System;
+using BackOffice.Domain.Users;
+using BackOffice.Application.OAuth;
 
 namespace BackOffice.Controllers
 {
@@ -10,10 +12,14 @@ namespace BackOffice.Controllers
     public class AuthController : ControllerBase
     {
         private readonly UserActivationService _userActivationService;
+        private readonly JwtTokenService _jwtTokenService;
+        
+        private readonly UserService _userService;
 
-        public AuthController(UserActivationService userActivationService)
+        public AuthController(UserActivationService userActivationService, JwtTokenService jwtTokenService)
         {
             _userActivationService = userActivationService;
+            _jwtTokenService = jwtTokenService;
         }
 
         [HttpGet("login")]
@@ -27,28 +33,27 @@ namespace BackOffice.Controllers
         }
 
         [HttpGet("callback")]
-        public async Task<IActionResult> AuthCallback(string code)
+public async Task<IActionResult> AuthCallback(string code)
+{
+    try
+    {
+        var result = await _userActivationService.HandleOAuthCallbackAsync(code);
+        
+        if (result.IsUserActive)
         {
-            try
-            {
-                var result = await _userActivationService.HandleOAuthCallbackAsync(code);
-                
-                if (result.IsUserActive)
-                {
-                    // Redirect to the main page if the user is active
-                    return Redirect("http://localhost:5184/swagger/index.html");
-                }
-                else
-                {
-                    // Return Unauthorized if the user is inactive
-                    return Unauthorized(new { success = false, message = result.Message });
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { success = false, message = ex.Message });
-            }
+            var token = _jwtTokenService.GenerateToken(result.Role);
+            return Ok(new { token });
         }
+        else
+        {
+            return Unauthorized(new { success = false, message = result.Message });
+        }
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new { success = false, message = ex.Message });
+    }
+}
 
         [HttpGet("activate")]
         public async Task<IActionResult> ActivateAccount(string token)
