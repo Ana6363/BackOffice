@@ -19,7 +19,6 @@ namespace BackOffice.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Patient")]
         public async Task<IActionResult> Get()
         {
             var res = await _userService.GetAllAsync();
