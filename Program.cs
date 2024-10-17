@@ -4,7 +4,8 @@ using BackOffice.Infrastructure.Users;
 using Microsoft.EntityFrameworkCore;
 using BackOffice.Domain.Shared;
 using BackOffice.Infrastructure.Shared;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion; 
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using BackOffice.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,8 @@ builder.Services.AddDbContext<BackOfficeDbContext>(options =>
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IUserRepository, UsersRepository>();
 builder.Services.AddTransient<UserService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 
 var app = builder.Build();
 
@@ -37,7 +40,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 

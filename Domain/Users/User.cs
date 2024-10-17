@@ -5,7 +5,7 @@ namespace BackOffice.Domain.Users
     public class User : Entity<UserId>, IAggregateRoot
     {
         public string Role { get; private set; }
-        public bool Active { get; private set; }
+        public bool Active { get;  set; }
 
         // Private constructor for EF Core
         private User() 
