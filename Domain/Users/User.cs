@@ -10,10 +10,8 @@ namespace BackOffice.Domain.Users
         public string? ActivationToken { get;  set; } 
         public DateTime? TokenExpiration { get;  set; } 
 
-        // Private constructor for EF Core
         private User() 
         {
-            this.Active = true;
         }
 
         public User(string email, string role)
@@ -24,9 +22,9 @@ namespace BackOffice.Domain.Users
             if (string.IsNullOrWhiteSpace(role))
                 throw new BusinessRuleValidationException("Role cannot be empty.");
                 
-            this.Id = new UserId(email); // Set UserId using email
+            this.Id = new UserId(email);
             this.Role = role;
-            this.Active = true; // Default to active
+            this.Active = false;
         }
 
             public void GenerateActivationToken()

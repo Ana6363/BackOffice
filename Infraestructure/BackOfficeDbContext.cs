@@ -2,13 +2,14 @@ using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure; 
 using BackOffice.Domain.Users; 
 using BackOffice.Infrastructure.Users; 
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion; 
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using BackOffice.Infrastructure.Persistence.Models;
 
 namespace BackOffice.Infrastructure
 {
     public class BackOfficeDbContext : DbContext
     {
-        public DbSet<User> Users { get; set; } 
+        public DbSet<UserDataModel> Users { get; set; } 
 
         public BackOfficeDbContext(DbContextOptions<BackOfficeDbContext> options) : base(options) 
         { 

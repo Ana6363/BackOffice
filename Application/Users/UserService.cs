@@ -19,7 +19,7 @@ namespace BackOffice.Domain.Users
         {
             var list = await this._repo.GetAllAsync();
             
-            List<UserDto> listDto = list.ConvertAll<UserDto>(user => new UserDto{Id = user.Id.AsString(), Role = user.Role, Active = user.Active, ActivationToken = user.ActivationToken , TokenExpiration = user.TokenExpiration} );
+            List<UserDto> listDto = list.ConvertAll<UserDto>(user => UserMapper.ToDto(user));  // Use the mapper here
 
             return listDto;
         }
@@ -50,14 +50,22 @@ namespace BackOffice.Domain.Users
             var user = await this._repo.GetByIdAsync(new UserId(dto.Id)); 
 
             if (user == null)
-                return null;   
+                return null;
 
-            // change all field
             user.ChangeRole(dto.Role);
-            
+            user.ActivationToken = dto.ActivationToken;
+            user.TokenExpiration = dto.TokenExpiration;
+
+            await this._repo.UpdateAsync(user);
             await this._unitOfWork.CommitAsync();
 
-            return new UserDto { Id = user.Id.AsString(), Role = user.Role };
+            return new UserDto { 
+                Id = user.Id.AsString(), 
+                Role = user.Role, 
+                Active = user.Active, 
+                ActivationToken = user.ActivationToken, 
+                TokenExpiration = user.TokenExpiration
+            };
         }
 
         public async Task<UserDto> InactivateAsync(UserId id)
@@ -67,7 +75,6 @@ namespace BackOffice.Domain.Users
             if (user == null)
                 return null;   
 
-            // change all fields
             user.MarkAsInactive();
             
             await this._unitOfWork.CommitAsync();

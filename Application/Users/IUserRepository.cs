@@ -4,6 +4,6 @@ namespace BackOffice.Domain.Users
 {
     public interface IUserRepository:IRepository<User,UserId>
     {
-
+        Task UpdateAsync(User user);
     }
 }

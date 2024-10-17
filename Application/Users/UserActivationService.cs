@@ -1,10 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using BackOffice.Application.Services;
+using BackOffice.Application.OAuth;
 using BackOffice.Domain.Users;
 using BackOffice.Infrastructure;
+using BackOffice.Application.Users;
 using Microsoft.EntityFrameworkCore;
-using BackOffice.Application.OAuth;
 
 namespace BackOffice.Application.Users
 {
@@ -24,16 +25,17 @@ namespace BackOffice.Application.Users
         public async Task<(bool IsUserActive, string Message)> HandleOAuthCallbackAsync(string code)
         {
             var tokenResponse = await _googleOAuthService.ExchangeCodeForTokensAsync(code);
-
             var payload = await _googleOAuthService.ValidateToken(tokenResponse.IdToken);
 
-            var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == new UserId(payload.Email));
+            // Query for the user as a data model, then map it to the domain model
+            var userDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == payload.Email);
+            var existingUser = userDataModel != null ? UserMapper.ToDomain(userDataModel) : null;
 
             if (existingUser != null)
             {
                 if (!existingUser.Active)
                 {
-                    await SendActivationEmailAsync(existingUser.Id.Value);
+                    await SendActivationEmailAsync(existingUser.Id.AsString());
                     return (false, "User is inactive. An activation email has been sent.");
                 }
 
@@ -41,24 +43,28 @@ namespace BackOffice.Application.Users
             }
             else
             {
-                // Register a new user
+                
                 var newUser = new User(payload.Email, "Patient")
                 {
                     Active = false
                 };
                 newUser.GenerateActivationToken();
-                _dbContext.Users.Add(newUser);
+
+                var newUserDataModel = UserMapper.ToDataModel(newUser); 
+                _dbContext.Users.Add(newUserDataModel);
                 await _dbContext.SaveChangesAsync();
 
                 // Send activation email for new user
-                await SendActivationEmailAsync(newUser.Id.Value);
+                await SendActivationEmailAsync(newUser.Id.AsString());
                 return (false, "User registered but inactive. An activation email has been sent.");
             }
         }
 
         public async Task ActivateUserAsync(string token)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.ActivationToken == token);
+            // Query for the user data model by token
+            var userDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.ActivationToken == token);
+            var user = userDataModel != null ? UserMapper.ToDomain(userDataModel) : null;
 
             if (user == null)
             {
@@ -78,12 +84,17 @@ namespace BackOffice.Application.Users
             user.MarkAsActive();
             user.ActivationToken = null;
             user.TokenExpiration = null;
+
+            var updatedUserDataModel = UserMapper.ToDataModel(user);
+            _dbContext.Entry(userDataModel).CurrentValues.SetValues(updatedUserDataModel);
             await _dbContext.SaveChangesAsync();
         }
 
         public async Task SendActivationEmailAsync(string email)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == new UserId(email));
+            var userDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == email);
+            var user = userDataModel != null ? UserMapper.ToDomain(userDataModel) : null;
+
             if (user == null)
             {
                 throw new Exception("User not found.");
@@ -97,9 +108,13 @@ namespace BackOffice.Application.Users
             if (!user.IsActivationTokenValid() || string.IsNullOrEmpty(user.ActivationToken))
             {
                 user.GenerateActivationToken();
+
+                var updatedUserDataModel = UserMapper.ToDataModel(user);
+                _dbContext.Entry(userDataModel).CurrentValues.SetValues(updatedUserDataModel);
                 await _dbContext.SaveChangesAsync();
             }
 
+            // Send email
             string activationUrl = $"http://localhost:5184/auth/activate?token={user.ActivationToken}";
             string subject = "Activate Your Account";
             string body = $"Please activate your account by clicking on the following link: {activationUrl}";
