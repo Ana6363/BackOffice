@@ -30,13 +30,30 @@ namespace BackOffice.Domain.Users
             return user == null ? null : UserMapper.ToDto(user);
         }
 
-        public async Task<UserDto> AddAsync(UserDto dto)
-        { 
+       public async Task<UserDto> AddAsync(UserDto dto)
+        {
+
             var user = new User(dto.Id, dto.Role);
+            if (_repo == null)
+            {
+                throw new Exception("User repository is not initialized.");
+            }
+
+            // Check if the user already exists
+            var existingUser = await _repo.GetByIdAsync(new UserId(dto.Id));
+            if (existingUser != null)
+            {
+                throw new Exception("User already exists in the database.");
+            }
+
+            Console.WriteLine($"Adding user to repository: {user}");
+
             await this._repo.AddAsync(user);
+
             await this._unitOfWork.CommitAsync();
             return UserMapper.ToDto(user);
         }
+
 
         public async Task<string> GetUserRoleAsync(string email)
         {

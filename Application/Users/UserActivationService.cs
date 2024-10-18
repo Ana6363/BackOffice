@@ -27,31 +27,25 @@ namespace BackOffice.Application.Users
     var tokenResponse = await _googleOAuthService.ExchangeCodeForTokensAsync(code);
     var payload = await _googleOAuthService.ValidateToken(tokenResponse.IdToken);
 
+    // Check if the user exists in the database by email
     var userDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == payload.Email);
-    var existingUser = userDataModel != null ? UserMapper.ToDomain(userDataModel) : null;
-
-    if (existingUser != null)
+    
+    if (userDataModel == null)
     {
-        if (!existingUser.Active)
-        {
-            await SendActivationEmailAsync(existingUser.Id.AsString());
-            return (false, null, "User is inactive. An activation email has been sent.");
-        }
-
-        return (true, existingUser.Role, "User is active");
+        // If the user doesn't exist, prevent authentication
+        return (false, null, "User not in the system. An admin has to register the user profile first.");
     }
-    else
+
+    // If the user exists, map to the domain object
+    var existingUser = UserMapper.ToDomain(userDataModel);
+
+    if (!existingUser.Active)
     {
-        var newUser = new User(payload.Email, "Patient") { Active = false };
-        newUser.GenerateActivationToken();
-
-        var newUserDataModel = UserMapper.ToDataModel(newUser);
-        _dbContext.Users.Add(newUserDataModel);
-        await _dbContext.SaveChangesAsync();
-
-        await SendActivationEmailAsync(newUser.Id.AsString());
-        return (false, null, "User registered but inactive. An activation email has been sent.");
+        await SendActivationEmailAsync(existingUser.Id.AsString());
+        return (false, null, "User is inactive. An activation email has been sent.");
     }
+
+    return (true, existingUser.Role, "User is active");
 }
 
         public async Task ActivateUserAsync(string token)

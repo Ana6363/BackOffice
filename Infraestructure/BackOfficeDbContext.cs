@@ -4,12 +4,14 @@ using BackOffice.Domain.Users;
 using BackOffice.Infrastructure.Users; 
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using BackOffice.Infrastructure.Persistence.Models;
+using BackOffice.Infrastructure.Patients;
 
 namespace BackOffice.Infrastructure
 {
     public class BackOfficeDbContext : DbContext
     {
         public DbSet<UserDataModel> Users { get; set; } 
+        public DbSet<PatientDataModel> Patients { get; set; }
 
         public BackOfficeDbContext(DbContextOptions<BackOfficeDbContext> options) : base(options) 
         { 

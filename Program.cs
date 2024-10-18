@@ -12,6 +12,9 @@ using BackOffice.Application.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using BackOffice.Domain.Patients;
+using BackOffice.Infrastructure.Persistence.Repositories;
+using BackOffice.Application.Patients;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +42,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<UserActivationService>();
 builder.Services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
 builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+builder.Services.AddScoped<PatientService>();
 
     // Configure Authentication
     builder.Services.AddAuthentication(options =>
