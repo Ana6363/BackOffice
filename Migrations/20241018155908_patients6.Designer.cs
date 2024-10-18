@@ -4,6 +4,7 @@ using BackOffice.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BackOffice.Migrations
 {
     [DbContext(typeof(BackOfficeDbContext))]
-    partial class BackOfficeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241018155908_patients6")]
+    partial class patients6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,8 +51,7 @@ namespace BackOffice.Migrations
             modelBuilder.Entity("BackOffice.Infrastructure.Patients.PatientDataModel", b =>
                 {
                     b.Property<string>("RecordNumber")
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("RecordNumber");
+                        .HasColumnType("varchar(255)");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime(6)");

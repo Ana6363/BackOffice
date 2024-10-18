@@ -20,7 +20,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpPost("create")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreatePatientAsync([FromBody] PatientDto patientDto)
         {
             if (patientDto == null)
@@ -42,6 +42,7 @@ namespace BackOffice.Controllers
 
 
         [HttpGet] 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllPatientsAsync()
         {
             try

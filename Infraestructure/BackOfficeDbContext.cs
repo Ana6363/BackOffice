@@ -34,15 +34,7 @@ namespace BackOffice.Infrastructure
             // Apply the UserIdConverter for the UserId property
             modelBuilder.Entity<User>()
                 .Property(u => u.Id)
-                .HasConversion(new UserIdConverter());
-
-            modelBuilder.Entity<PatientDataModel>()
-                .HasIndex(p => p.UserId)
-                .IsUnique();
-
-                modelBuilder.Entity<PatientDataModel>()
-                .HasIndex(p => p.PhoneNumber)
-                .IsUnique();    
+                .HasConversion(new UserIdConverter());   
                 
             modelBuilder.ApplyConfiguration(new UsersEntityTypeConfiguration());
         }

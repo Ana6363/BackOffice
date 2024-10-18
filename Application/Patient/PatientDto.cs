@@ -1,6 +1,6 @@
 public class PatientDto
 {
-    public string RecordNumber { get; set; } // Unique identifier for the patient
+    public string? RecordNumber { get; set; } // Unique identifier for the patient
     public DateTime DateOfBirth { get; set; }
     public int PhoneNumber { get; set; } // Patient's phone number
     public int EmergencyContact { get; set; } // Emergency contact number
