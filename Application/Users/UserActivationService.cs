@@ -6,6 +6,7 @@ using BackOffice.Domain.Users;
 using BackOffice.Infrastructure;
 using BackOffice.Application.Users;
 using Microsoft.EntityFrameworkCore;
+using BackOffice.Domain.Patients;
 
 namespace BackOffice.Application.Users
 {
@@ -33,7 +34,7 @@ namespace BackOffice.Application.Users
     if (userDataModel == null)
     {
         // If the user doesn't exist, prevent authentication
-        return (false, null, "User not in the system. An admin has to register the user profile first.");
+        return (false, null, "User not in the system. An admin has to register the user.");
     }
 
     // If the user exists, map to the domain object
@@ -79,39 +80,36 @@ namespace BackOffice.Application.Users
         }
 
 
-        public async Task<UserDto> RegisterUserAsync(string email, string role)
+        public async Task<UserDto> RegisterUserAsync(string email, string role, string firstName, string lastName, string fullName)
         {
-            // Validate input
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(role))
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) || string.IsNullOrWhiteSpace(fullName))
             {
-                throw new ArgumentException("Email and role must be provided.");
+                throw new ArgumentException("Email, role, first name, last name, and full name must be provided.");
             }
 
-            // Check if the user already exists
             var existingUserDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == email);
             if (existingUserDataModel != null)
             {
                 throw new Exception("User already exists.");
             }
 
-            // Create new user
-            var newUser = new User(email, role)
+            var firstNameObj = new Name(firstName);
+            var lastNameObj = new Name(lastName);
+            var fullNameObj = new Name(fullName);
+
+            var newUser = new User(email, role, firstNameObj, lastNameObj, fullNameObj)
             {
-                Active = false // User is initially inactive
+                Active = false
             };
 
-            // Generate activation token
             newUser.GenerateActivationToken();
 
-            // Save user to the database
             var newUserDataModel = UserMapper.ToDataModel(newUser);
             _dbContext.Users.Add(newUserDataModel);
             await _dbContext.SaveChangesAsync();
 
-            // Send activation email using the existing method
             await SendActivationEmailAsync(email);
 
-            // Return the UserDto representation of the newly created user
             return UserMapper.ToDto(newUser);
         }
         

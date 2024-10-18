@@ -46,7 +46,10 @@ public async Task<PatientDataModel> CreatePatientAsync(PatientDto patientDto)
         Role = "Patient",
         Active = false,
         ActivationToken = null,
-        TokenExpiration = null
+        TokenExpiration = null,
+        FirstName = patientDto.FirstName,
+        LastName = patientDto.LastName,
+        FullName = patientDto.FullName
     };
 
     await _userService.AddAsync(userDto);

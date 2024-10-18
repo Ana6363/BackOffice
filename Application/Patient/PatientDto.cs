@@ -7,6 +7,10 @@ public class PatientDto
     public string Gender { get; set; } // Use valid values for Gender
     public string UserId { get; set; } // Corresponds to UserId
 
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string FullName { get; set; }
+
     public PatientDto(string recordNumber, DateTime dateOfBirth, int phoneNumber, int emergencyContact, string gender, string userId)
     {
         RecordNumber = recordNumber;
@@ -15,6 +19,19 @@ public class PatientDto
         EmergencyContact = emergencyContact;
         Gender = gender;
         UserId = userId;
+    }
+
+    public PatientDto(string recordNumber, DateTime dateOfBirth, int phoneNumber, int emergencyContact, string gender, string userId,string firstName,string lastName,string fullName)
+    {
+        RecordNumber = recordNumber;
+        DateOfBirth = dateOfBirth;
+        PhoneNumber = phoneNumber;
+        EmergencyContact = emergencyContact;
+        Gender = gender;
+        UserId = userId;
+        FirstName = firstName;
+        LastName = lastName;
+        FullName = fullName;
     }
 
     // Add a parameterless constructor for model binding

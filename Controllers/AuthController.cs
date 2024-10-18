@@ -93,7 +93,7 @@ namespace BackOffice.Controllers
     {
         try
         {
-            var registeredUser = await _userActivationService.RegisterUserAsync(userDto.Id, userDto.Role);
+            var registeredUser = await _userActivationService.RegisterUserAsync(userDto.Id, userDto.Role,userDto.FirstName,userDto.LastName,userDto.FullName);
             return Ok(new { success = true, user = registeredUser });
         }
         catch (Exception ex)

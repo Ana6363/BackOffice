@@ -1,3 +1,4 @@
+using BackOffice.Domain.Patients;
 using BackOffice.Domain.Shared;
 
 namespace BackOffice.Domain.Users
@@ -5,16 +6,18 @@ namespace BackOffice.Domain.Users
     public class User : Entity<UserId>, IAggregateRoot
     {
         public string Role { get; private set; }
-        public bool Active { get;  set; }
+        public bool Active { get; set; }
 
-        public string? ActivationToken { get;  set; } 
-        public DateTime? TokenExpiration { get;  set; } 
+        public Name FirstName { get; private set; }
+        public Name LastName { get; private set; }
+        public Name FullName {get; private set;}
 
-        private User() 
-        {
-        }
+        public string? ActivationToken { get; set; }
+        public DateTime? TokenExpiration { get; set; }
 
-        public User(string email, string role)
+        private User() { }
+
+        public User(string email, string role, Name firstName, Name lastName,Name fullName)
         {
             if (string.IsNullOrWhiteSpace(email))
                 throw new BusinessRuleValidationException("Email cannot be empty.");
@@ -24,10 +27,13 @@ namespace BackOffice.Domain.Users
                 
             this.Id = new UserId(email);
             this.Role = role;
+            this.FirstName = firstName ?? throw new BusinessRuleValidationException("First name cannot be null.");
+            this.LastName = lastName ?? throw new BusinessRuleValidationException("Last name cannot be null.");
+            this.FullName = fullName ?? throw new BusinessRuleValidationException("Full name cannot be null.");
             this.Active = false;
         }
 
-            public void GenerateActivationToken()
+        public void GenerateActivationToken()
         {
             this.ActivationToken = Guid.NewGuid().ToString(); // Generate a unique token
             this.TokenExpiration = DateTime.UtcNow.AddHours(24);
@@ -53,10 +59,16 @@ namespace BackOffice.Domain.Users
         {
             this.Active = false;
         }
-        
+
         public void MarkAsActive()
         {
             this.Active = true;
+        }
+
+        public void UpdateName(Name firstName, Name lastName)
+        {
+            FirstName = firstName ?? throw new BusinessRuleValidationException("First name cannot be null.");
+            LastName = lastName ?? throw new BusinessRuleValidationException("Last name cannot be null.");
         }
     }
 }

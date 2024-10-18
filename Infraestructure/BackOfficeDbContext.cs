@@ -5,6 +5,7 @@ using BackOffice.Infrastructure.Users;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using BackOffice.Infrastructure.Persistence.Models;
 using BackOffice.Infrastructure.Patients;
+using BackOffice.Domain.Patients;
 
 namespace BackOffice.Infrastructure
 {
@@ -31,6 +32,7 @@ namespace BackOffice.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Ignore<Name>();
             // Apply the UserIdConverter for the UserId property
             modelBuilder.Entity<User>()
                 .Property(u => u.Id)

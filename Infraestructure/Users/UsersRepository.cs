@@ -33,15 +33,12 @@ public class UsersRepository : IUserRepository
     }
 
     async Task<User> IRepository<User, UserId>.AddAsync(User obj)
-{
-    var dataModel = UserMapper.ToDataModel(obj);
-    
-    await _context.Users.AddAsync(dataModel);
-
-    await _context.SaveChangesAsync();
-
-    return obj;
-}
+    {
+        var dataModel = UserMapper.ToDataModel(obj);
+        await _context.Users.AddAsync(dataModel);
+        await _context.SaveChangesAsync();
+        return obj;
+    }
 
     public async Task UpdateAsync(User domainModel)
     {
@@ -52,6 +49,10 @@ public class UsersRepository : IUserRepository
             dataModel.Active = domainModel.Active;
             dataModel.ActivationToken = domainModel.ActivationToken;
             dataModel.TokenExpiration = domainModel.TokenExpiration;
+
+            dataModel.FirstName = domainModel.FirstName.NameValue;
+            dataModel.LastName = domainModel.LastName.NameValue;
+            dataModel.FullName = domainModel.FullName.NameValue;
 
             _context.Users.Update(dataModel);
             await _context.SaveChangesAsync();
@@ -64,6 +65,7 @@ public class UsersRepository : IUserRepository
         if (dataModel != null)
         {
             _context.Users.Remove(dataModel);
+            _context.SaveChanges();
         }
     }
 
