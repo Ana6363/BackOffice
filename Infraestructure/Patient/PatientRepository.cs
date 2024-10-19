@@ -40,7 +40,10 @@ namespace BackOffice.Infrastructure.Persistence.Repositories
         }
         public async Task<PatientDataModel?> GetByIdAsync(RecordNumber id)
         {
-            return await _context.Patients.FirstOrDefaultAsync(p => p.RecordNumber == id.AsString());
+            var recordNumberString = id.AsString();
+
+            return await _context.Patients
+                .FirstOrDefaultAsync(p => p.RecordNumber == recordNumberString);
         }
 
         public async Task<List<PatientDataModel>> GetAllAsync()

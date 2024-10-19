@@ -25,13 +25,16 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle  
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(); // Uncomment this line to enable Swagger
+builder.Logging.AddConsole();
 
 // Get the connection string from appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("BackOfficeDb");
 
 // Configure the DbContext to use MySQL
 builder.Services.AddDbContext<BackOfficeDbContext>(options =>
-    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 5))) // Update with your MySQL version
+    options
+    .UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 5))) // Update with your MySQL version
+    .EnableSensitiveDataLogging()
 );
 
 // Register services

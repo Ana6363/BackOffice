@@ -7,8 +7,8 @@ namespace BackOffice.Domain.Patients
     {
         public RecordNumber RecordNumber { get; set; }
         public DateOfBirth DateOfBirth { get; private set; }
-        public PhoneNumber PhoneNumber { get; private set; }
-        public PhoneNumber EmergencyContact { get; private set; }
+        public PhoneNumber PhoneNumber { get;set; }
+        public PhoneNumber EmergencyContact { get;set; }
         public Gender Gender { get; private set; }
         public UserId UserId { get; private set; }
         public bool IsToBeDeleted { get; private set; }

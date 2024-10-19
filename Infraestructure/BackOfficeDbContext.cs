@@ -14,6 +14,8 @@ namespace BackOffice.Infrastructure
         public DbSet<UserDataModel> Users { get; set; } 
         public DbSet<PatientDataModel> Patients { get; set; }
 
+        public DbSet<LogDataModel> Logs { get; set; }
+
         public BackOfficeDbContext(DbContextOptions<BackOfficeDbContext> options) : base(options) 
         { 
         }
@@ -36,7 +38,9 @@ namespace BackOffice.Infrastructure
             // Apply the UserIdConverter for the UserId property
             modelBuilder.Entity<User>()
                 .Property(u => u.Id)
-                .HasConversion(new UserIdConverter());   
+                .HasConversion(new UserIdConverter()); 
+            modelBuilder.Entity<LogDataModel>()
+                .HasKey(l => l.LogId);      
                 
             modelBuilder.ApplyConfiguration(new UsersEntityTypeConfiguration());
         }

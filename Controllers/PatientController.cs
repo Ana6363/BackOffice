@@ -61,18 +61,17 @@ namespace BackOffice.Controllers
             }
         }
 
-        [HttpPut("update/{recordNumber}")]
-        public async Task<IActionResult> UpdatePatientAsync([FromRoute] RecordNumber recordNumber, [FromBody] PatientDto patientDto)
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdatePatientAsync([FromBody] PatientDto patientDto)
         {
-            if (patientDto == null)
+            if (patientDto == null || string.IsNullOrWhiteSpace(patientDto.RecordNumber))
             {
-                return BadRequest(new { success = false, message = "Patient details are required." });
+                return BadRequest(new { success = false, message = "Patient details including RecordNumber are required." });
             }
 
             try
             {
-                // Use the PatientService to update the patient
-                var updatedPatient = await _patientService.UpdateAsync(recordNumber, patientDto);
+                var updatedPatient = await _patientService.UpdateAsync(patientDto);
                 return Ok(new { success = true, patient = updatedPatient });
             }
             catch (Exception ex)
@@ -82,12 +81,15 @@ namespace BackOffice.Controllers
         }
 
         [HttpPut("markToDelete/{recordNumber}")]
-        public async Task<IActionResult> MarkPatientToDeleteAsync([FromRoute] RecordNumber recordNumber)
+        public async Task<IActionResult> MarkPatientToDeleteAsync([FromRoute] string recordNumber)
         {
             try
             {
+                // Convert the string recordNumber to the RecordNumber domain object
+                var recordNumObj = new RecordNumber(recordNumber);
+
                 // Use the PatientService to mark the patient for deletion
-                var patientDataModel = await _patientService.MarkToDelete(recordNumber);
+                var patientDataModel = await _patientService.MarkToDelete(recordNumObj);
                 return Ok(new { success = true, patient = patientDataModel });
             }
             catch (Exception ex)
@@ -96,19 +98,21 @@ namespace BackOffice.Controllers
             }
         }
 
-
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeletePatientAsync([FromBody] RecordNumber? recordNumber)
+        public async Task<IActionResult> DeletePatientAsync([FromBody] string recordNumber)
         {
-            if (recordNumber == null)
+            if (string.IsNullOrWhiteSpace(recordNumber))
             {
                 return BadRequest(new { success = false, message = "Patient details are required." });
             }
 
             try
             {
+                // Convert the string recordNumber to the RecordNumber domain object
+                var recordNumObj = new RecordNumber(recordNumber);
+
                 // Use the PatientService to delete the patient
-                var patientDataModel = await _patientService.DeletePatientAsync(recordNumber);
+                var patientDataModel = await _patientService.DeletePatientAsync(recordNumObj);
                 return Ok(new { success = true, patient = patientDataModel });
             }
             catch (Exception ex)

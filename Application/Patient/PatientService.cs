@@ -10,6 +10,9 @@ using BackOffice.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Mail;
 using BackOffice.Infrastructure.Services;
+using BackOffice.Domain.Shared;
+using BackOffice.Application.Services;
+using System.Reflection;
 
 namespace BackOffice.Application.Patients
 {
@@ -18,10 +21,11 @@ namespace BackOffice.Application.Patients
         private readonly IPatientRepository _patientRepository;
         private readonly UserService _userService;
         private readonly BackOfficeDbContext _dbContext;
-        private readonly UnitOfWork _unitOfWork;
-        private readonly EmailService _emailService;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IEmailService _emailService;
 
-        public PatientService(IPatientRepository patientRepository, UserService userService, BackOfficeDbContext dbContext, UnitOfWork unitOfWork, EmailService emailService)
+
+        public PatientService(IPatientRepository patientRepository, UserService userService, BackOfficeDbContext dbContext, IUnitOfWork unitOfWork, IEmailService emailService)
         {
             _patientRepository = patientRepository;
             _userService = userService;
@@ -29,6 +33,7 @@ namespace BackOffice.Application.Patients
             _unitOfWork = unitOfWork;
             _emailService = emailService;
         }
+
 
         public async Task<PatientDataModel> CreatePatientAsync(PatientDto patientDto)
         {
@@ -60,7 +65,6 @@ namespace BackOffice.Application.Patients
 
             await _userService.AddAsync(userDto);
 
-            // Generate the next sequential RecordNumber
             var latestPatient = await _dbContext.Patients
                 .OrderByDescending(p => p.RecordNumber)
                 .FirstOrDefaultAsync();
@@ -69,9 +73,8 @@ namespace BackOffice.Application.Patients
                 ? int.Parse(latestPatient.RecordNumber) + 1
                 : 1;
 
-            string generatedRecordNumber = nextRecordNumber.ToString("D5"); // Always 5 digits
+            string generatedRecordNumber = nextRecordNumber.ToString("D5");
 
-            // Ensure the generated RecordNumber is set
             patientDto.RecordNumber = generatedRecordNumber;
 
             var patient = PatientMapper.ToDomain(patientDto);
@@ -92,40 +95,101 @@ namespace BackOffice.Application.Patients
                 throw;
             }
         }
-        public async Task<PatientDto> UpdateAsync(RecordNumber recordNumber, PatientDto patientDto)
+
+        public async Task<PatientDto> UpdateAsync(PatientDto patientDto)
         {
-            var patient = await _patientRepository.GetByIdAsync(recordNumber);
-            if (patient == null)
+            var patientDataModel = await _dbContext.Patients
+                .FirstOrDefaultAsync(p => p.RecordNumber == patientDto.RecordNumber);
+
+            if (patientDataModel == null)
             {
                 throw new Exception("Patient not found.");
             }
-            if (patient.UserId != patientDto.UserId)
+
+            var user = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Id == patientDataModel.UserId);
+
+            if (user == null)
             {
-                throw new Exception("Patient does not belong to the user.");
-            }
-            var user = await _userService.GetByIdAsync(new UserId(patient.UserId));
-            if (patient.EmergencyContact != patientDto.EmergencyContact)
-            {
-                if (_emailService != null)
-                {
-                    await _emailService.SendEmailAsync(user.Id, "Emergency contact change", $"Your emergency contact has been changed to {patientDto.PhoneNumber}.");
-                }
-                patient.EmergencyContact = patientDto.EmergencyContact;
-            }
-            if (patient.PhoneNumber != patientDto.PhoneNumber)
-            {
-                if (_emailService != null)
-                {
-                    await _emailService.SendEmailAsync(user.Id, "Phone number change", $"Your phone number has been changed to {patientDto.PhoneNumber}.");
-                }
-                patient.PhoneNumber = patientDto.PhoneNumber;
+                throw new Exception("User associated with this patient not found.");
             }
 
-            await _patientRepository.UpdateAsync(PatientMapper.ToDomain(patient));
-            await _unitOfWork.CommitAsync();
+            if (patientDto.PhoneNumber != patientDataModel.PhoneNumber)
+            {
+                var existingPatientWithSamePhoneNumber = await _dbContext.Patients
+                    .FirstOrDefaultAsync(p => p.PhoneNumber == patientDto.PhoneNumber);
 
-            return PatientMapper.ToDto(PatientMapper.ToDomain(patient));
+                if (existingPatientWithSamePhoneNumber != null)
+                {
+                    throw new Exception("A patient with this phone number already exists. Cannot update to this phone number.");
+                }
+            }
+
+            bool phoneNumberChanged = false;
+            bool emergencyContactChanged = false;
+
+            bool isUpdated = false;
+            
+            isUpdated |= UpdateProperties(patientDto, patientDataModel, ref phoneNumberChanged, ref emergencyContactChanged);
+
+            isUpdated |= UpdateProperties(patientDto, user, ref phoneNumberChanged, ref emergencyContactChanged);
+            if (!isUpdated)
+            {
+                var updatedPatientDomain = PatientMapper.ToDomain(patientDataModel);
+                return PatientMapper.ToDto(updatedPatientDomain);
+            }
+
+            _dbContext.Patients.Update(patientDataModel);
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+            if (phoneNumberChanged && _emailService != null)
+            {
+                await _emailService.SendEmailAsync(user.Id, "Phone number change", $"Your phone number has been changed to {patientDto.PhoneNumber}.");
+            }
+
+            if (emergencyContactChanged && _emailService != null)
+            {
+                await _emailService.SendEmailAsync(user.Id, "Emergency contact change", $"Your emergency contact has been changed to {patientDto.EmergencyContact}.");
+            }
+
+            var updatedPatientDomainFinal = PatientMapper.ToDomain(patientDataModel);
+            return PatientMapper.ToDto(updatedPatientDomainFinal);
         }
+
+        // Helper method to update properties and detect changes
+        private bool UpdateProperties(object source, object target, ref bool phoneNumberChanged, ref bool emergencyContactChanged)
+        {
+            bool isUpdated = false;
+
+            foreach (PropertyInfo property in source.GetType().GetProperties())
+            {
+                var sourceValue = property.GetValue(source);
+                var targetProperty = target.GetType().GetProperty(property.Name);
+                if (targetProperty != null)
+                {
+                    var targetValue = targetProperty.GetValue(target);
+
+                    if (sourceValue != null && !sourceValue.Equals(targetValue))
+                    {
+                        targetProperty.SetValue(target, sourceValue);
+                        isUpdated = true;
+
+                        if (property.Name == "PhoneNumber")
+                        {
+                            phoneNumberChanged = true;
+                        }
+
+                        if (property.Name == "EmergencyContact")
+                        {
+                            emergencyContactChanged = true;
+                        }
+                    }
+                }
+            }
+
+            return isUpdated;
+        }
+
 
         public async Task<PatientDto?> MarkToDelete(RecordNumber recordNumber)
         {
