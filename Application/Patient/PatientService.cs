@@ -268,7 +268,7 @@ namespace BackOffice.Application.Patients
                 new LogId(Guid.NewGuid().ToString()),
                 new ActionType(ActionTypeEnum.Delete),
                 new Email(userEmail),
-                new Text($"Patient profile {userEmail} scheduled for deleting in 12 horus by an admin at {DateTime.UtcNow}.")
+                new Text($"Patient profile {userEmail} scheduled for deleting in 24 hours by an admin at {DateTime.UtcNow}.")
             );
 
             var logDataModel = LogMapper.ToDataModel(log);
