@@ -8,6 +8,8 @@ using BackOffice.Domain.Users;
 using BackOffice.Infrastructure.Patients;
 using BackOffice.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mail;
+using BackOffice.Infrastructure.Services;
 
 namespace BackOffice.Application.Patients
 {
@@ -17,12 +19,15 @@ namespace BackOffice.Application.Patients
         private readonly UserService _userService;
         private readonly BackOfficeDbContext _dbContext;
         private readonly UnitOfWork _unitOfWork;
+        private readonly EmailService _emailService;
 
-        public PatientService(IPatientRepository patientRepository, UserService userService, BackOfficeDbContext dbContext)
+        public PatientService(IPatientRepository patientRepository, UserService userService, BackOfficeDbContext dbContext, UnitOfWork unitOfWork, EmailService emailService)
         {
             _patientRepository = patientRepository;
             _userService = userService;
             _dbContext = dbContext;
+            _unitOfWork = unitOfWork;
+            _emailService = emailService;
         }
 
         public async Task<PatientDataModel> CreatePatientAsync(PatientDto patientDto)
@@ -87,26 +92,79 @@ namespace BackOffice.Application.Patients
                 throw;
             }
         }
-
-        public async Task<PatientDataModel?> DeletePatientAsync(PatientDto dto)
+        public async Task<PatientDto> UpdateAsync(RecordNumber recordNumber, PatientDto patientDto)
         {
-            var patient = await _patientRepository.GetByIdAsync(new RecordNumber(dto.RecordNumber));
+            var patient = await _patientRepository.GetByIdAsync(recordNumber);
             if (patient == null)
             {
                 throw new Exception("Patient not found.");
             }
-            if (patient.UserId != dto.UserId)
+            if (patient.UserId != patientDto.UserId)
             {
                 throw new Exception("Patient does not belong to the user.");
             }
-            var user = await _userService.GetByIdAsync(new UserId(dto.UserId));
-            if (user.Active)
+            var user = await _userService.GetByIdAsync(new UserId(patient.UserId));
+            if (patient.EmergencyContact != patientDto.EmergencyContact)
+            {
+                if (_emailService != null)
+                {
+                    await _emailService.SendEmailAsync(user.Id, "Emergency contact change", $"Your emergency contact has been changed to {patientDto.PhoneNumber}.");
+                }
+                patient.EmergencyContact = patientDto.EmergencyContact;
+            }
+            if (patient.PhoneNumber != patientDto.PhoneNumber)
+            {
+                if (_emailService != null)
+                {
+                    await _emailService.SendEmailAsync(user.Id, "Phone number change", $"Your phone number has been changed to {patientDto.PhoneNumber}.");
+                }
+                patient.PhoneNumber = patientDto.PhoneNumber;
+            }
+
+            await _patientRepository.UpdateAsync(PatientMapper.ToDomain(patient));
+            await _unitOfWork.CommitAsync();
+
+            return PatientMapper.ToDto(PatientMapper.ToDomain(patient));
+        }
+
+        public async Task<PatientDto?> MarkToDelete(RecordNumber recordNumber)
+        {
+            var patient = await _patientRepository.GetByIdAsync(recordNumber);
+            if (patient == null)
+            {
+                throw new Exception("Patient not found.");
+            }
+
+            patient.IsToBeDeleted = true;
+            await _patientRepository.UpdateAsync(PatientMapper.ToDomain(patient)); // Fix: Pass the correct type
+            await _unitOfWork.CommitAsync();
+
+            return PatientMapper.ToDto(PatientMapper.ToDomain(patient)); // Fix: Pass the correct type
+        }
+
+
+        public async Task<PatientDataModel?> DeletePatientAsync(RecordNumber recordNumber)
+        {
+            var patient = await _patientRepository.GetByIdAsync(recordNumber);
+            if (patient == null)
+            {
+                throw new Exception("Patient not found.");
+            }
+            var user = await _userService.GetByIdAsync(new UserId(patient.UserId));
+            if (patient.UserId != user.Id)
+            {
+                throw new Exception("Patient does not belong to the user.");
+            }
+            if (user?.Active == true)
             {
                 throw new Exception("Cannot delete a patient from an active user.");
             }
-            var recordNumber = new RecordNumber(patient.RecordNumber); // Convert string to RecordNumber
+            if (!patient.IsToBeDeleted)
+            {
+                throw new Exception("Patient isn't marked for deletion.");
+            }
             await _patientRepository.DeleteAsync(recordNumber);
-            await _userService.DeleteAsync(new UserId(dto.UserId));
+            await _userService.DeleteAsync(new UserId(patient.UserId));
             await _unitOfWork.CommitAsync();
 
             return patient;

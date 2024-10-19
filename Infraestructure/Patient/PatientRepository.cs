@@ -29,7 +29,8 @@ namespace BackOffice.Infrastructure.Persistence.Repositories
                 DateOfBirth = patient.DateOfBirth.Value,
                 PhoneNumber = patient.PhoneNumber.Number,
                 EmergencyContact = patient.EmergencyContact.Number,
-                Gender = patient.Gender.ToString() ?? "UNKNOWN"
+                Gender = patient.Gender.ToString() ?? "UNKNOWN",
+                IsToBeDeleted = patient.IsToBeDeleted
             };
 
             await _context.Patients.AddAsync(patientDataModel);

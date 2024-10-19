@@ -17,5 +17,7 @@ namespace BackOffice.Infrastructure.Patients
         public required int EmergencyContact { get; set; }
 
         public required string Gender { get; set; }
+
+        public required bool IsToBeDeleted { get; set; }
     }
 }
