@@ -95,8 +95,14 @@ public async Task<PatientDataModel> CreatePatientAsync(PatientDto patientDto)
                 join user in _dbContext.Users on patient.UserId equals user.Id
                 select new { patient, user };
 
-    // Apply filters based on the provided filterDto
     if (!string.IsNullOrWhiteSpace(filterDto.UserId))
+    {
+        query = query.Where(p => p.user.Id == filterDto.UserId);
+    }
+    if (filterDto.PhoneNumber != null ){
+        
+        query = query.Where (p => p.patient.PhoneNumber == filterDto.PhoneNumber);
+    }
     {
         query = query.Where(p => p.user.Id == filterDto.UserId);
     }
