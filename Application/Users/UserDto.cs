@@ -16,5 +16,7 @@ namespace BackOffice.Domain.Users
         public string? ActivationToken { get; set; }
 
         public DateTime? TokenExpiration { get; set; }
+
+        public bool IsToBeDeleted { get; set; }
     }
 }

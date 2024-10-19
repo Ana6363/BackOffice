@@ -9,13 +9,13 @@ namespace BackOffice.Domain.Users
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _repo;
-        private readonly IEmailService _emailService; // Add email service for sending activation emails
+        private readonly IEmailService _emailService;
 
         public UserService(IUnitOfWork unitOfWork, IUserRepository repo, IEmailService emailService)
         {
             this._unitOfWork = unitOfWork;
             this._repo = repo;
-            this._emailService = emailService; // Initialize email service
+            this._emailService = emailService; 
         }
 
         public async Task<List<UserDto>> GetAllAsync()

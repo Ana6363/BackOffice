@@ -18,8 +18,7 @@ namespace BackOffice.Application.Patients
                 patient.PhoneNumber.Number,
                 patient.EmergencyContact.Number,
                 patient.Gender?.ToString() ?? "UNKNOWN",
-                patient.UserId.AsString(),
-                patient.IsToBeDeleted
+                patient.UserId.AsString()
             );
         }
 
@@ -39,8 +38,7 @@ namespace BackOffice.Application.Patients
                 new DateOfBirth(patientDto.DateOfBirth),
                 new PhoneNumber(patientDto.PhoneNumber),
                 new PhoneNumber(patientDto.EmergencyContact),
-                new Gender(genderType),
-                patientDto.IsToBeDeleted 
+                new Gender(genderType)
             );
         }
 
@@ -56,8 +54,7 @@ namespace BackOffice.Application.Patients
                 DateOfBirth = patient.DateOfBirth.Value,
                 PhoneNumber = patient.PhoneNumber.Number,
                 EmergencyContact = patient.EmergencyContact.Number,
-                Gender = patient.Gender?.ToString() ?? "UNKNOWN",
-                IsToBeDeleted = patient.IsToBeDeleted
+                Gender = patient.Gender?.ToString() ?? "UNKNOWN"          
             };
         }
 
@@ -77,8 +74,7 @@ namespace BackOffice.Application.Patients
                 new DateOfBirth(dataModel.DateOfBirth),
                 new PhoneNumber(dataModel.PhoneNumber),
                 new PhoneNumber(dataModel.EmergencyContact),
-                new Gender(genderType),
-                dataModel.IsToBeDeleted
+                new Gender(genderType)
             );
         }
     }

@@ -13,6 +13,8 @@ using BackOffice.Infrastructure.Services;
 using BackOffice.Domain.Shared;
 using BackOffice.Application.Services;
 using System.Reflection;
+using BackOffice.Domain.Logs;
+using BackOffice.Application.Logs;
 
 namespace BackOffice.Application.Patients
 {
@@ -152,7 +154,9 @@ namespace BackOffice.Application.Patients
                 await _emailService.SendEmailAsync(user.Id, "Emergency contact change", $"Your emergency contact has been changed to {patientDto.EmergencyContact}.");
             }
 
+            
             var updatedPatientDomainFinal = PatientMapper.ToDomain(patientDataModel);
+            await LogUpdateOperation(patientDto.UserId, patientDto);
             return PatientMapper.ToDto(updatedPatientDomainFinal);
         }
 
@@ -191,21 +195,31 @@ namespace BackOffice.Application.Patients
         }
 
 
-        public async Task<PatientDto?> MarkToDelete(RecordNumber recordNumber)
+        public async Task MarkToDelete(RecordNumber recordNumber)
         {
-            var patient = await _patientRepository.GetByIdAsync(recordNumber);
-            if (patient == null)
+            var patientDataModel = await _patientRepository.GetByIdAsync(recordNumber);
+            if (patientDataModel == null)
             {
                 throw new Exception("Patient not found.");
             }
 
-            patient.IsToBeDeleted = true;
-            await _patientRepository.UpdateAsync(PatientMapper.ToDomain(patient)); // Fix: Pass the correct type
-            await _unitOfWork.CommitAsync();
+            var userDataModel = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Id == patientDataModel.UserId);
 
-            return PatientMapper.ToDto(PatientMapper.ToDomain(patient)); // Fix: Pass the correct type
+            if (userDataModel == null)
+            {
+                throw new Exception("User associated with this patient not found.");
+            }
+
+            Console.WriteLine("HHHHHHH");
+            userDataModel.IsToBeDeleted = true;
+
+            Console.WriteLine("HHHHHHH");
+            _dbContext.Users.Update(userDataModel);
+
+            Console.WriteLine("HHHHHHH");
+            await _dbContext.SaveChangesAsync();
         }
-
 
         public async Task<PatientDataModel?> DeletePatientAsync(RecordNumber recordNumber)
         {
@@ -215,23 +229,51 @@ namespace BackOffice.Application.Patients
                 throw new Exception("Patient not found.");
             }
             var user = await _userService.GetByIdAsync(new UserId(patient.UserId));
-            if (patient.UserId != user.Id)
+            if (user == null || patient.UserId != user.Id)
             {
                 throw new Exception("Patient does not belong to the user.");
             }
-            if (user?.Active == true)
-            {
-                throw new Exception("Cannot delete a patient from an active user.");
-            }
-            if (!patient.IsToBeDeleted)
-            {
-                throw new Exception("Patient isn't marked for deletion.");
-            }
-            await _patientRepository.DeleteAsync(recordNumber);
-            await _userService.DeleteAsync(new UserId(patient.UserId));
-            await _unitOfWork.CommitAsync();
 
+            if (!user.IsToBeDeleted)
+            {
+                throw new Exception("User is not marked for deletion.");
+            }
+
+            if (_emailService != null)
+            {
+                await _emailService.SendEmailAsync(user.Id, "Account Deletion Scheduled", 
+                    $"Your account and related patient information will be deleted in 24 hours.");
+            }
+
+            _ = Task.Delay(TimeSpan.FromHours(24)).ContinueWith(async _ =>  // comentar esta linha para testar q ta a eliminar, se n espera 24 horas 
+            {
+                try
+                {
+                    await _patientRepository.DeleteAsync(recordNumber);
+                    await _userService.DeleteAsync(new UserId(patient.UserId));
+                    await _unitOfWork.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error during scheduled deletion: {ex.Message}");
+                }
+            }); 
+            await LogDeleteOperation(user.Id, patient);
             return patient;
+        }
+
+        private async Task LogDeleteOperation(string userEmail, PatientDataModel patientDataModel)
+        {
+            var log = new Log(
+                new LogId(Guid.NewGuid().ToString()),
+                new ActionType(ActionTypeEnum.Delete),
+                new Email(userEmail),
+                new Text($"Patient profile {userEmail} scheduled for deleting in 12 horus by an admin at {DateTime.UtcNow}.")
+            );
+
+            var logDataModel = LogMapper.ToDataModel(log);
+            await _dbContext.Logs.AddAsync(logDataModel);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<PatientDataModel>> GetFilteredPatientsAsync(PatientFilterDto filterDto)
@@ -264,5 +306,22 @@ namespace BackOffice.Application.Patients
             var result = await query.Select(p => p.patient).ToListAsync();
             return result;
         }
+
+        private async Task LogUpdateOperation(string userEmail, PatientDto patientDto)
+        {
+            var log = new Log(
+                new LogId(Guid.NewGuid().ToString()),
+                new ActionType(ActionTypeEnum.Update),
+                new Email(userEmail),
+                new Text($"Patient profile {userEmail} updated by an admin at {DateTime.UtcNow}.")
+            );
+
+            var logDataModel = LogMapper.ToDataModel(log);
+            await _dbContext.Logs.AddAsync(logDataModel);
+            await _dbContext.SaveChangesAsync();
+        }
+
     }
+
+    
 }

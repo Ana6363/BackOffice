@@ -15,7 +15,8 @@ public static class UserMapper
             TokenExpiration = domainModel.TokenExpiration,
             FirstName = domainModel.FirstName.NameValue,
             LastName = domainModel.LastName.NameValue,
-            FullName = domainModel.FullName.NameValue
+            FullName = domainModel.FullName.NameValue,
+            IsToBeDeleted = domainModel.IsToBeDeleted
         };
     }
 
@@ -30,9 +31,11 @@ public static class UserMapper
             TokenExpiration = domainModel.TokenExpiration,
             FirstName = domainModel.FirstName.NameValue,
             LastName = domainModel.LastName.NameValue,
-            FullName = domainModel.FullName.NameValue
+            FullName = domainModel.FullName.NameValue,
+            IsToBeDeleted = domainModel.IsToBeDeleted
         };
     }
+
     public static User ToDomain(UserDataModel dataModel)
     {
         var user = new User(
@@ -55,12 +58,17 @@ public static class UserMapper
         user.ActivationToken = dataModel.ActivationToken;
         user.TokenExpiration = dataModel.TokenExpiration;
 
+        if (dataModel.IsToBeDeleted)
+        {
+            user.MarkDeleteAsActive();
+        }
+
         return user;
     }
 
     public static User ToDomain(UserDto dto)
     {
-        return new User(
+        var user = new User(
             dto.Id,
             dto.Role,
             new Name(dto.FirstName),
@@ -72,5 +80,12 @@ public static class UserMapper
             ActivationToken = dto.ActivationToken,
             TokenExpiration = dto.TokenExpiration
         };
+
+        if (dto.IsToBeDeleted)
+        {
+            user.MarkDeleteAsActive();
+        }
+
+        return user;
     }
 }

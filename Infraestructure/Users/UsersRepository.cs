@@ -53,6 +53,7 @@ public class UsersRepository : IUserRepository
             dataModel.FirstName = domainModel.FirstName.NameValue;
             dataModel.LastName = domainModel.LastName.NameValue;
             dataModel.FullName = domainModel.FullName.NameValue;
+            dataModel.IsToBeDeleted = domainModel.IsToBeDeleted;
 
             _context.Users.Update(dataModel);
             await _context.SaveChangesAsync();

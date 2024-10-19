@@ -41,6 +41,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpGet("filter")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllPatientsAsync(
             [FromQuery] string? userId = null,
             [FromQuery] string? firstName = null,
@@ -62,6 +63,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpPut("update")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdatePatientAsync([FromBody] PatientDto patientDto)
         {
             if (patientDto == null || string.IsNullOrWhiteSpace(patientDto.RecordNumber))
@@ -81,16 +83,14 @@ namespace BackOffice.Controllers
         }
 
         [HttpPut("markToDelete")]
-        public async Task<IActionResult> MarkPatientToDeleteAsync([FromBody] string recordNumber)
+        public async Task<IActionResult> MarkPatientToDeleteAsync([FromBody] RecordNumberDto recordNumberDto)
         {
             try
             {
-                // Convert the string recordNumber to the RecordNumber domain object
-                var recordNumObj = new RecordNumber(recordNumber);
+                var recordNumObj = new RecordNumber(recordNumberDto.RecordNumber);
 
-                // Use the PatientService to mark the patient for deletion
-                var patientDataModel = await _patientService.MarkToDelete(recordNumObj);
-                return Ok(new { success = true, patient = patientDataModel });
+                await _patientService.MarkToDelete(recordNumObj);
+                return Ok(new { success = true });
             }
             catch (Exception ex)
             {
@@ -98,8 +98,10 @@ namespace BackOffice.Controllers
             }
         }
 
-        [HttpDelete("delete")]
-        public async Task<IActionResult> DeletePatientAsync([FromBody] string recordNumber)
+
+        [HttpDelete("delete/{recordNumber}")]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeletePatientAsync([FromRoute] string recordNumber)
         {
             if (string.IsNullOrWhiteSpace(recordNumber))
             {

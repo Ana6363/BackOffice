@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using BackOffice.Domain.Patients;
 using BackOffice.Domain.Shared;
 
@@ -15,6 +16,8 @@ namespace BackOffice.Domain.Users
         public string? ActivationToken { get; set; }
         public DateTime? TokenExpiration { get; set; }
 
+        public bool IsToBeDeleted { get; private set; }
+
         private User() { }
 
         public User(string email, string role, Name firstName, Name lastName,Name fullName)
@@ -31,6 +34,7 @@ namespace BackOffice.Domain.Users
             this.LastName = lastName ?? throw new BusinessRuleValidationException("Last name cannot be null.");
             this.FullName = fullName ?? throw new BusinessRuleValidationException("Full name cannot be null.");
             this.Active = false;
+            this.IsToBeDeleted = false;
         }
 
         public void GenerateActivationToken()
@@ -63,6 +67,10 @@ namespace BackOffice.Domain.Users
         public void MarkAsActive()
         {
             this.Active = true;
+        }
+
+        public void MarkDeleteAsActive(){
+            this.IsToBeDeleted = true;
         }
 
         public void UpdateName(Name firstName, Name lastName)

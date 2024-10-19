@@ -6,14 +6,13 @@ public class PatientDto
     public int EmergencyContact { get; set; } // Emergency contact number
     public string Gender { get; set; } // Use valid values for Gender
     public string UserId { get; set; } // Corresponds to UserId
-    public bool IsToBeDeleted { get; set; } // Flag to indicate if the patient is to be deleted
 
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string FullName { get; set; }
 
 
-    public PatientDto(string recordNumber, DateTime dateOfBirth, int phoneNumber, int emergencyContact, string gender, string userId, bool isToBeDeleted)
+    public PatientDto(string recordNumber, DateTime dateOfBirth, int phoneNumber, int emergencyContact, string gender, string userId)
     {
         RecordNumber = recordNumber;
         DateOfBirth = dateOfBirth;
@@ -21,6 +20,5 @@ public class PatientDto
         EmergencyContact = emergencyContact;
         Gender = gender;
         UserId = userId;
-        IsToBeDeleted = isToBeDeleted;
     }
 }

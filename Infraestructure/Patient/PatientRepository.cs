@@ -30,7 +30,6 @@ namespace BackOffice.Infrastructure.Persistence.Repositories
                 PhoneNumber = patient.PhoneNumber.Number,
                 EmergencyContact = patient.EmergencyContact.Number,
                 Gender = patient.Gender.ToString() ?? "UNKNOWN",
-                IsToBeDeleted = patient.IsToBeDeleted
             };
 
             await _context.Patients.AddAsync(patientDataModel);

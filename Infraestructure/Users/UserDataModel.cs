@@ -15,5 +15,6 @@ namespace BackOffice.Infrastructure.Persistence.Models
         public string? ActivationToken { get; set; } 
 
         public DateTime? TokenExpiration { get; set; }
+        public required bool IsToBeDeleted { get; set; }
     }
 }
