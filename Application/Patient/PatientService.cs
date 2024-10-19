@@ -106,6 +106,7 @@ namespace BackOffice.Application.Patients
             }
             var recordNumber = new RecordNumber(patient.RecordNumber); // Convert string to RecordNumber
             await _patientRepository.DeleteAsync(recordNumber);
+            await _userService.DeleteAsync(new UserId(dto.UserId));
             await _unitOfWork.CommitAsync();
 
             return patient;
