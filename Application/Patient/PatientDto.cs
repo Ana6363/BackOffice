@@ -20,20 +20,4 @@ public class PatientDto
         Gender = gender;
         UserId = userId;
     }
-
-    public PatientDto(string recordNumber, DateTime dateOfBirth, int phoneNumber, int emergencyContact, string gender, string userId,string firstName,string lastName,string fullName)
-    {
-        RecordNumber = recordNumber;
-        DateOfBirth = dateOfBirth;
-        PhoneNumber = phoneNumber;
-        EmergencyContact = emergencyContact;
-        Gender = gender;
-        UserId = userId;
-        FirstName = firstName;
-        LastName = lastName;
-        FullName = fullName;
-    }
-
-    // Add a parameterless constructor for model binding
-    public PatientDto() { }
 }
