@@ -80,8 +80,8 @@ namespace BackOffice.Controllers
             }
         }
 
-        [HttpPut("markToDelete/{recordNumber}")]
-        public async Task<IActionResult> MarkPatientToDeleteAsync([FromRoute] string recordNumber)
+        [HttpPut("markToDelete")]
+        public async Task<IActionResult> MarkPatientToDeleteAsync([FromBody] string recordNumber)
         {
             try
             {
