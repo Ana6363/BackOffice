@@ -41,19 +41,27 @@ namespace BackOffice.Controllers
         }
 
 
-        [HttpGet] 
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllPatientsAsync()
-        {
-            try
-            {
-                var patients = await _patientRepository.GetAllAsync(); // Get all patients
-                return Ok(new { success = true, patients });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { success = false, message = ex.Message });
-            }
-        }
+      [HttpGet("filter")]
+public async Task<IActionResult> GetAllPatientsAsync(
+    [FromQuery] string? userId = null, 
+    [FromQuery] string? firstName = null, 
+    [FromQuery] string? lastName = null, 
+    [FromQuery] string? fullName = null)
+{
+    try
+    {
+        // Create a filter DTO from the query parameters
+        var filterDto = new PatientFilterDto(userId, firstName, lastName, fullName);
+        
+        var patients = await _patientService.GetFilteredPatientsAsync(filterDto); // Filter based on dto
+        return Ok(new { success = true, patients });
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new { success = false, message = ex.Message });
+    }
+}
+
+
     }
 }

@@ -89,9 +89,33 @@ public async Task<PatientDataModel> CreatePatientAsync(PatientDto patientDto)
 
 
 
-    public async Task<IEnumerable<PatientDataModel>> GetAllPatientsAsync()
-        {
-            return await _patientRepository.GetAllAsync();
-        }
+    public async Task<IEnumerable<PatientDataModel>> GetFilteredPatientsAsync(PatientFilterDto filterDto)
+{
+    var query = from patient in _dbContext.Patients
+                join user in _dbContext.Users on patient.UserId equals user.Id
+                select new { patient, user };
+
+    // Apply filters based on the provided filterDto
+    if (!string.IsNullOrWhiteSpace(filterDto.UserId))
+    {
+        query = query.Where(p => p.user.Id == filterDto.UserId);
+    }
+    if (!string.IsNullOrWhiteSpace(filterDto.FirstName))
+    {
+        query = query.Where(p => p.user.FirstName.Contains(filterDto.FirstName));
+    }
+    if (!string.IsNullOrWhiteSpace(filterDto.LastName))
+    {
+        query = query.Where(p => p.user.LastName.Contains(filterDto.LastName));
+    }
+    if (!string.IsNullOrWhiteSpace(filterDto.FullName))
+    {
+        query = query.Where(p => p.user.FullName.Contains(filterDto.FullName));
+    }
+
+    var result = await query.Select(p => p.patient).ToListAsync();
+    return result;
+}
+
     }
 }
