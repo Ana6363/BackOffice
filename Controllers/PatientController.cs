@@ -61,6 +61,25 @@ public async Task<IActionResult> GetAllPatientsAsync(
         return BadRequest(new { success = false, message = ex.Message });
     }
 }
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeletePatientAsync([FromBody] PatientDto patientDto)
+        {
+            if (patientDto == null)
+            {
+                return BadRequest(new { success = false, message = "Patient details are required." });
+            }
+
+            try
+            {
+                // Use the PatientService to delete the patient
+                var patientDataModel = await _patientService.DeletePatientAsync(patientDto);
+                return Ok(new { success = true, patient = patientDataModel });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
 
 
     }
