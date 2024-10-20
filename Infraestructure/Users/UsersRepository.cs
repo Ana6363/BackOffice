@@ -47,6 +47,7 @@ public class UsersRepository : IUserRepository
         {
             dataModel.Role = domainModel.Role;
             dataModel.Active = domainModel.Active;
+            dataModel.PhoneNumber = domainModel.PhoneNumber.Number;
             dataModel.ActivationToken = domainModel.ActivationToken;
             dataModel.TokenExpiration = domainModel.TokenExpiration;
 

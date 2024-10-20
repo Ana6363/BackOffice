@@ -8,8 +8,6 @@ namespace BackOffice.Infrastructure.Patients
         [Key]
         public required string RecordNumber { get; set; } // Primary key
 
-        public required int PhoneNumber { get; set; }
-
         public required string UserId { get; set; }
 
         public required DateTime DateOfBirth { get; set; }

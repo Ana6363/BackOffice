@@ -12,11 +12,10 @@ public class PatientDto
     public string FullName { get; set; }
 
 
-    public PatientDto(string recordNumber, DateTime dateOfBirth, int phoneNumber, int emergencyContact, string gender, string userId)
+    public PatientDto(string recordNumber, DateTime dateOfBirth, int emergencyContact, string gender, string userId)
     {
         RecordNumber = recordNumber;
         DateOfBirth = dateOfBirth;
-        PhoneNumber = phoneNumber;
         EmergencyContact = emergencyContact;
         Gender = gender;
         UserId = userId;

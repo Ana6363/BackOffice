@@ -45,19 +45,21 @@ namespace BackOffice.Application.Patients
                 throw new Exception("User is already registered in the database.");
             }
 
-            var existingPatientWithPhoneNumber = await _dbContext.Patients
-                .FirstOrDefaultAsync(p => p.PhoneNumber == patientDto.PhoneNumber);
+            var existingUserWithPhoneNumber = await _dbContext.Users
+            .FirstOrDefaultAsync(u => u.PhoneNumber == patientDto.PhoneNumber);
 
-            if (existingPatientWithPhoneNumber != null)
+            if (existingUserWithPhoneNumber != null)
             {
-                throw new Exception("A patient with this phone number already exists.");
+                throw new Exception("A user with this phone number already exists. Cannot create a new patient with this phone number.");
             }
+
 
             var userDto = new UserDto
             {
                 Id = patientDto.UserId,
                 Role = "Patient",
                 Active = false,
+                PhoneNumber = patientDto.PhoneNumber,
                 ActivationToken = null,
                 TokenExpiration = null,
                 FirstName = patientDto.FirstName,
@@ -116,15 +118,17 @@ namespace BackOffice.Application.Patients
                 throw new Exception("User associated with this patient not found.");
             }
 
-            if (patientDto.PhoneNumber != patientDataModel.PhoneNumber)
+            if (patientDto.PhoneNumber != user.PhoneNumber)
             {
-                var existingPatientWithSamePhoneNumber = await _dbContext.Patients
-                    .FirstOrDefaultAsync(p => p.PhoneNumber == patientDto.PhoneNumber);
+                var existingUserWithSamePhoneNumber = await _dbContext.Users
+                    .FirstOrDefaultAsync(u => u.PhoneNumber == patientDto.PhoneNumber);
 
-                if (existingPatientWithSamePhoneNumber != null)
+                if (existingUserWithSamePhoneNumber != null)
                 {
-                    throw new Exception("A patient with this phone number already exists. Cannot update to this phone number.");
+                    throw new Exception("A user with this phone number already exists. Cannot update to this phone number.");
                 }
+
+                user.PhoneNumber = patientDto.PhoneNumber;
             }
 
             bool phoneNumberChanged = false;
@@ -288,7 +292,7 @@ namespace BackOffice.Application.Patients
             }
             if (filterDto.PhoneNumber != null)
             {
-                query = query.Where(p => p.patient.PhoneNumber == filterDto.PhoneNumber);
+                query = query.Where(u => u.user.PhoneNumber == filterDto.PhoneNumber);
             }
             if (!string.IsNullOrWhiteSpace(filterDto.FirstName))
             {

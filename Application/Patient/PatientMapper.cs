@@ -15,7 +15,6 @@ namespace BackOffice.Application.Patients
             return new PatientDto(
                 patient.RecordNumber.AsString(),
                 patient.DateOfBirth.Value,
-                patient.PhoneNumber.Number,
                 patient.EmergencyContact.Number,
                 patient.Gender?.ToString() ?? "UNKNOWN",
                 patient.UserId.AsString()
@@ -36,7 +35,6 @@ namespace BackOffice.Application.Patients
                 new RecordNumber(patientDto.RecordNumber),
                 new UserId(patientDto.UserId),
                 new DateOfBirth(patientDto.DateOfBirth),
-                new PhoneNumber(patientDto.PhoneNumber),
                 new PhoneNumber(patientDto.EmergencyContact),
                 new Gender(genderType)
             );
@@ -52,7 +50,6 @@ namespace BackOffice.Application.Patients
                 RecordNumber = patient.Id.AsString(),
                 UserId = patient.UserId.AsString(),
                 DateOfBirth = patient.DateOfBirth.Value,
-                PhoneNumber = patient.PhoneNumber.Number,
                 EmergencyContact = patient.EmergencyContact.Number,
                 Gender = patient.Gender?.ToString() ?? "UNKNOWN"          
             };
@@ -72,7 +69,6 @@ namespace BackOffice.Application.Patients
                 new RecordNumber(dataModel.RecordNumber),
                 new UserId(dataModel.UserId),
                 new DateOfBirth(dataModel.DateOfBirth),
-                new PhoneNumber(dataModel.PhoneNumber),
                 new PhoneNumber(dataModel.EmergencyContact),
                 new Gender(genderType)
             );

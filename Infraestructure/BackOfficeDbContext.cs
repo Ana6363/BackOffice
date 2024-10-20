@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using BackOffice.Infrastructure.Persistence.Models;
 using BackOffice.Infrastructure.Patients;
 using BackOffice.Domain.Patients;
+using BackOffice.Infrastructure.Staff;
 
 namespace BackOffice.Infrastructure
 {
@@ -13,8 +14,11 @@ namespace BackOffice.Infrastructure
     {
         public DbSet<UserDataModel> Users { get; set; } 
         public DbSet<PatientDataModel> Patients { get; set; }
-
         public DbSet<LogDataModel> Logs { get; set; }
+        public DbSet<StaffDataModel> Staff { get; set; }
+        public DbSet<AvailableSlotDataModel> AvailableSlots { get; set; }
+
+
 
         public BackOfficeDbContext(DbContextOptions<BackOfficeDbContext> options) : base(options) 
         { 
@@ -35,17 +39,25 @@ namespace BackOffice.Infrastructure
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Ignore<Name>();
+            modelBuilder.Ignore<PhoneNumber>();
             // Apply the UserIdConverter for the UserId property
             modelBuilder.Entity<User>()
                 .Property(u => u.Id)
                 .HasConversion(new UserIdConverter()); 
             modelBuilder.Entity<LogDataModel>()
-                .HasKey(l => l.LogId);      
+                .HasKey(l => l.LogId);     
+
+            modelBuilder.Entity<AvailableSlotDataModel>()
+                .HasOne(s => s.Staff)
+                .WithMany(s => s.AvailableSlots)
+                .HasForeignKey(s => s.StaffLicenseNumber); 
+
+            modelBuilder.Entity<StaffDataModel>()
+                .HasKey(s => s.LicenseNumber);     
                 
             modelBuilder.ApplyConfiguration(new UsersEntityTypeConfiguration());
         }
 
-        // Value Converter for UserId
         public class UserIdConverter : ValueConverter<UserId, string>
         {
             public UserIdConverter() : base(

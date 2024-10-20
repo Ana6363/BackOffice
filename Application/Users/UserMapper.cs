@@ -11,6 +11,7 @@ public static class UserMapper
             Id = domainModel.Id.AsString(),
             Role = domainModel.Role,
             Active = domainModel.Active,
+            PhoneNumber = domainModel.PhoneNumber.Number,
             ActivationToken = domainModel.ActivationToken,
             TokenExpiration = domainModel.TokenExpiration,
             FirstName = domainModel.FirstName.NameValue,
@@ -27,6 +28,7 @@ public static class UserMapper
             Id = domainModel.Id.AsString(),
             Role = domainModel.Role,
             Active = domainModel.Active,
+            PhoneNumber = domainModel.PhoneNumber.Number,
             ActivationToken = domainModel.ActivationToken,
             TokenExpiration = domainModel.TokenExpiration,
             FirstName = domainModel.FirstName.NameValue,
@@ -41,6 +43,7 @@ public static class UserMapper
         var user = new User(
             dataModel.Id,
             dataModel.Role,
+            new PhoneNumber(dataModel.PhoneNumber),
             new Name(dataModel.FirstName), 
             new Name(dataModel.LastName),   
             new Name(dataModel.FullName)
@@ -71,6 +74,7 @@ public static class UserMapper
         var user = new User(
             dto.Id,
             dto.Role,
+            new PhoneNumber(dto.PhoneNumber),
             new Name(dto.FirstName),
             new Name(dto.LastName),   
             new Name(dto.FullName)    

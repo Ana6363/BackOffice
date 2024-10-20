@@ -9,6 +9,8 @@ namespace BackOffice.Domain.Users
         public string Role { get; private set; }
         public bool Active { get; set; }
 
+        public PhoneNumber PhoneNumber { get;set; }
+
         public Name FirstName { get; private set; }
         public Name LastName { get; private set; }
         public Name FullName {get; private set;}
@@ -20,7 +22,7 @@ namespace BackOffice.Domain.Users
 
         private User() { }
 
-        public User(string email, string role, Name firstName, Name lastName,Name fullName)
+        public User(string email, string role,PhoneNumber phoneNumber, Name firstName, Name lastName,Name fullName)
         {
             if (string.IsNullOrWhiteSpace(email))
                 throw new BusinessRuleValidationException("Email cannot be empty.");
@@ -30,6 +32,7 @@ namespace BackOffice.Domain.Users
                 
             this.Id = new UserId(email);
             this.Role = role;
+            this.PhoneNumber = phoneNumber ?? throw new BusinessRuleValidationException("PhoneNumber cannot be null");
             this.FirstName = firstName ?? throw new BusinessRuleValidationException("First name cannot be null.");
             this.LastName = lastName ?? throw new BusinessRuleValidationException("Last name cannot be null.");
             this.FullName = fullName ?? throw new BusinessRuleValidationException("Full name cannot be null.");

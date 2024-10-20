@@ -7,6 +7,7 @@ using BackOffice.Infrastructure;
 using BackOffice.Application.Users;
 using Microsoft.EntityFrameworkCore;
 using BackOffice.Domain.Patients;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BackOffice.Application.Users
 {
@@ -80,7 +81,7 @@ namespace BackOffice.Application.Users
         }
 
 
-        public async Task<UserDto> RegisterUserAsync(string email, string role, string firstName, string lastName, string fullName)
+        public async Task<UserDto> RegisterUserAsync(string email, string role,int phoneNumber, string firstName, string lastName, string fullName)
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) || string.IsNullOrWhiteSpace(fullName))
             {
@@ -93,11 +94,18 @@ namespace BackOffice.Application.Users
                 throw new Exception("User already exists.");
             }
 
+            var existingUserWithPhoneNumber = await _dbContext.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+            if (existingUserWithPhoneNumber != null)
+            {
+                throw new Exception("A user with this phone number already exists.");
+            }
+
+            var phoneNumberObj = new PhoneNumber(phoneNumber);
             var firstNameObj = new Name(firstName);
             var lastNameObj = new Name(lastName);
             var fullNameObj = new Name(fullName);
 
-            var newUser = new User(email, role, firstNameObj, lastNameObj, fullNameObj)
+            var newUser = new User(email, role,phoneNumberObj,firstNameObj, lastNameObj, fullNameObj)
             {
                 Active = false
             };

@@ -88,12 +88,12 @@ namespace BackOffice.Controllers
 
         
     [HttpPost("send-conf-admin")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public async Task<IActionResult> RegisterUserAsync([FromBody] UserDto userDto)
     {
         try
         {
-            var registeredUser = await _userActivationService.RegisterUserAsync(userDto.Id, userDto.Role,userDto.FirstName,userDto.LastName,userDto.FullName);
+            var registeredUser = await _userActivationService.RegisterUserAsync(userDto.Id, userDto.Role,userDto.PhoneNumber,userDto.FirstName,userDto.LastName,userDto.FullName);
             return Ok(new { success = true, user = registeredUser });
         }
         catch (Exception ex)

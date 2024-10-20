@@ -27,7 +27,6 @@ namespace BackOffice.Infrastructure.Persistence.Repositories
                 RecordNumber = patient.RecordNumber.AsString(),
                 UserId = patient.UserId.AsString(),
                 DateOfBirth = patient.DateOfBirth.Value,
-                PhoneNumber = patient.PhoneNumber.Number,
                 EmergencyContact = patient.EmergencyContact.Number,
                 Gender = patient.Gender.ToString() ?? "UNKNOWN",
             };
@@ -59,7 +58,6 @@ namespace BackOffice.Infrastructure.Persistence.Repositories
             }
 
             patientDataModel.DateOfBirth = patient.DateOfBirth.Value;
-            patientDataModel.PhoneNumber = patient.PhoneNumber.Number; 
             patientDataModel.EmergencyContact = patient.EmergencyContact.Number; 
             patientDataModel.Gender = patient.Gender.Value.ToString();
 
