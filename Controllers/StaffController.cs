@@ -41,5 +41,26 @@ namespace BackOffice.Controllers
                     return BadRequest(new { success = false, message = ex.Message });
                 }
             }
+
+        [HttpGet("filter")]
+            public async Task<IActionResult> GetAllStaffAsync(
+                [FromQuery] int? phoneNumber = null,
+                [FromQuery] string? firstName = null,
+                [FromQuery] string? lastName = null,
+                [FromQuery] string? fullName = null)
+            {
+                try
+                {
+                    var filterDto = new StaffFilterDto(phoneNumber, firstName, lastName, fullName);
+
+                    var staffMembers = await _staffService.GetFilteredStaffAsync(filterDto);
+                    return Ok(new { success = true, staffMembers });
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new { success = false, message = ex.Message });
+                }
+            }
+
     }
 }

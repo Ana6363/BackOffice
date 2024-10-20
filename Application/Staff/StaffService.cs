@@ -5,6 +5,7 @@ using BackOffice.Domain.Staff;
 using BackOffice.Domain.Users;
 using BackOffice.Infrastructure;
 using BackOffice.Infrastructure.Staff;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 
@@ -50,6 +51,38 @@ namespace BackOffice.Application.StaffService
 
                 return staffDataModel;
             }
+
+        public async Task<IEnumerable<StaffDataModel>> GetFilteredStaffAsync(StaffFilterDto filterDto)
+            {
+                var query = _dbContext.Staff
+                    .Include(s => s.AvailableSlots) 
+                    .Join(_dbContext.Users, staff => staff.Email, user => user.Id, (staff, user) => new { staff, user });
+
+                if (filterDto.PhoneNumber.HasValue)
+                {
+                    query = query.Where(s => EF.Functions.Collate(s.user.PhoneNumber.ToString(), "utf8mb4_unicode_ci") == EF.Functions.Collate(filterDto.PhoneNumber.Value.ToString(), "utf8mb4_unicode_ci"));
+                }
+                if (!string.IsNullOrWhiteSpace(filterDto.FirstName))
+                {
+                    query = query.Where(s => EF.Functions.Collate(s.user.FirstName, "utf8mb4_unicode_ci").Contains(EF.Functions.Collate(filterDto.FirstName, "utf8mb4_unicode_ci")));
+                }
+                if (!string.IsNullOrWhiteSpace(filterDto.LastName))
+                {
+                    query = query.Where(s => EF.Functions.Collate(s.user.LastName, "utf8mb4_unicode_ci").Contains(EF.Functions.Collate(filterDto.LastName, "utf8mb4_unicode_ci")));
+                }
+                if (!string.IsNullOrWhiteSpace(filterDto.FullName))
+                {
+                    query = query.Where(s => EF.Functions.Collate(s.user.FullName, "utf8mb4_unicode_ci").Contains(EF.Functions.Collate(filterDto.FullName, "utf8mb4_unicode_ci")));
+                }
+
+                var result = await query
+                    .Select(s => s.staff)
+                    .ToListAsync();
+
+                return result;
+            }
+
+
 
 
     }
