@@ -7,9 +7,26 @@ namespace BackOffice.Domain.Staff
         public SpecializationType Value { get; private set; }
         public enum SpecializationType
         {
-            Doctor,
-            Nurse,
-            Other
+            Cardiology,
+            Orthopedics,
+            Dermatology,
+            Neurology,
+            Pediatrics,
+            Radiology,
+            GeneralSurgery,
+            Anesthesiology,
+            Oncology,
+            Ophthalmology,
+            Psychiatry,
+            Urology,
+            Endocrinology,
+            Gastroenterology,
+            Rheumatology,
+            Pulmonology,
+            Nephrology,
+            ObstetricsGynecology,
+            EmergencyMedicine,
+            FamilyMedicine
         }
 
         private Specializations(SpecializationType value)

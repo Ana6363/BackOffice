@@ -8,7 +8,8 @@ namespace BackOffice.Domain.Staff
         public required string LicenseNumber { get; set; }
         public required string Specialization { get; set; }
         public required string Email { get; set; }
-        public required int PhoneNumber { get; set; }
+        public int? PhoneNumber { get; set; }
         public List<SlotDto> AvailableSlots { get; set; } = new List<SlotDto>();
+        public bool Status { get; set; }
     }
 }

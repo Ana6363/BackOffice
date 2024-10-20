@@ -15,11 +15,18 @@ using System.Text;
 using BackOffice.Domain.Patients;
 using BackOffice.Infrastructure.Persistence.Repositories;
 using BackOffice.Application.Patients;
+using BackOffice.Infrastructure.Staff;
+using BackOffice.Application.StaffService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.  
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
+
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle  
@@ -47,6 +54,8 @@ builder.Services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<PatientService>();
+builder.Services.AddScoped<IStaffRepository,StaffRepository>();
+builder.Services.AddScoped<StaffService>();
 
     // Configure Authentication
     builder.Services.AddAuthentication(options =>

@@ -7,17 +7,15 @@ namespace BackOffice.Domain.Staff
     public class Staff : Entity<LicenseNumber>, IAggregateRoot
     {
         public Specializations Specialization { get; private set; }
-        public Email Email { get; private set; }
-        public PhoneNumber PhoneNumber { get; private set; }
-
+        public StaffEmail Email { get; private set; }
         public List<Slots> AvailableSlots { get; private set; } = new List<Slots>();
+        public StaffStatus Status { get; private set; } // Use the new VO for status
 
-        public Staff(LicenseNumber licenseNumber, Specializations specialization, Email email, PhoneNumber phoneNumber, List<Slots> slots)
+        public Staff(LicenseNumber licenseNumber, Specializations specialization, StaffEmail  email, List<Slots> slots, StaffStatus status)
         {
             Id = licenseNumber ?? throw new BusinessRuleValidationException("License number cannot be null");
             Specialization = specialization ?? throw new BusinessRuleValidationException("Specialization cannot be null");
             Email = email ?? throw new BusinessRuleValidationException("Email cannot be null");
-            PhoneNumber = phoneNumber ?? throw new BusinessRuleValidationException("PhoneNumber cannot be null");
             
             if (slots == null || slots.Count == 0)
             {
@@ -25,6 +23,7 @@ namespace BackOffice.Domain.Staff
             }
 
             AvailableSlots = slots;
+            Status = status ?? throw new BusinessRuleValidationException("Status cannot be null");
         }
 
         public Staff() { }
@@ -36,7 +35,6 @@ namespace BackOffice.Domain.Staff
                 throw new BusinessRuleValidationException("Slot cannot be null.");
             }
 
-            // Check for slot conflicts before adding
             foreach (var existingSlot in AvailableSlots)
             {
                 if (existingSlot.ConflictsWith(slot))
@@ -52,10 +50,18 @@ namespace BackOffice.Domain.Staff
         {
             AvailableSlots.Remove(slot);
         }
+        
+        public void Deactivate()
+        {
+            if (Status.IsActive)
+            {
+                Status = StaffStatus.Inactive();
+            }
+        }
 
         public override string ToString()
         {
-            return $"Staff: {Email}, Specialization: {Specialization}, Slots: {string.Join(", ", AvailableSlots)}";
+            return $"Staff: {Email}, Specialization: {Specialization}, Slots: {string.Join(", ", AvailableSlots)}, Status: {Status}";
         }
     }
 }

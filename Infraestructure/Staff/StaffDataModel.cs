@@ -13,8 +13,7 @@ namespace BackOffice.Infrastructure.Staff
 
         public string Email { get; set; } 
 
-        public int PhoneNumber { get; set; } 
-
         public List<AvailableSlotDataModel> AvailableSlots { get; set; }
+        public bool Status { get; set; }
     }
 }    

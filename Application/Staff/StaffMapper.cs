@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using BackOffice.Domain.Staff;
 using BackOffice.Infrastructure.Staff;
+using Microsoft.Extensions.Configuration;  // Add this namespace
 
-namespace BackOffice.Application.StaffMapper
+namespace BackOffice.Application.Staffs
 {
     public static class StaffMapper
     {
@@ -16,39 +17,41 @@ namespace BackOffice.Application.StaffMapper
                 LicenseNumber = domainModel.Id.AsString(),
                 Specialization = domainModel.Specialization.ToString(),
                 Email = domainModel.Email.Value,
-                PhoneNumber = domainModel.PhoneNumber.Number,
-                AvailableSlots = domainModel.AvailableSlots.Select(slot => ToDto(slot)).ToList() // Convert Slots to DTO
+
+                AvailableSlots = domainModel.AvailableSlots.Select(slot => ToDto(slot)).ToList(),
+                Status = domainModel.Status.IsActive
             };
         }
 
-        // DTO to Domain Model
-        public static Staff ToDomain(StaffDto dto)
+        // DTO to Domain Model (with IConfiguration)
+        public static Staff ToDomain(StaffDto dto, IConfiguration configuration)
         {
             var slots = dto.AvailableSlots.Select(ToDomain).ToList();
-
             var specialization = Specializations.FromString(dto.Specialization);
+            var status = dto.Status ? StaffStatus.Active() : StaffStatus.Inactive();
 
             return new Staff(
                 new LicenseNumber(dto.LicenseNumber),
                 specialization,
-                new Email(dto.Email),
-                new PhoneNumber(dto.PhoneNumber),
-                slots
+                new StaffEmail(dto.LicenseNumber, dto.Email, configuration),  // Pass configuration here
+                slots,
+                status
             );
         }
 
-        // DataModel to Domain Model
-        public static Staff ToDomain(StaffDataModel dataModel)
+        // DataModel to Domain Model (with IConfiguration)
+        public static Staff ToDomain(StaffDataModel dataModel, IConfiguration configuration)
         {
             var slots = dataModel.AvailableSlots.Select(ToDomain).ToList();
             var specialization = Specializations.FromString(dataModel.Specialization);
+            var status = dataModel.Status ? StaffStatus.Active() : StaffStatus.Inactive();
 
             return new Staff(
                 new LicenseNumber(dataModel.LicenseNumber),
                 specialization,
-                new Email(dataModel.Email),
-                new PhoneNumber(dataModel.PhoneNumber),
-                slots
+                new StaffEmail(dataModel.LicenseNumber, dataModel.Email, configuration),  // Pass configuration here
+                slots,
+                status
             );
         }
 
@@ -59,9 +62,9 @@ namespace BackOffice.Application.StaffMapper
             {
                 LicenseNumber = domainModel.Id.AsString(),
                 Specialization = domainModel.Specialization.ToString(),
-                Email = domainModel.Email.Value,
-                PhoneNumber = domainModel.PhoneNumber.Number,
-                AvailableSlots = domainModel.AvailableSlots.Select(ToDataModel).ToList()
+                Email = domainModel.Email.Value,  // Map email
+                AvailableSlots = domainModel.AvailableSlots.Select(ToDataModel).ToList(),
+                Status = domainModel.Status.IsActive
             };
         }
 
@@ -73,11 +76,12 @@ namespace BackOffice.Application.StaffMapper
                 LicenseNumber = dataModel.LicenseNumber,
                 Specialization = dataModel.Specialization,
                 Email = dataModel.Email,
-                PhoneNumber = dataModel.PhoneNumber,
-                AvailableSlots = dataModel.AvailableSlots.Select(slot => ToDto(slot)).ToList()
+                AvailableSlots = dataModel.AvailableSlots.Select(slot => ToDto(slot)).ToList(),
+                Status = dataModel.Status
             };
         }
 
+        // Slot Mapping: AvailableSlotDataModel to SlotDto
         public static SlotDto ToDto(AvailableSlotDataModel slotDataModel)
         {
             return new SlotDto
@@ -87,6 +91,7 @@ namespace BackOffice.Application.StaffMapper
             };
         }
 
+        // Slot Mapping: Slots (Domain) to SlotDto
         public static SlotDto ToDto(Slots domainSlot)
         {
             return new SlotDto
@@ -96,17 +101,19 @@ namespace BackOffice.Application.StaffMapper
             };
         }
 
+        // Slot Mapping: SlotDto to Slots (Domain)
         public static Slots ToDomain(SlotDto dto)
         {
             return new Slots(dto.StartTime, dto.EndTime);
         }
 
+        // Slot Mapping: AvailableSlotDataModel to Slots (Domain)
         public static Slots ToDomain(AvailableSlotDataModel dataModel)
         {
             return new Slots(dataModel.StartTime, dataModel.EndTime);
         }
 
-
+        // Slot Mapping: Slots (Domain) to AvailableSlotDataModel
         public static AvailableSlotDataModel ToDataModel(Slots domainSlot)
         {
             return new AvailableSlotDataModel

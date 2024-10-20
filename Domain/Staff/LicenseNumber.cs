@@ -4,31 +4,18 @@ using BackOffice.Domain.Shared;
 
 namespace BackOffice.Domain.Staff
 {
-    public class LicenseNumber : EntityId, IEquatable<LicenseNumber>
+    public class LicenseNumber : EntityId
     {
-        public char Role { get; private set; }
-        public int Year { get; private set; }
-        public int SequentialNumber { get; private set; }
-
-        private static readonly Regex LicenseNumberPattern = new Regex(@"^(N|D|O)(\d{4})(\d{5})$", RegexOptions.Compiled);
-
-        public LicenseNumber(string licenseNumber) : base(licenseNumber)
+        private const string LicenseNumberPattern = @"^[A-Z0-9]{6,10}$";
+        public LicenseNumber(string number) : base(number)
         {
-            if (string.IsNullOrWhiteSpace(licenseNumber))
-                throw new ArgumentException("License number cannot be null or empty.", nameof(licenseNumber));
-
-            var match = LicenseNumberPattern.Match(licenseNumber);
-            if (!match.Success)
-                throw new ArgumentException("Invalid license number format. Expected format: (N | D | O)yyyynnnnn", nameof(licenseNumber));
-
-            Role = match.Groups[1].Value[0]; // 'N', 'D', or 'O'
-            Year = int.Parse(match.Groups[2].Value); // 'yyyy'
-            SequentialNumber = int.Parse(match.Groups[3].Value); // 'nnnnn'
+            if (!IsValidLicenseNumber(number))
+                throw new ArgumentException("Invalid license number format.", nameof(number));
         }
 
         protected override object CreateFromString(string text)
         {
-            return new LicenseNumber(text); 
+            return text; 
         }
 
         public override string AsString()
@@ -40,19 +27,19 @@ namespace BackOffice.Domain.Staff
         {
             if (obj is LicenseNumber other)
             {
-                return string.Equals(AsString(), other.AsString(), StringComparison.Ordinal);
+                return string.Equals(Value as string, other.Value as string, StringComparison.Ordinal);
             }
             return false;
         }
 
         public override int GetHashCode()
         {
-            return AsString().GetHashCode();
+            return Value?.GetHashCode() ?? 0;
         }
 
-        public bool Equals(LicenseNumber? other)
+        private static bool IsValidLicenseNumber(string licenseNumber)
         {
-            return other != null && AsString() == other.AsString();
+            return Regex.IsMatch(licenseNumber, LicenseNumberPattern);
         }
     }
 }
