@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BackOffice.Domain.Staff;
 using BackOffice.Infrastructure.Staff;
-using Microsoft.Extensions.Configuration;  // Add this namespace
+using Microsoft.Extensions.Configuration;
 
 namespace BackOffice.Application.Staffs
 {
@@ -14,9 +14,8 @@ namespace BackOffice.Application.Staffs
         {
             return new StaffDto
             {
-                LicenseNumber = domainModel.Id.AsString(),
+                LicenseNumber = domainModel.LicenseNumber.AsString(),
                 Specialization = domainModel.Specialization.ToString(),
-                Email = domainModel.Email.Value,
 
                 AvailableSlots = domainModel.AvailableSlots.Select(slot => ToDto(slot)).ToList(),
                 Status = domainModel.Status.IsActive
@@ -24,43 +23,46 @@ namespace BackOffice.Application.Staffs
         }
 
         // DTO to Domain Model (with IConfiguration)
-        public static Staff ToDomain(StaffDto dto, IConfiguration configuration)
+        public static Staff ToDomain(StaffDto dto, StaffId staffId, IConfiguration configuration)
         {
             var slots = dto.AvailableSlots.Select(ToDomain).ToList();
             var specialization = Specializations.FromString(dto.Specialization);
             var status = dto.Status ? StaffStatus.Active() : StaffStatus.Inactive();
 
             return new Staff(
+                staffId,
                 new LicenseNumber(dto.LicenseNumber),
                 specialization,
-                new StaffEmail(dto.LicenseNumber, dto.Email, configuration),  // Pass configuration here
+                new StaffEmail(staffId.AsString(),configuration),
                 slots,
                 status
             );
         }
 
-        // DataModel to Domain Model (with IConfiguration)
-        public static Staff ToDomain(StaffDataModel dataModel, IConfiguration configuration)
+        public static Staff ToDomain(StaffDataModel dataModel, StaffId staffId, IConfiguration configuration)
         {
             var slots = dataModel.AvailableSlots.Select(ToDomain).ToList();
             var specialization = Specializations.FromString(dataModel.Specialization);
             var status = dataModel.Status ? StaffStatus.Active() : StaffStatus.Inactive();
 
             return new Staff(
+                staffId,
                 new LicenseNumber(dataModel.LicenseNumber),
                 specialization,
-                new StaffEmail(dataModel.LicenseNumber, dataModel.Email, configuration),  // Pass configuration here
+                new StaffEmail(dataModel.StaffId, configuration),
                 slots,
                 status
             );
         }
+
 
         // Domain Model to DataModel
         public static StaffDataModel ToDataModel(Staff domainModel)
         {
             return new StaffDataModel
             {
-                LicenseNumber = domainModel.Id.AsString(),
+                StaffId = domainModel.Id.Value, // Map StaffId
+                LicenseNumber = domainModel.LicenseNumber.AsString(), // Map LicenseNumber
                 Specialization = domainModel.Specialization.ToString(),
                 Email = domainModel.Email.Value,  // Map email
                 AvailableSlots = domainModel.AvailableSlots.Select(ToDataModel).ToList(),
@@ -75,7 +77,6 @@ namespace BackOffice.Application.Staffs
             {
                 LicenseNumber = dataModel.LicenseNumber,
                 Specialization = dataModel.Specialization,
-                Email = dataModel.Email,
                 AvailableSlots = dataModel.AvailableSlots.Select(slot => ToDto(slot)).ToList(),
                 Status = dataModel.Status
             };

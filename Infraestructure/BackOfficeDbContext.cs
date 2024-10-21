@@ -50,10 +50,10 @@ namespace BackOffice.Infrastructure
             modelBuilder.Entity<AvailableSlotDataModel>()
                 .HasOne(s => s.Staff)
                 .WithMany(s => s.AvailableSlots)
-                .HasForeignKey(s => s.StaffLicenseNumber); 
+                .HasForeignKey(s => s.StaffId); 
 
             modelBuilder.Entity<StaffDataModel>()
-                .HasKey(s => s.LicenseNumber);     
+                .HasKey(s => s.StaffId);     
                 
             modelBuilder.ApplyConfiguration(new UsersEntityTypeConfiguration());
         }

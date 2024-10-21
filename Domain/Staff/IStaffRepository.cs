@@ -14,5 +14,6 @@ namespace BackOffice.Infrastructure.Staff
         Task<List<AvailableSlotDataModel>> GetAvailableSlotsByStaffAsync(string licenseNumber);
         Task AddAvailableSlotAsync(AvailableSlotDataModel slot);
         Task RemoveAvailableSlotAsync(int slotId);
+        Task<StaffDataModel> GetByStaffIdAsync(string staffId);
     }
 }

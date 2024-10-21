@@ -1,33 +1,31 @@
 using System;
 using System.Text.RegularExpressions;
-using BackOffice.Domain.Shared;
 
 namespace BackOffice.Domain.Staff
 {
-    public class LicenseNumber : EntityId
+    public class LicenseNumber
     {
-        private const string LicenseNumberPattern = @"^[A-Z0-9]{6,10}$";
-        public LicenseNumber(string number) : base(number)
+        private const string LicenseNumberPattern = @"^\d{8}$";
+        public string Value { get; private set; }
+
+        public LicenseNumber(string number)
         {
             if (!IsValidLicenseNumber(number))
-                throw new ArgumentException("Invalid license number format.", nameof(number));
+                throw new ArgumentException("Invalid license number format. It must be an 8-digit number.", nameof(number));
+
+            Value = number;
         }
 
-        protected override object CreateFromString(string text)
+        public string AsString()
         {
-            return text; 
-        }
-
-        public override string AsString()
-        {
-            return (string)base.Value;
+            return Value;
         }
 
         public override bool Equals(object obj)
         {
             if (obj is LicenseNumber other)
             {
-                return string.Equals(Value as string, other.Value as string, StringComparison.Ordinal);
+                return string.Equals(Value, other.Value, StringComparison.Ordinal);
             }
             return false;
         }

@@ -11,7 +11,7 @@ public class AvailableSlotDataModel
         public DateTime EndTime { get; set; }
 
         // Foreign key to reference the staff member
-        public string StaffLicenseNumber { get; set; }
+        public string StaffId { get; set; }
 
         // Navigation property to the StaffDataModel
         public StaffDataModel Staff { get; set; }

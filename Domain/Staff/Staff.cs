@@ -4,16 +4,18 @@ using BackOffice.Domain.Shared;
 
 namespace BackOffice.Domain.Staff
 {
-    public class Staff : Entity<LicenseNumber>, IAggregateRoot
+    public class Staff : Entity<StaffId>, IAggregateRoot
     {
+        public LicenseNumber LicenseNumber { get; private set; }
         public Specializations Specialization { get; private set; }
         public StaffEmail Email { get; private set; }
         public List<Slots> AvailableSlots { get; private set; } = new List<Slots>();
-        public StaffStatus Status { get; private set; } // Use the new VO for status
+        public StaffStatus Status { get; private set; }
 
-        public Staff(LicenseNumber licenseNumber, Specializations specialization, StaffEmail  email, List<Slots> slots, StaffStatus status)
+        public Staff(StaffId id,LicenseNumber licenseNumber, Specializations specialization, StaffEmail  email, List<Slots> slots, StaffStatus status)
         {
-            Id = licenseNumber ?? throw new BusinessRuleValidationException("License number cannot be null");
+            Id = id ?? throw new BusinessRuleValidationException("StaffId cannot be null");
+            LicenseNumber = licenseNumber ?? throw new BusinessRuleValidationException("License number cannot be null");
             Specialization = specialization ?? throw new BusinessRuleValidationException("Specialization cannot be null");
             Email = email ?? throw new BusinessRuleValidationException("Email cannot be null");
             

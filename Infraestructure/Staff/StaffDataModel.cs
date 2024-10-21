@@ -7,6 +7,7 @@ namespace BackOffice.Infrastructure.Staff
     public class StaffDataModel
     {
         [Key]
+        public string StaffId { get; set; }
         public string LicenseNumber { get; set; } 
 
         public string Specialization { get; set; } 

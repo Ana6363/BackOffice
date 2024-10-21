@@ -21,6 +21,11 @@ namespace BackOffice.Infrastructure.Staff
                 .FirstOrDefaultAsync(s => s.LicenseNumber == licenseNumber);
         }
 
+        public async Task<StaffDataModel> GetByStaffIdAsync(string staffId)
+            {
+                return await _context.Staff.FirstOrDefaultAsync(s => s.StaffId == staffId);
+            }
+
         public async Task<List<StaffDataModel>> GetAllAsync()
         {
             return await _context.Staff

@@ -5,19 +5,18 @@ public class StaffEmail
 {
     public string Value { get; private set; }
 
-    public StaffEmail(string licenseNumber, string value, IConfiguration configuration)
+    public StaffEmail(string staffId, IConfiguration configuration)
     {
+        // Get the domain from configuration settings
         string domain = configuration["EmailSettings:MyDns"];
 
+        // Ensure the domain is configured properly
         if (string.IsNullOrWhiteSpace(domain))
             throw new BusinessRuleValidationException("Domain is not configured properly.");
 
-        if (string.IsNullOrWhiteSpace(value) || !value.Equals($"{licenseNumber}@{domain}", StringComparison.OrdinalIgnoreCase))
-            throw new BusinessRuleValidationException($"Invalid email address. It must be in the format: {licenseNumber}@{domain}.");
-        
-        Value = value;
+        // Generate the email based on the StaffId and domain
+        Value = $"{staffId}@{domain}".ToLower();
     }
-
 
     public override bool Equals(object obj)
     {

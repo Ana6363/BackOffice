@@ -6,6 +6,7 @@ namespace BackOffice.Domain.Users
 {
     public class User : Entity<UserId>, IAggregateRoot
     {
+        public UserId Id { get; set; }
         public string Role { get; private set; }
         public bool Active { get; set; }
 
