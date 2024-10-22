@@ -158,6 +158,9 @@ namespace BackOffice.Application.StaffService
             }
 
             user.MarkAsInactive();
+            var staff1 = StaffMapper.ToDto(staff);
+            staff1.Status = false;
+            await _staffRepository.UpdateAsync(staff);
             await _dbContext.SaveChangesAsync();
             await LogDeactivateOperation(user.Id.AsString(), staff);
 
