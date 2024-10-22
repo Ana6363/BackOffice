@@ -7,6 +7,8 @@ using BackOffice.Infrastructure.Persistence.Models;
 using BackOffice.Infrastructure.Patients;
 using BackOffice.Domain.Patients;
 using BackOffice.Infrastructure.Staff;
+using BackOffice.Domain.OperationRequest;
+using BackOffice.Infraestructure.OperationRequest;
 
 namespace BackOffice.Infrastructure
 {
@@ -17,7 +19,7 @@ namespace BackOffice.Infrastructure
         public DbSet<LogDataModel> Logs { get; set; }
         public DbSet<StaffDataModel> Staff { get; set; }
         public DbSet<AvailableSlotDataModel> AvailableSlots { get; set; }
-
+        public DbSet<OperationRequestDataModel> OperationRequests { get; set; }
 
 
         public BackOfficeDbContext(DbContextOptions<BackOfficeDbContext> options) : base(options) 

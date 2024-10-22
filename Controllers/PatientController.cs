@@ -65,11 +65,12 @@ namespace BackOffice.Controllers
 
         [HttpPut("update")]
         //[Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Patient")]
         public async Task<IActionResult> UpdatePatientAsync([FromBody] PatientDto patientDto)
         {
             if (patientDto == null || string.IsNullOrWhiteSpace(patientDto.RecordNumber))
             {
-                return BadRequest(new { success = false, message = "Patient details including RecordNumber are required." });
+                return BadRequest(new { success = false, message = "Details including RecordNumber are required." });
             }
 
             try
@@ -102,6 +103,7 @@ namespace BackOffice.Controllers
 
         [HttpDelete("delete/{recordNumber}")]
         //[Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Patient")]
         public async Task<IActionResult> DeletePatientAsync([FromRoute] string recordNumber)
         {
             if (string.IsNullOrWhiteSpace(recordNumber))
