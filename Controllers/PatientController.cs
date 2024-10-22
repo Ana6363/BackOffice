@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using BackOffice.Application.Patients;
 using BackOffice.Domain.Patients;
+using BackOffice.Infrastructure.Patients;
 
 namespace BackOffice.Controllers
 {
@@ -116,6 +117,21 @@ namespace BackOffice.Controllers
                 // Use the PatientService to delete the patient
                 var patientDataModel = await _patientService.DeletePatientAsync(recordNumObj);
                 return Ok(new { success = true, patient = patientDataModel });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("allPatients")]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllAsync()
+        {
+            try
+            {
+                var patients = await _patientService.GetAllAsync();
+                return Ok(new { success = true, patients });
             }
             catch (Exception ex)
             {

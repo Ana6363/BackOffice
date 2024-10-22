@@ -62,5 +62,24 @@ namespace BackOffice.Controllers
                 }
             }
 
+        [HttpPut("deactivate")]
+        public async Task<IActionResult> DeactivateStaffAsync([FromBody] LicenseNumber licenseNumber)
+        {
+            if (licenseNumber == null)
+            {
+                return BadRequest(new { success = false, message = "Staff lincense number is required." });
+            }
+
+            try
+            {
+                var staffDataModel = await _staffService.DeactivateStaff(licenseNumber);
+                return Ok(new { success = true, staff = staffDataModel });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
     }
 }

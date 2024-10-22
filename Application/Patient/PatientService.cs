@@ -325,6 +325,21 @@ namespace BackOffice.Application.Patients
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task<List<PatientDto>> GetAllAsync()
+        {
+            var list = await _patientRepository.GetAllAsync();
+            var returnList = new List<PatientDto>();
+            foreach (var patientDataModel in list)
+            {
+                var patient = PatientMapper.ToDomain(patientDataModel);
+                var patientDto = PatientMapper.ToDto(patient);
+                returnList.Add(patientDto);
+                
+            }
+
+            return returnList;
+        }
+
     }
 
     

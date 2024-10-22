@@ -1,9 +1,13 @@
 
 using System.Threading.Tasks;
+using BackOffice.Application.Logs;
 using BackOffice.Application.Staffs;
+using BackOffice.Domain.Logs;
+using BackOffice.Domain.Shared;
 using BackOffice.Domain.Staff;
 using BackOffice.Domain.Users;
 using BackOffice.Infrastructure;
+using BackOffice.Infrastructure.Patients;
 using BackOffice.Infrastructure.Persistence.Models;
 using BackOffice.Infrastructure.Staff;
 using Microsoft.EntityFrameworkCore;
@@ -125,8 +129,44 @@ namespace BackOffice.Application.StaffService
                 return result;
             }
 
+        private async Task LogDeactivateOperation(string userEmail, StaffDataModel staffDataModel)
+        {
+            var log = new Log(
+                new LogId(Guid.NewGuid().ToString()),
+                new ActionType(ActionTypeEnum.Delete),
+                new Email(userEmail),
+                new Text($"Staff Profile {userEmail} deactivated by admin at {DateTime.UtcNow}.")
+            );
 
-        
+            var logDataModel = LogMapper.ToDataModel(log);
+            await _dbContext.Logs.AddAsync(logDataModel);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<StaffDto> DeactivateStaff(LicenseNumber licenseNumber)
+        {
+            var staff = await _staffRepository.GetByLicenseNumberAsync(licenseNumber.AsString());
+            if (staff == null)
+            {
+                throw new Exception("Staff member not found.");
+            }
+
+            var user = await _userRepository.GetByEmailAsync(staff.Email);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            user.MarkAsInactive();
+            await _dbContext.SaveChangesAsync();
+            await LogDeactivateOperation(user.Id.AsString(), staff);
+
+            var staffDto = StaffMapper.ToDto(staff);
+            return staffDto;
+        }
+
+
+
 
     }
 }
