@@ -25,10 +25,6 @@ namespace BackOffice.Application.OperationRequest
 
         public async Task<OperationRequestDataModel> CreateOperationRequestAsync(OperationRequestDto operationRequest)
         {
-            if (operationRequest.RequestId == null)
-            {
-                throw new ArgumentException("RequestId cannot be null", nameof(operationRequest.RequestId));
-            }
 
             var requestDto = new OperationRequestDto(
                 Guid.NewGuid(),
@@ -39,7 +35,10 @@ namespace BackOffice.Application.OperationRequest
                 Status.StatusType.PENDING.ToString()
             );
 
+            Console.WriteLine($"RecordNumber in DTO: {requestDto.RecordNumber}"); // Before conversion
+
             var request = OperationRequestMapper.ToDomain(requestDto);
+            Console.WriteLine($"RecordNumber in Domain: {request.Patient.AsString()}"); // After conversion
             if(request == null)
             {
                 Console.WriteLine("Error mapping");

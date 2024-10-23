@@ -24,7 +24,7 @@ namespace BackOffice.Infraestructure.OperationRequest
                 RequestId = Guid.Parse(request.RequestId.AsString()),
                 DeadLine = request.DeadLine.Value,
                 Priority = request.Priority.Value.ToString(),
-                RecordNumber = request.Patient.ToString(),
+                RecordNumber = request.Patient.AsString(),
                 StaffId = request.StaffId.AsString(),
                 Status = request.Status.Value.ToString()
             };
