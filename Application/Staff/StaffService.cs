@@ -157,7 +157,6 @@ namespace BackOffice.Application.StaffService
                 throw new Exception("User not found.");
             }
 
-            user.MarkAsInactive();
             var staff1 = StaffMapper.ToDto(staff);
             staff1.Status = false;
             await _staffRepository.UpdateAsync(staff);
