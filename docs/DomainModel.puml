@@ -47,6 +47,7 @@ class OperationRequest{
     requestID
     deadlineDate
     priority
+    status
 }
 
 class OperationType{
