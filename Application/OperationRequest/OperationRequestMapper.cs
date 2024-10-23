@@ -19,7 +19,8 @@ namespace BackOffice.Application.OperationRequest
                 request.DeadLine.Value,
                 request.Priority.Value.ToString(),
                 request.Patient.AsString(),
-                request.StaffId.AsString()
+                request.StaffId.AsString(),
+                request.Status.Value.ToString()
             );
         }
 
@@ -33,16 +34,22 @@ namespace BackOffice.Application.OperationRequest
                 throw new ArgumentException("Invalid priority", nameof(requestDto.Priority));
             }
 
+            if(!Enum.TryParse<Status.StatusType>(requestDto.Status, true, out var statusType))
+            {
+                throw new ArgumentException("Invalid status", nameof(requestDto.Status));
+            }
+
             return new BackOffice.Domain.OperationRequest.OperationRequest(
                 new RequestId((Guid)requestDto.RequestId!),
                 new DeadLine(requestDto.DeadLine),
-                new Priority(priorityType), // Fix for Problem 3
+                new Priority(priorityType), 
                 new RecordNumber(requestDto.RecordNumber),
-                new LicenseNumber(requestDto.StaffId)
+                new LicenseNumber(requestDto.StaffId),
+                new Status(statusType)
             );
         }
 
-        public static OperationRequestDataModel ToDataModel(Domain.OperationRequest.OperationRequest request) // Fix for Problem 1
+        public static OperationRequestDataModel ToDataModel(Domain.OperationRequest.OperationRequest request) 
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request), "Request cannot be null.");
@@ -53,7 +60,8 @@ namespace BackOffice.Application.OperationRequest
                 DeadLine = request.DeadLine.Value,
                 Priority = request.Priority.Value.ToString(),
                 RecordNumber = request.Patient.AsString(),
-                StaffId = request.StaffId.AsString()
+                StaffId = request.StaffId.AsString(),
+                Status = request.Status.Value.ToString()
             };
         }
 

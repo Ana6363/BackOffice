@@ -11,6 +11,7 @@ namespace BackOffice.Infraestructure.OperationRequest
         public required string Priority { get; set; }
         public required string RecordNumber { get; set; }
         public required string StaffId { get; set; }
+        public required string Status { get; set; }
         //public required string OperationType { get; set; }
 
     }
