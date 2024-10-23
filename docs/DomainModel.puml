@@ -100,6 +100,9 @@ OperationType "1" *--> "1" Staff: staff
 
 Appointment "1" *--> "1" SurgeryRoom: room
 Appointment "1" *--> "1" OperationRequest: request
+Appointment "1" *--> "1..*" Staff: staff
+Appointment "1" *--> "1" Patient: patient
+
 
 MedicalRecord "1" *--> "1" Patient: patient
 MedicalRecord "1" *--> "..*" Staff: staff
