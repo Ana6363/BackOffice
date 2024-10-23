@@ -4,30 +4,32 @@ namespace BackOffice.Domain.OperationRequest
 {
     public class RequestId : EntityId
     {
-        public RequestId(Guid id ) : base(id)
+        public RequestId(Guid id) : base(id)
         {
         }
 
         public override string AsString()
         {
-           return Value.ToString();
+            return ObjValue.ToString();
         }
 
         protected override object CreateFromString(string text)
         {
             return new RequestId(Guid.Parse(text));
         }
+
         public override bool Equals(object obj)
         {
             if (obj is RequestId other)
             {
-                return Value.Equals(other.Value);
+                return ObjValue.Equals(other.ObjValue);
             }
             return false;
         }
-        public override int GetHashCode() {
-            return Value.GetHashCode();
+
+        public override int GetHashCode()
+        {
+            return ObjValue.GetHashCode();
         }
     }
-
 }

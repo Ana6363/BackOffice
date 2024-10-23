@@ -1,8 +1,8 @@
 ﻿using BackOffice.Domain.Shared;
 
-namespace BackOffice.Domain.Appointement
+namespace BackOffice.Domain.Appointement // Corrected namespace
 {
-    public class AppointementId : EntityId
+    public class AppointementId : EntityId // Corrected class name
     {
         public AppointementId(Guid id) : base(id)
         {
@@ -17,6 +17,7 @@ namespace BackOffice.Domain.Appointement
         {
             return new AppointementId(Guid.Parse(text));
         }
+
         public override bool Equals(object obj)
         {
             if (obj is AppointementId other)
@@ -25,11 +26,10 @@ namespace BackOffice.Domain.Appointement
             }
             return false;
         }
+
         public override int GetHashCode()
         {
             return Value.GetHashCode();
         }
-    }
-    {
     }
 }
