@@ -35,7 +35,7 @@ namespace BackOffice.Infraestructure.Appointement
 
             return appointementDataModel;
         }
-        public async Task<AppointementDataModel> GetByIdAsync(AppointementId id)
+        public async Task<AppointementDataModel?> GetByIdAsync(AppointementId id)
         {
             var appointementIdString = id.AsString();
 
@@ -75,7 +75,12 @@ namespace BackOffice.Infraestructure.Appointement
             }
         }
 
+        public async Task<AppointementDataModel?> GetByRequestIdAsync(RequestId requestId)
+        {
+            var appointement = await _context.Appointements
+                .FirstOrDefaultAsync(p => p.Request.ToString() == requestId.AsString());
 
-        
+            return appointement;
+        }
     }
 }

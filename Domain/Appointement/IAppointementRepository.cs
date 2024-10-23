@@ -11,5 +11,6 @@ namespace BackOffice.Domain.Appointement
         Task<List<AppointementDataModel>> GetAllAsync();
         Task UpdateAsync(Appointement appointement);
         Task DeleteAsync(AppointementId id);
+        Task<AppointementDataModel> GetByRequestIdAsync(RequestId requestId);
     }
 }
