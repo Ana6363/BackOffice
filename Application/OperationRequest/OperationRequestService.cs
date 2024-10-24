@@ -21,12 +21,14 @@ namespace BackOffice.Application.OperationRequest
         private readonly IUnitOfWork _unitOfWork;
 
         public OperationRequestService(IOperationRequestRepository operationRequestRepository,
-            IAppointementRepository appointementRepository, IUnitOfWork unitOfWork, BackOfficeDbContext context)
+            IAppointementRepository appointementRepository, IUnitOfWork unitOfWork, BackOfficeDbContext context, IUserRepository userRepository, IStaffRepository staffRepository)
         {
             _operationRequestRepository = operationRequestRepository;
             _appointementRepository = appointementRepository;
             _unitOfWork = unitOfWork;
             _context = context;
+            _userRepository = userRepository;
+            _staffRepository = staffRepository;
         }
 
         public async Task<OperationRequestDataModel> CreateOperationRequestAsync(OperationRequestDto operationRequest)
@@ -105,6 +107,12 @@ namespace BackOffice.Application.OperationRequest
     var doctor =  await _context.Staff
         .FirstOrDefaultAsync(s => s.StaffId == updatedRequestDto.StaffId);
     
+
+    if (doctor == null)
+    {
+        throw new Exception("Doctor not found.");
+    }
+
     var doctorEmail = await _context.Users
         .Where(u => u.Id == doctor.Email)
         .Select(u => u.Id)
@@ -170,6 +178,11 @@ public async Task<OperationRequestDto> DeleteAsync(OperationRequestDto updatedRe
 
     var doctor =  await _context.Staff
         .FirstOrDefaultAsync(s => s.StaffId == updatedRequestDto.StaffId);
+
+    if (doctor == null)
+    {
+        throw new Exception("Doctor not found.");
+    }
     
     var doctorEmail = await _context.Users
         .Where(u => u.Id == doctor.Email)
