@@ -68,7 +68,7 @@ namespace BackOffice.Controllers
 
             try
             {
-                var operationRequestDataModel = await _operationRequestService.DeleteAsync(operationRequest);
+                var operationRequestDataModel = await _operationRequestService.DeleteOperationRequestAsync(operationRequest);
                 return Ok(new { success = true, operationRequest = operationRequestDataModel });
             }
             catch (Exception ex)

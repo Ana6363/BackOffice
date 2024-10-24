@@ -166,7 +166,7 @@ private async Task LogUpdateOperation(string staffEmail, OperationRequestDto upd
     await _context.SaveChangesAsync();
 }
 
-public async Task<OperationRequestDto> DeleteAsync(OperationRequestDto updatedRequestDto)
+public async Task<OperationRequestDto> DeleteOperationRequestAsync(OperationRequestDto updatedRequestDto)
 {
     var existingRequest = await _context.OperationRequests
         .FirstOrDefaultAsync(r => r.RequestId == updatedRequestDto.RequestId);
