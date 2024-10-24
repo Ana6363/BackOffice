@@ -5,13 +5,13 @@ namespace BackOffice.Domain.Staff
 {
     public class LicenseNumber
     {
-        private const string LicenseNumberPattern = @"^[a-zA-Z0-9]{10}$";
+        private const string LicenseNumberPattern = @"^\d{8}$";
         public string Value { get; private set; }
 
         public LicenseNumber(string number)
         {
             if (!IsValidLicenseNumber(number))
-                throw new ArgumentException("Invalid license number format. It must be a 10-character alphanumeric string.", nameof(number));
+                throw new ArgumentException("Invalid license number format. It must be an 8-digit number.", nameof(number));
 
             Value = number;
         }

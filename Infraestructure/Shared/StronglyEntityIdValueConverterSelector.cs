@@ -19,7 +19,7 @@ namespace BackOffice.Infrastructure.Shared
         {
         }
 
-        public override IEnumerable<ValueConverterInfo> Select(Type modelClrType, Type providerClrType = null)
+        public override IEnumerable<ValueConverterInfo> Select(Type modelClrType, Type? providerClrType = null)
         {
             var baseConverters = base.Select(modelClrType, providerClrType);
             foreach (var converter in baseConverters)
@@ -48,7 +48,7 @@ namespace BackOffice.Infrastructure.Shared
             }
         }
 
-        private static Type UnwrapNullableType(Type type)
+        private static Type UnwrapNullableType(Type? type)
         {
             if (type is null)
             {

@@ -62,6 +62,25 @@ namespace BackOffice.Controllers
                 }
             }
 
+        [HttpPut("update")]
+            public async Task<IActionResult> UpdateStaffAsync([FromBody] StaffDto updatedStaffDto)
+            {
+                if (updatedStaffDto == null)
+                {
+                    return BadRequest(new { success = false, message = "Staff details are required." });
+                }
+
+                try
+                {
+                    var updatedStaff = await _staffService.UpdateAsync(updatedStaffDto);
+                    return Ok(new { success = true, staff = updatedStaff });
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new { success = false, message = ex.Message });
+                }
+            }
+    
         [HttpPut("deactivate")]
         public async Task<IActionResult> DeactivateStaffAsync([FromBody] LicenseNumber licenseNumber)
         {

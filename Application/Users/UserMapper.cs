@@ -80,7 +80,7 @@ public static class UserMapper
             new Name(dto.FullName)    
         )
         {
-            Active = dto.Active,
+            Active = dto.Active ?? false,
             ActivationToken = dto.ActivationToken,
             TokenExpiration = dto.TokenExpiration
         };

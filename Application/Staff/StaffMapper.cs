@@ -61,10 +61,10 @@ namespace BackOffice.Application.Staffs
         {
             return new StaffDataModel
             {
-                StaffId = domainModel.Id.Value, // Map StaffId
-                LicenseNumber = domainModel.LicenseNumber.AsString(), // Map LicenseNumber
+                StaffId = domainModel.Id.Value,
+                LicenseNumber = domainModel.LicenseNumber.AsString(),
                 Specialization = domainModel.Specialization.ToString(),
-                Email = domainModel.Email.Value,  // Map email
+                Email = domainModel.Email.Value,
                 AvailableSlots = domainModel.AvailableSlots.Select(ToDataModel).ToList(),
                 Status = domainModel.Status.IsActive
             };
@@ -82,46 +82,61 @@ namespace BackOffice.Application.Staffs
             };
         }
 
-        // Slot Mapping: AvailableSlotDataModel to SlotDto
-        public static SlotDto ToDto(AvailableSlotDataModel slotDataModel)
-        {
-            return new SlotDto
-            {
-                StartTime = slotDataModel.StartTime,
-                EndTime = slotDataModel.EndTime
-            };
-        }
+       // Slot Mapping: AvailableSlotDataModel to SlotDto
+public static SlotDto ToDto(AvailableSlotDataModel slotDataModel)
+{
+    return new SlotDto
+    {
+        Id = slotDataModel.Id,
+        StartTime = slotDataModel.StartTime,
+        EndTime = slotDataModel.EndTime,
+        StaffId = slotDataModel.StaffId
+    };
+}
 
-        // Slot Mapping: Slots (Domain) to SlotDto
-        public static SlotDto ToDto(Slots domainSlot)
-        {
-            return new SlotDto
-            {
-                StartTime = domainSlot.StartTime,
-                EndTime = domainSlot.EndTime
-            };
-        }
+// Slot Mapping: Slots (Domain) to SlotDto
+public static SlotDto ToDto(Slots domainSlot)
+{
+    return new SlotDto
+    {   
+        StartTime = domainSlot.StartTime,
+        EndTime = domainSlot.EndTime
+    };
+}
 
-        // Slot Mapping: SlotDto to Slots (Domain)
-        public static Slots ToDomain(SlotDto dto)
-        {
-            return new Slots(dto.StartTime, dto.EndTime);
-        }
+// Slot Mapping: SlotDto to Slots (Domain)
+public static Slots ToDomain(SlotDto dto)
+{
+    return new Slots(dto.StartTime, dto.EndTime);
+}
 
-        // Slot Mapping: AvailableSlotDataModel to Slots (Domain)
-        public static Slots ToDomain(AvailableSlotDataModel dataModel)
-        {
-            return new Slots(dataModel.StartTime, dataModel.EndTime);
-        }
+// Slot Mapping: AvailableSlotDataModel to Slots (Domain)
+public static Slots ToDomain(AvailableSlotDataModel dataModel)
+{
+    return new Slots(dataModel.StartTime, dataModel.EndTime);
+}
 
-        // Slot Mapping: Slots (Domain) to AvailableSlotDataModel
-        public static AvailableSlotDataModel ToDataModel(Slots domainSlot)
-        {
-            return new AvailableSlotDataModel
-            {
-                StartTime = domainSlot.StartTime,
-                EndTime = domainSlot.EndTime
-            };
-        }
+// Slot Mapping: Slots (Domain) to AvailableSlotDataModel
+public static AvailableSlotDataModel ToDataModel(Slots domainSlot)
+{
+    return new AvailableSlotDataModel
+    {
+        StartTime = domainSlot.StartTime,
+        EndTime = domainSlot.EndTime
+    };
+}
+
+// Slot Mapping: SlotDto to AvailableSlotDataModel
+public static AvailableSlotDataModel ToDataModel1(SlotDto dto)
+{
+    return new AvailableSlotDataModel
+    {
+        Id = dto.Id,  
+        StartTime = dto.StartTime,
+        EndTime = dto.EndTime,
+        StaffId = dto.StaffId
+    };
+}
+
     }
 }

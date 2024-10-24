@@ -7,7 +7,7 @@ namespace BackOffice.Domain.Shared
     {
         protected Object ObjValue {get;}
 
-        public String Value { 
+        public string Value { 
             get { 
                     if (this.ObjValue.GetType() == typeof(String))
                         return (String) this.ObjValue;
@@ -40,7 +40,7 @@ namespace BackOffice.Domain.Shared
             return Value.GetHashCode();
         }
 
-        public bool Equals(EntityId other)
+        public bool Equals(EntityId? other)
         {
             if (other == null)
                 return false;
@@ -49,13 +49,13 @@ namespace BackOffice.Domain.Shared
             return this.Value == other.Value;
         }
 
-        public int CompareTo(EntityId other){
+        public int CompareTo(EntityId? other){
             if (other == null)
                 return -1;
             return this.Value.CompareTo(other.Value);
         }
 
-        public static bool operator ==(EntityId obj1, EntityId obj2)
+        public static bool operator ==(EntityId? obj1, EntityId? obj2)
         {
             if (object.Equals(obj1, null))
             {
@@ -67,7 +67,7 @@ namespace BackOffice.Domain.Shared
             }
             return obj1.Equals(obj2);
         }
-        public static bool operator !=(EntityId x, EntityId y) 
+        public static bool operator !=(EntityId? x, EntityId? y) 
         {
             return !(x == y);
         }

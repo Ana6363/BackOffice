@@ -1,1 +1,1 @@
-SELECT * FROM Users;
+select * from Logs;
