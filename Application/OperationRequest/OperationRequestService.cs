@@ -180,6 +180,12 @@ public async Task<OperationRequestDto> DeleteAsync(OperationRequestDto updatedRe
     {
         throw new Exception("Only the requesting doctor can delete this operation request.");
     }
+    var apointment = await _context.Appointements
+        .FirstOrDefaultAsync(a => a.Request == updatedRequestDto.RequestId.ToString());
+
+    if (apointment != null){
+        throw new Exception("Operation request cannot be deleted because it is associated with an appointment.");
+    }
 
     await LogDeleteOperation(doctorEmail, updatedRequestDto);
     _context.OperationRequests.Remove(existingRequest);

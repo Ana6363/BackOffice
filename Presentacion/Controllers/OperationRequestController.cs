@@ -58,6 +58,26 @@ namespace BackOffice.Controllers
             }
         }
 
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteOperationRequestAsync([FromBody] OperationRequestDto operationRequest)
+        {
+            if (operationRequest == null)
+            {
+                return BadRequest(new { success = false, message = "Operation request details are required." });
+            }
+
+            try
+            {
+                var operationRequestDataModel = await _operationRequestService.DeleteAsync(operationRequest);
+                return Ok(new { success = true, operationRequest = operationRequestDataModel });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+
         [HttpGet("filter")]
         //[Authorize(Roles = "Doctor")]
         public async Task<IActionResult> GetAllOperationRequestsAsync(
