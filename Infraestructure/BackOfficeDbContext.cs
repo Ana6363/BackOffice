@@ -10,6 +10,7 @@ using BackOffice.Infrastructure.Staff;
 using BackOffice.Domain.OperationRequest;
 using BackOffice.Infraestructure.OperationRequest;
 using BackOffice.Infraestructure.Appointement;
+using BackOffice.Infrastructure.OperationTypes;
 
 namespace BackOffice.Infrastructure
 {
@@ -22,6 +23,8 @@ namespace BackOffice.Infrastructure
         public DbSet<AvailableSlotDataModel> AvailableSlots { get; set; }
         public DbSet<OperationRequestDataModel> OperationRequests { get; set; }
         public DbSet<AppointementDataModel> Appointements { get; set; }
+        public DbSet<OperationTypeDataModel> OperationType { get; set; }
+        public DbSet<SpecializationDataModel> Specializations { get; set; }
 
 
         public BackOfficeDbContext(DbContextOptions<BackOfficeDbContext> options) : base(options) 
@@ -59,6 +62,12 @@ namespace BackOffice.Infrastructure
             modelBuilder.Entity<StaffDataModel>()
                 .HasKey(s => s.StaffId);     
                 
+            modelBuilder.Entity<OperationTypeDataModel>()
+                .HasMany(o => o.Specializations)
+                .WithOne(s => s.OperationType)
+                .HasForeignKey(s => s.OperationTypeId)
+                .OnDelete(DeleteBehavior.Cascade);   
+                 
             modelBuilder.ApplyConfiguration(new UsersEntityTypeConfiguration());
         }
 

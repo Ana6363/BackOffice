@@ -5,7 +5,8 @@
     public class OperationType : Entity<OperationTypeId>, IAggregateRoot
     {
 
-    public OperationTypeName OperationTypeName { get; private set; }
+        public OperationTypeId Id { get; private set; }
+        public OperationTypeName OperationTypeName { get; private set; }
         public OperationTime OperationTime { get; private set; }
         
         public List<Specializations> Specializations{ get; private set; }
@@ -14,7 +15,7 @@
         {
             Specializations = new List<Specializations>();
         }
-        public OperationType(string id, OperationTypeName operationTypeName, OperationTime operationTime, List<Specializations> specializations)
+        public OperationType(string Id, OperationTypeName operationTypeName, OperationTime operationTime, List<Specializations> specializations)
         {
             this.Id = OperationTypeId.NewId();
             this.OperationTypeName = operationTypeName;
