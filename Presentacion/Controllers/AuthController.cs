@@ -44,7 +44,7 @@ namespace BackOffice.Controllers
                 
                 if (result.IsUserActive)
                 {
-                    var token = _jwtTokenService.GenerateToken(result.Role);
+                    var token = _jwtTokenService.GenerateToken(result.Email,result.Role);
                     return Ok(new { token });
                 }
                 else

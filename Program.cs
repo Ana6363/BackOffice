@@ -50,6 +50,7 @@ builder.Services.AddDbContext<BackOfficeDbContext>(options =>
 );
 
 // Register services
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IUserRepository, UsersRepository>();
 builder.Services.AddTransient<UserService>();

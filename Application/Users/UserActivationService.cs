@@ -24,31 +24,32 @@ namespace BackOffice.Application.Users
             _googleOAuthService = googleOAuthService;
         }
 
-        public async Task<(bool IsUserActive, string Role, string Message)> HandleOAuthCallbackAsync(string code)
-{
-    var tokenResponse = await _googleOAuthService.ExchangeCodeForTokensAsync(code);
-    var payload = await _googleOAuthService.ValidateToken(tokenResponse.IdToken);
+        public async Task<(bool IsUserActive, string Role, string Email, string Message)> HandleOAuthCallbackAsync(string code)
+        {
+            var tokenResponse = await _googleOAuthService.ExchangeCodeForTokensAsync(code);
+            var payload = await _googleOAuthService.ValidateToken(tokenResponse.IdToken);
 
-    // Check if the user exists in the database by email
-    var userDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == payload.Email);
-    
-    if (userDataModel == null)
-    {
-        // If the user doesn't exist, prevent authentication
-        return (false, null, "User not in the system. An admin has to register the user.");
-    }
+            // Check if the user exists in the database by email
+            var userDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == payload.Email);
+            
+            if (userDataModel == null)
+            {
+                return (false, null, null, "User not in the system. An admin has to register the user.");
+            }
 
-    // If the user exists, map to the domain object
-    var existingUser = UserMapper.ToDomain(userDataModel);
+            // If the user exists, map to the domain object
+            var existingUser = UserMapper.ToDomain(userDataModel);
 
-    if (!existingUser.Active)
-    {
-        await SendActivationEmailAsync(existingUser.Id.AsString());
-        return (false, null, "User is inactive. An activation email has been sent.");
-    }
+            if (!existingUser.Active)
+            {
+                await SendActivationEmailAsync(existingUser.Id.AsString());
+                return (false, null, null, "User is inactive. An activation email has been sent.");
+            }
 
-    return (true, existingUser.Role, "User is active");
-}
+            // Return the user's role and email if active
+            return (true, existingUser.Role, existingUser.Id.AsString(), "User is active");
+        }
+
 
         public async Task ActivateUserAsync(string token)
         {
