@@ -45,8 +45,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="docs\sprintA\global-artifacts\Level1\" />
-    <Folder Include="docs\sprintA\global-artifacts\Level2\" />
     <Folder Include="docs\sprintA\global-artifacts\Level3\US 5.1.14\" />
     <Folder Include="docs\sprintA\global-artifacts\Level3\US 5.1.19\" />
     <Folder Include="docs\sprintA\global-artifacts\Level3\US 5.1.16\" />
