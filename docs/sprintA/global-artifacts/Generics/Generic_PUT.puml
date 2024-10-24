@@ -1,0 +1,44 @@
+@startuml Generics
+
+autonumber
+skinparam packageStyle rect
+
+title Update Resource
+
+participant "Hospital" as H <<system (C4)>>
+
+-> H: PUT resources/{...}
+
+activate H
+
+alt resources Updated
+
+  <-- H: Response status code - 200
+
+else invalid input
+
+  <-- H: Response status code - 400
+
+else unauthorized
+
+  <-- H: Response status code - 401
+
+else necessary resource not found
+
+  <-- H: Response status code - 404
+
+else resource already exists
+
+  <-- H: Response status code - 409
+
+else database unavailable
+
+  <-- H: Response status code - 503
+
+else database error
+
+  <-- H: Response status code - 500
+
+end
+
+@enduml

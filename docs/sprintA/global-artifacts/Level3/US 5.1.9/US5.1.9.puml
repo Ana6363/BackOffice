@@ -1,0 +1,139 @@
+@startuml Process View - Level 3
+
+autonumber
+skinparam packageStyle rect
+
+title Update Patient
+
+participant "Back-End" as BE <<component>>
+database "DataBase" as DB <<component>>
+
+-> BE : GET patients/{userId}/{firstName}/{lastName}/{fullName}
+
+alt user authorized
+
+activate BE
+
+BE -> DB: find by user id
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
+
+end
+
+BE -> DB: find by first name
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
+
+end
+
+BE -> DB: find by last name
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
+
+end
+
+BE -> DB: find by full name
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
+
+end
+
+BE -> DB: update
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+<-- BE: Response status code - 200
+
+deactivate BE
+
+alt database unavailable
+
+<-- BE: Response status code - 503
+
+else database error
+
+<-- BE: Response status code - 500
+
+end
+
+else user not authorized
+
+<-- BE: Response status code - 401
+
+end
+
+@enduml
+
+
+
+
+
+

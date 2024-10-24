@@ -1,0 +1,32 @@
+@startuml Generics
+
+autonumber
+skinparam packageStyle rect
+
+title Retrieve Resources
+
+participant "Hospital" as H <<system (C4)>>
+
+-> H: GET resources/{...}
+
+activate H
+
+alt resources retrieved
+
+  <-- H: Response status code - 200
+
+else unauthorized
+
+  <-- H: Response status code - 401
+
+else database unavailable
+
+  <-- H: Response status code - 503
+
+else database error
+
+  <-- H: Response status code - 500
+
+end
+
+@enduml

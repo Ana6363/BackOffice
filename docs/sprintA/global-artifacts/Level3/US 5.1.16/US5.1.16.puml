@@ -1,0 +1,44 @@
+@startuml Process View - Level 3
+
+autonumber
+skinparam packageStyle rect
+
+title Create Operation Request
+
+participant "Back-End" as BE <<component>>
+database "DataBase" as DB <<component>>
+
+-> BE: POST /request {request}
+
+alt user authorized
+
+activate BE
+
+BE -> DB: save(request)
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt request valid
+
+<-- BE: Response status code -201
+
+else database unavailable
+
+<-- BE: Response status code -503
+
+end
+
+else user unauthorized
+
+<-- BE: Response status code -401
+
+end
+
+deactivate BE
+
+@enduml
+

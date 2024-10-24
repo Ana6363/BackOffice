@@ -1,0 +1,66 @@
+@startuml Process View - Level 3
+
+autonumber
+skinparam packageStyle rect
+
+title Deactivate Staff
+
+participant "Back-End" as BE <<component>>
+database "DataBase" as DB <<component>>
+
+
+-> BE: PUT /staff/{licenseNumber}
+
+alt authorized user
+
+activate BE
+
+BE -> DB: deacrivatestaff(licenseNumber)
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt recordNumber not found
+
+<--BE: Response status code -404
+
+else database unavailable
+
+<--BE: Response status code -503
+
+else recordNumber found
+
+<--BE: Response status code -200
+
+end 
+
+BE --> DB: save
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt database unavailable
+
+<--BE: Response status code -503
+
+else inactivate staff
+
+<--BE: Response status code -200
+
+end
+
+else user unauthorized
+
+<--BE: Response status code -401
+
+end
+
+deactivate BE
+
+@enduml
