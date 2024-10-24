@@ -1,0 +1,70 @@
+@startuml Process View - Level 3
+
+autonumber
+skinparam packageStyle rect
+
+title Delete Operation Request
+
+participant "Back-End" as BE <<component>>
+database "DataBase" as DB <<component>>
+
+
+-> BE: DELETE /operationRequest/{request}
+
+alt authorized user
+
+activate BE
+
+BE -> DB: deleteOperationRequest(updatedRequestDto)
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt operationRequest not found
+
+<--BE: Response status code -404
+
+else database unavailable
+
+<--BE: Response status code -503
+
+else recordNumber found
+
+<--BE: Response status code -204
+
+end 
+
+BE -> DB: save
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt database unavailable
+
+<-- BE: Response status code -503
+
+else database error
+
+<-- BE: Response status code -500
+
+else patient deleted
+
+<-- BE: Response status code -200
+
+end
+
+else user unauthorized
+
+<--BE: return Response status code -401
+
+end
+
+deactivate BE
+
+@enduml
