@@ -1,11 +1,15 @@
 
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using BackOffice.Application.Logs;
+using BackOffice.Application.Services;
 using BackOffice.Application.Staffs;
 using BackOffice.Domain.Logs;
 using BackOffice.Domain.Shared;
 using BackOffice.Domain.Staff;
 using BackOffice.Domain.Users;
+using BackOffice.Domain.Utilities;
 using BackOffice.Infrastructure;
 using BackOffice.Infrastructure.Patients;
 using BackOffice.Infrastructure.Persistence.Models;
@@ -22,12 +26,19 @@ namespace BackOffice.Application.StaffService
     private readonly IStaffRepository _staffRepository;
     private readonly BackOfficeDbContext _dbContext;
     private readonly IUserRepository _userRepository;
+    private readonly IConfiguration _configuration;
 
-    public StaffService(IStaffRepository staffRepository, BackOfficeDbContext dbContext, IUserRepository userRepository)
+    
+
+    private readonly IEmailService _emailService;
+
+    public StaffService(IStaffRepository staffRepository, BackOfficeDbContext dbContext, IUserRepository userRepository, IEmailService emailService,IConfiguration configuration)
     {
         _staffRepository = staffRepository;
         _dbContext = dbContext;
         _userRepository = userRepository;
+        _emailService = emailService;
+        _configuration = configuration;
     }
 
     public async Task<StaffDataModel> CreateStaffAsync(StaffDto staffDto, IConfiguration configuration)
@@ -128,6 +139,134 @@ namespace BackOffice.Application.StaffService
 
                 return result;
             }
+            
+
+        public async Task<StaffDto> UpdateAsync(StaffDto staffDto)
+        {
+            var staffDataModel = await _dbContext.Staff
+                .Include(s => s.AvailableSlots)
+                .FirstOrDefaultAsync(s => s.StaffId == staffDto.StaffId);
+
+            if (staffDataModel == null)
+            {
+                throw new Exception("Staff member not found.");
+            }
+            foreach (var slot in staffDto.AvailableSlots)
+            {
+                Console.WriteLine($"SlotDto Id: {slot.Id}, StartTime: {slot.StartTime}, EndTime: {slot.EndTime}");
+            }
+            var user = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Id == staffDataModel.StaffId.ToLower() + "@myhospital.com");
+
+            if (user == null)
+            {
+                throw new Exception("User associated with this staff not found.");
+            }
+
+            bool phoneNumberChanged = false;
+            bool specChanged = false;
+            bool isUpdated = false;
+
+            isUpdated |= UpdateProperties(staffDto, staffDataModel, ref phoneNumberChanged, ref specChanged);
+            isUpdated |= UpdateProperties(staffDto, user, ref phoneNumberChanged, ref specChanged);
+
+            var updatedAvailableSlotDataModels = staffDto.AvailableSlots
+                .Select(slotDto => StaffMapper.ToDataModel1(slotDto))
+                .ToList();
+
+            if (updatedAvailableSlotDataModels != null && updatedAvailableSlotDataModels.Count > 0)
+            {
+                foreach (var updatedSlotDataModel in updatedAvailableSlotDataModels)
+                {
+                    var existingSlot = staffDataModel.AvailableSlots
+                        .FirstOrDefault(s => s.Id == updatedSlotDataModel.Id);
+
+                    if (existingSlot != null)
+                    {
+                        if (existingSlot.StartTime != updatedSlotDataModel.StartTime || existingSlot.EndTime != updatedSlotDataModel.EndTime)
+                        {
+                            Console.WriteLine($"Updating existing slot with ID: {existingSlot.Id}");
+                            existingSlot.StartTime = updatedSlotDataModel.StartTime;
+                            existingSlot.EndTime = updatedSlotDataModel.EndTime;
+                            isUpdated = true;
+                            _dbContext.Entry(existingSlot).State = EntityState.Modified;  
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Adding new slot for StaffId: {staffDto.StaffId}");
+                        var newSlot = new AvailableSlotDataModel
+                        {
+                            StartTime = updatedSlotDataModel.StartTime,
+                            EndTime = updatedSlotDataModel.EndTime,
+                            StaffId = staffDto.StaffId
+                        };
+
+                        staffDataModel.AvailableSlots.Add(newSlot);
+                        _dbContext.Entry(newSlot).State = EntityState.Added;
+                        isUpdated = true;
+                    }
+                }
+            }
+
+            if (!isUpdated)
+            {
+                var updatedStaffDomain = StaffMapper.ToDomain(staffDataModel, new StaffId(staffDto.StaffId), _configuration);
+                return StaffMapper.ToDto(updatedStaffDomain);
+            }
+            _dbContext.Staff.Update(staffDataModel);
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+
+            staffDataModel = await _dbContext.Staff
+                .Include(s => s.AvailableSlots)
+                .FirstOrDefaultAsync(s => s.StaffId == staffDto.StaffId);
+
+            if (phoneNumberChanged && _emailService != null)
+            {
+                await _emailService.SendEmailAsync(user.Id, "Phone number change", $"Your phone number has been changed to {staffDto.PhoneNumber}.");
+            }
+            var updatedStaffDomainFinal = StaffMapper.ToDomain(staffDataModel, new StaffId(staffDto.StaffId), _configuration);
+            await LogUpdateOperation(user.Id);
+            return StaffMapper.ToDto(updatedStaffDomainFinal);
+        }
+        private bool UpdateProperties(object source, object target, ref bool phoneNumberChanged, ref bool specChanged)
+        {
+            bool isUpdated = false;
+
+            foreach (var property in source.GetType().GetProperties())
+            {
+                if (typeof(System.Collections.IEnumerable).IsAssignableFrom(property.PropertyType) && property.PropertyType != typeof(string))
+                {
+                    continue;
+                }
+
+                var sourceValue = property.GetValue(source);
+                var targetProperty = target.GetType().GetProperty(property.Name);
+                if (targetProperty != null)
+                {
+                    var targetValue = targetProperty.GetValue(target);
+
+                    if (sourceValue != null && !sourceValue.Equals(targetValue))
+                    {
+                        targetProperty.SetValue(target, sourceValue);
+                        isUpdated = true;
+
+                        if (property.Name == "PhoneNumber")
+                        {
+                            phoneNumberChanged = true;
+                        }
+
+                        if (property.Name == "Specialization")
+                        {
+                            specChanged = true;
+                        }
+                    }
+                }
+            }
+
+            return isUpdated;
+        }
 
         private async Task LogDeactivateOperation(string userEmail, StaffDataModel staffDataModel)
         {
@@ -136,6 +275,20 @@ namespace BackOffice.Application.StaffService
                 new ActionType(ActionTypeEnum.Delete),
                 new Email(userEmail),
                 new Text($"Staff Profile {userEmail} deactivated by admin at {DateTime.UtcNow}.")
+            );
+
+            var logDataModel = LogMapper.ToDataModel(log);
+            await _dbContext.Logs.AddAsync(logDataModel);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        private async Task LogUpdateOperation(string userEmail)
+        {
+            var log = new Log(
+                new LogId(Guid.NewGuid().ToString()),
+                new ActionType(ActionTypeEnum.Update),
+                new Email(userEmail),
+                new Text($"Staff Profile {userEmail} updated by admin at {DateTime.UtcNow}.")
             );
 
             var logDataModel = LogMapper.ToDataModel(log);

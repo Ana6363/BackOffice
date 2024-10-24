@@ -5,7 +5,7 @@ namespace BackOffice.Domain.Patients
 {
     public class Name
     {
-        public string NameValue { get; private set; }
+        public string NameValue { get; set; }
 
         public Name(string name)
         {
