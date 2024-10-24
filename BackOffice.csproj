@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\**" />
+    <Content Remove="bin\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <None Remove="bin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Domain\Shared\IValueObject.cs" />
   </ItemGroup>
 
@@ -38,12 +45,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="bin\Debug\net8.0\runtimes\unix\lib\net6.0\" />
-    <Folder Include="bin\Debug\net8.0\runtimes\win-arm64\native\" />
-    <Folder Include="bin\Debug\net8.0\runtimes\win-arm\native\" />
-    <Folder Include="bin\Debug\net8.0\runtimes\win-x64\native\" />
-    <Folder Include="bin\Debug\net8.0\runtimes\win-x86\native\" />
-    <Folder Include="bin\Debug\net8.0\runtimes\win\lib\net6.0\" />
     <Folder Include="docs\sprintA\global-artifacts\Level1\" />
     <Folder Include="docs\sprintA\global-artifacts\Level2\" />
     <Folder Include="docs\sprintA\global-artifacts\Level3\US 5.1.14\" />
