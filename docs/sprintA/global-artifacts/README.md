@@ -65,3 +65,7 @@ By combining the two models, it is possible to represent the system from various
 ![Generic DELETE](.../docs/sprintA/global-artifacts/Generics/Generic_DELETE.svg)
 
 ![Generic GET](.../docs/sprintA/global-artifacts/Generics/Generic_GET.svg)
+
+### **4. Domain Model**
+
+![Domain Model](.../docs/DomainModel.svg)
