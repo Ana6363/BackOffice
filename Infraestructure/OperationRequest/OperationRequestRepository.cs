@@ -27,7 +27,7 @@ namespace BackOffice.Infraestructure.OperationRequest
                 RecordNumber = request.Patient.AsString(),
                 StaffId = request.StaffId.AsString(),
                 Status = request.Status.Value.ToString(),
-                OperationType = request.OperationTypeId.Value.ToString()
+                OperationType = request.OperationTypeId.Name.ToString()
             };
 
             await _context.OperationRequests.AddAsync(operationRequestDataModel);
@@ -62,7 +62,7 @@ namespace BackOffice.Infraestructure.OperationRequest
             operationRequestDataModel.RecordNumber = request.Patient.AsString();
             operationRequestDataModel.StaffId = request.StaffId.AsString();
             operationRequestDataModel.Status = request.Status.ToString();
-            operationRequestDataModel.OperationType = request.OperationTypeId.Value.ToString();
+            operationRequestDataModel.OperationType = request.OperationTypeId.Name.ToString();
 
             _context.OperationRequests.Update(operationRequestDataModel);
             await _context.SaveChangesAsync();

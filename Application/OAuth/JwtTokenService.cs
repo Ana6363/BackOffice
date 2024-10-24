@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
 
 namespace BackOffice.Application.OAuth
 {
@@ -20,12 +21,12 @@ namespace BackOffice.Application.OAuth
             _audience = configuration["Jwt:Audience"];
         }
 
-        public string GenerateToken(string userRole)
+        public string GenerateToken(string email, string userRole)
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.Role, userRole),  
-                new Claim(ClaimTypes.Name, userRole) 
+                new Claim(ClaimTypes.Email, email),  // Include email claim
+                new Claim(ClaimTypes.Role, userRole)  // Include role claim
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));

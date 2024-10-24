@@ -1,4 +1,5 @@
-﻿using BackOffice.Application.Logs;
+﻿using System.Security.Claims;
+using BackOffice.Application.Logs;
 using BackOffice.Domain.Appointement;
 using BackOffice.Domain.Logs;
 using BackOffice.Domain.OperationRequest;
@@ -19,9 +20,11 @@ namespace BackOffice.Application.OperationRequest
         private readonly IUserRepository _userRepository;
         private readonly IStaffRepository _staffRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public OperationRequestService(IOperationRequestRepository operationRequestRepository,
-            IAppointementRepository appointementRepository, IUnitOfWork unitOfWork, BackOfficeDbContext context, IUserRepository userRepository, IStaffRepository staffRepository)
+            IAppointementRepository appointementRepository, IUnitOfWork unitOfWork, BackOfficeDbContext context, 
+            IUserRepository userRepository, IStaffRepository staffRepository, IHttpContextAccessor httpContextAccessor)
         {
             _operationRequestRepository = operationRequestRepository;
             _appointementRepository = appointementRepository;
@@ -29,6 +32,7 @@ namespace BackOffice.Application.OperationRequest
             _context = context;
             _userRepository = userRepository;
             _staffRepository = staffRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<OperationRequestDataModel> CreateOperationRequestAsync(OperationRequestDto operationRequest)
@@ -68,6 +72,7 @@ namespace BackOffice.Application.OperationRequest
       
         public async Task<IEnumerable<OperationRequestDataModel>> GetFilteredRequestAsync(FilteredRequestDto filteredRequest)
         {
+            GetLoggedInUserEmail();
             var query = from request in _context.OperationRequests
                         join patient in _context.Patients on request.RecordNumber equals patient.RecordNumber
                         join user in _context.Users on patient.UserId equals user.Id
@@ -147,9 +152,21 @@ namespace BackOffice.Application.OperationRequest
     return updatedRequestDto;
     
 }
+    private string GetLoggedInUserEmail()
+        {
+            var claimsIdentity = _httpContextAccessor.HttpContext.User.Identity as ClaimsIdentity;
+            if (claimsIdentity != null)
+            {
+                var emailClaim = claimsIdentity.FindFirst(ClaimTypes.Email);
+                if (emailClaim != null)
+                {
+                    Console.WriteLine(emailClaim.Value);
+                    return emailClaim.Value;
+                }
+            }
 
-
-
+            throw new Exception("User email not found in token.");
+        }
 
 // Método para registrar a atualização
 private async Task LogUpdateOperation(string staffEmail, OperationRequestDto updatedRequestDto)
