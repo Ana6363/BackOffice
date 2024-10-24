@@ -8,7 +8,7 @@ namespace BackOffice.Domain.Users
 
         public required string Role { get; set; }
 
-        public bool Active { get; set; }
+        public bool? Active { get; set; }
 
         public int PhoneNumber { get; set; }
 

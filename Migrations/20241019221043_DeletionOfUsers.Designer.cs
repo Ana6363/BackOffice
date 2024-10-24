@@ -4,6 +4,7 @@ using BackOffice.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BackOffice.Migrations
 {
     [DbContext(typeof(BackOfficeDbContext))]
-    partial class BackOfficeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241019221043_DeletionOfUsers")]
+    partial class DeletionOfUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,31 +24,6 @@ namespace BackOffice.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
-
-            modelBuilder.Entity("AvailableSlotDataModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("StaffLicenseNumber")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StaffLicenseNumber");
-
-                    b.ToTable("AvailableSlots");
-                });
 
             modelBuilder.Entity("BackOffice.Domain.Users.User", b =>
                 {
@@ -151,9 +129,6 @@ namespace BackOffice.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("PhoneNumber")
-                        .HasColumnType("int");
-
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -164,43 +139,6 @@ namespace BackOffice.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("BackOffice.Infrastructure.Staff.StaffDataModel", b =>
-                {
-                    b.Property<string>("LicenseNumber")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("PhoneNumber")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Specialization")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("LicenseNumber");
-
-                    b.ToTable("Staff");
-                });
-
-            modelBuilder.Entity("AvailableSlotDataModel", b =>
-                {
-                    b.HasOne("BackOffice.Infrastructure.Staff.StaffDataModel", "Staff")
-                        .WithMany("AvailableSlots")
-                        .HasForeignKey("StaffLicenseNumber")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Staff");
-                });
-
-            modelBuilder.Entity("BackOffice.Infrastructure.Staff.StaffDataModel", b =>
-                {
-                    b.Navigation("AvailableSlots");
                 });
 #pragma warning restore 612, 618
         }

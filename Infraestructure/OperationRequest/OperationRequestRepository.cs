@@ -24,8 +24,9 @@ namespace BackOffice.Infraestructure.OperationRequest
                 RequestId = Guid.Parse(request.RequestId.AsString()),
                 DeadLine = request.DeadLine.Value,
                 Priority = request.Priority.Value.ToString(),
-                RecordNumber = request.Patient.ToString(),
+                RecordNumber = request.Patient.AsString(),
                 StaffId = request.StaffId.AsString(),
+                Status = request.Status.Value.ToString()
             };
 
             await _context.OperationRequests.AddAsync(operationRequestDataModel);
@@ -59,6 +60,7 @@ namespace BackOffice.Infraestructure.OperationRequest
             operationRequestDataModel.Priority = request.Priority.Value.ToString();
             operationRequestDataModel.RecordNumber = request.Patient.AsString();
             operationRequestDataModel.StaffId = request.StaffId.AsString();
+            operationRequestDataModel.Status = request.Status.ToString();
 
             _context.OperationRequests.Update(operationRequestDataModel);
             await _context.SaveChangesAsync();

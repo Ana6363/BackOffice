@@ -12,9 +12,9 @@ namespace BackOffice.Domain.Users
 
         public PhoneNumber PhoneNumber { get;set; }
 
-        public Name FirstName { get; private set; }
-        public Name LastName { get; private set; }
-        public Name FullName {get; private set;}
+        public Name FirstName { get; set; }
+        public Name LastName { get; set; }
+        public Name FullName {get; set;}
 
         public string? ActivationToken { get; set; }
         public DateTime? TokenExpiration { get; set; }

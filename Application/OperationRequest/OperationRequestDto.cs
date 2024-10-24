@@ -7,14 +7,16 @@
         public string Priority { get; set; }
         public string RecordNumber { get; set; }
         public string StaffId { get; set; }
+        public string Status { get; set; }
 
-        public OperationRequestDto(Guid guid, DateTime dateTime, string priority, string recordNumber, string staffId) {
-        
-            RequestId = guid;
-            dateTime = DeadLine;
-            priority = Priority;
-            recordNumber = RecordNumber;
-            staffId = StaffId;
+        public OperationRequestDto(Guid? requestId, DateTime deadLine, string priority, string recordNumber, string staffId, string status) 
+        {
+            RequestId = requestId;
+            DeadLine = deadLine;
+            Priority = priority;
+            RecordNumber = recordNumber;
+            StaffId = staffId;
+            Status = status;
         }
     }
 }

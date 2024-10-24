@@ -17,6 +17,11 @@ using BackOffice.Infrastructure.Persistence.Repositories;
 using BackOffice.Application.Patients;
 using BackOffice.Infrastructure.Staff;
 using BackOffice.Application.StaffService;
+using BackOffice.Domain.OperationRequest;
+using BackOffice.Infraestructure.OperationRequest;
+using BackOffice.Application.OperationRequest;
+using BackOffice.Domain.Appointement;
+using BackOffice.Infraestructure.Appointement;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +61,9 @@ builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<PatientService>();
 builder.Services.AddScoped<IStaffRepository,StaffRepository>();
 builder.Services.AddScoped<StaffService>();
+builder.Services.AddScoped<IOperationRequestRepository,OperationRequestRepository>();
+builder.Services.AddScoped<OperationRequestService>();
+builder.Services.AddScoped<IAppointementRepository, AppointementRepository>();
 
     // Configure Authentication
     builder.Services.AddAuthentication(options =>

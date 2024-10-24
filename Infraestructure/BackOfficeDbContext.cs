@@ -9,6 +9,7 @@ using BackOffice.Domain.Patients;
 using BackOffice.Infrastructure.Staff;
 using BackOffice.Domain.OperationRequest;
 using BackOffice.Infraestructure.OperationRequest;
+using BackOffice.Infraestructure.Appointement;
 
 namespace BackOffice.Infrastructure
 {
@@ -20,6 +21,7 @@ namespace BackOffice.Infrastructure
         public DbSet<StaffDataModel> Staff { get; set; }
         public DbSet<AvailableSlotDataModel> AvailableSlots { get; set; }
         public DbSet<OperationRequestDataModel> OperationRequests { get; set; }
+        public DbSet<AppointementDataModel> Appointements { get; set; }
 
 
         public BackOfficeDbContext(DbContextOptions<BackOfficeDbContext> options) : base(options) 
