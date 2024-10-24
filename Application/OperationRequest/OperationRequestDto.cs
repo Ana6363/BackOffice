@@ -8,8 +8,9 @@
         public string RecordNumber { get; set; }
         public string StaffId { get; set; }
         public string Status { get; set; }
+        public string OperationTypeId { get; set; }
 
-        public OperationRequestDto(Guid? requestId, DateTime deadLine, string priority, string recordNumber, string staffId, string status) 
+        public OperationRequestDto(Guid? requestId, DateTime deadLine, string priority, string recordNumber, string staffId, string status, string operationTypeId)
         {
             RequestId = requestId;
             DeadLine = deadLine;
@@ -17,6 +18,8 @@
             RecordNumber = recordNumber;
             StaffId = staffId;
             Status = status;
+            OperationTypeId = operationTypeId;
         }
+      
     }
 }
