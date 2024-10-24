@@ -157,6 +157,49 @@ private async Task LogUpdateOperation(string staffEmail, OperationRequestDto upd
     await _context.Logs.AddAsync(logDataModel);
     await _context.SaveChangesAsync();
 }
+
+public async Task<OperationRequestDto> DeleteAsync(OperationRequestDto updatedRequestDto)
+{
+    var existingRequest = await _context.OperationRequests
+        .FirstOrDefaultAsync(r => r.RequestId == updatedRequestDto.RequestId);
+
+    if (existingRequest == null)
+    {
+        throw new Exception("Operation request not found.");
+    }
+
+    var doctor =  await _context.Staff
+        .FirstOrDefaultAsync(s => s.StaffId == updatedRequestDto.StaffId);
+    
+    var doctorEmail = await _context.Users
+        .Where(u => u.Id == doctor.Email)
+        .Select(u => u.Id)
+        .FirstOrDefaultAsync();
+
+    if (existingRequest.StaffId != doctorEmail)
+    {
+        throw new Exception("Only the requesting doctor can delete this operation request.");
+    }
+
+    await LogDeleteOperation(doctorEmail, updatedRequestDto);
+    _context.OperationRequests.Remove(existingRequest);
+    await _context.SaveChangesAsync();
+
+    return updatedRequestDto;
+}
+
+private async Task LogDeleteOperation(string doctorEmail, OperationRequestDto updatedRequestDto){
+    var log = new Log(
+        new LogId(Guid.NewGuid().ToString()),
+        new ActionType(ActionTypeEnum.Delete),
+        new Email(doctorEmail),
+        new Text($"Operation request {updatedRequestDto.RequestId} deleted by doctor {doctorEmail} at {DateTime.UtcNow}.")
+    );
+
+    var logDataModel = LogMapper.ToDataModel(log);
+    await _context.Logs.AddAsync(logDataModel);
+    await _context.SaveChangesAsync();
+}
     
     }
 }
