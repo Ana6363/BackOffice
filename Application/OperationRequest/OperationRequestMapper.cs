@@ -1,4 +1,5 @@
 ﻿using BackOffice.Domain.OperationRequest;
+using BackOffice.Domain.OperationType;
 using BackOffice.Domain.Patients;
 using BackOffice.Domain.Staff;
 using BackOffice.Domain.Users;
@@ -20,7 +21,8 @@ namespace BackOffice.Application.OperationRequest
                 request.Priority.Value.ToString(),
                 request.Patient.AsString(),
                 request.StaffId.AsString(),
-                request.Status.Value.ToString()
+                request.Status.Value.ToString(),
+                request.OperationTypeId.Name
             );
         }
 
@@ -45,7 +47,8 @@ namespace BackOffice.Application.OperationRequest
                 new Priority(priorityType), 
                 new RecordNumber(requestDto.RecordNumber),
                 new LicenseNumber(requestDto.StaffId),
-                new Status(statusType)
+                new Status(statusType),
+                new OperationTypeName(requestDto.OperationTypeName)
             );
         }
 
@@ -61,8 +64,34 @@ namespace BackOffice.Application.OperationRequest
                 Priority = request.Priority.Value.ToString(),
                 RecordNumber = request.Patient.AsString(),
                 StaffId = request.StaffId.AsString(),
-                Status = request.Status.Value.ToString()
+                Status = request.Status.Value.ToString(),
+                OperationType = request.OperationTypeId.Name
             };
+        }
+
+        public static BackOffice.Domain.OperationRequest.OperationRequest toDomain(OperationRequestDataModel request){
+            if (request == null)
+                throw new ArgumentNullException(nameof(request), "Request cannot be null.");
+
+            if (!Enum.TryParse<Priority.PriorityType>(request.Priority, true, out var priorityType))
+            {
+                throw new ArgumentException("Invalid priority", nameof(request.Priority));
+            }
+
+            if(!Enum.TryParse<Status.StatusType>(request.Status, true, out var statusType))
+            {
+                throw new ArgumentException("Invalid status", nameof(request.Status));
+            }
+
+            return new BackOffice.Domain.OperationRequest.OperationRequest(
+                new RequestId((Guid)request.RequestId),
+                new DeadLine(request.DeadLine),
+                new Priority(priorityType), 
+                new RecordNumber(request.RecordNumber),
+                new LicenseNumber(request.StaffId),
+                new Status(statusType),
+                new OperationTypeName(request.OperationType)
+            );
         }
 
     }

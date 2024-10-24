@@ -1,6 +1,9 @@
-﻿using BackOffice.Domain.Appointement;
+﻿using BackOffice.Application.Logs;
+using BackOffice.Domain.Appointement;
+using BackOffice.Domain.Logs;
 using BackOffice.Domain.OperationRequest;
 using BackOffice.Domain.Shared;
+using BackOffice.Domain.Users;
 using BackOffice.Infraestructure.OperationRequest;
 using BackOffice.Infrastructure;
 using BackOffice.Infrastructure.Staff;
@@ -13,6 +16,7 @@ namespace BackOffice.Application.OperationRequest
         private readonly IAppointementRepository _appointementRepository;
         private readonly BackOfficeDbContext _context;
         private readonly IOperationRequestRepository _operationRequestRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IStaffRepository _staffRepository;
         private readonly IUnitOfWork _unitOfWork;
 
@@ -42,17 +46,12 @@ namespace BackOffice.Application.OperationRequest
 
             var request = OperationRequestMapper.ToDomain(requestDto);
             Console.WriteLine($"RecordNumber in Domain: {request.Patient.AsString()}"); // After conversion
-            if (request == null)
+            if(request == null)
             {
                 Console.WriteLine("Error mapping");
                 throw new Exception("Request is null");
             }
 
-            var staff = await _staffRepository.GetByStaffIdAsync(operationRequest.StaffId);
-            if (staff.Specialization != request.OperationTypeId.Name) { 
-                Console.WriteLine("Staff specialization does not match operation type");
-                throw new Exception("Staff specialization does not match operation type");
-            }
             try
             {
                 return await _operationRequestRepository.AddAsync(request);
@@ -64,7 +63,7 @@ namespace BackOffice.Application.OperationRequest
             }
 
         }
-
+      
         public async Task<IEnumerable<OperationRequestDataModel>> GetFilteredRequestAsync(FilteredRequestDto filteredRequest)
         {
             var query = from request in _context.OperationRequests
@@ -87,16 +86,77 @@ namespace BackOffice.Application.OperationRequest
                 query = query.Where(p => p.request.Status.Contains(filteredRequest.Status));
             }
 
-            if(!string.IsNullOrWhiteSpace(filteredRequest.TypeId))
-            {
-                query = query.Where(p => p.request.OperationType.Contains(filteredRequest.TypeId));
-            }
-
             var result = await query.Select(r => r.request).ToListAsync();
             return result;
 
 
         }
 
+    public async Task<OperationRequestDto> UpdateAsync(OperationRequestDto updatedRequestDto)
+{
+    var existingRequest = await _context.OperationRequests
+        .FirstOrDefaultAsync(r => r.RequestId == updatedRequestDto.RequestId);
+
+    if (existingRequest == null)
+    {
+        throw new Exception("Operation request not found.");
+    }
+
+    var doctor =  await _context.Staff
+        .FirstOrDefaultAsync(s => s.StaffId == updatedRequestDto.StaffId);
+    
+    var doctorEmail = await _context.Users
+        .Where(u => u.Id == doctor.Email)
+        .Select(u => u.Id)
+        .FirstOrDefaultAsync();
+
+    if (existingRequest.StaffId != doctorEmail)
+    {
+        throw new Exception("Only the requesting doctor can update this operation request.");
+    }
+
+    bool isUpdated = false;
+
+    if (updatedRequestDto.DeadLine != existingRequest.DeadLine)
+    {
+        existingRequest.DeadLine = updatedRequestDto.DeadLine;
+        isUpdated = true;
+    }
+
+    if (updatedRequestDto.Priority != existingRequest.Priority)
+    {
+        existingRequest.Priority = updatedRequestDto.Priority;
+        isUpdated = true;
+    }
+
+    if (isUpdated)
+    {
+        await LogUpdateOperation(doctorEmail, updatedRequestDto);
+        await _context.SaveChangesAsync();
+    }
+
+    var updatedRequest= OperationRequestMapper.ToDomain(updatedRequestDto);
+    return updatedRequestDto;
+    
+}
+
+
+
+
+// Método para registrar a atualização
+private async Task LogUpdateOperation(string staffEmail, OperationRequestDto updatedRequestDto)
+{
+    var log = new Log(
+        new LogId(Guid.NewGuid().ToString()),
+        new ActionType(ActionTypeEnum.Update),
+        new Email(staffEmail),
+        new Text($"Operation request {updatedRequestDto.RequestId} updated by doctor {staffEmail} at {DateTime.UtcNow}.")
+    );
+
+    var logDataModel = LogMapper.ToDataModel(log);
+    await _context.Logs.AddAsync(logDataModel);
+    await _context.SaveChangesAsync();
+}
+    
     }
 }
