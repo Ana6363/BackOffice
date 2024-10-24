@@ -63,11 +63,12 @@ namespace BackOffice.Controllers
         public async Task<IActionResult> GetAllOperationRequestsAsync(
             [FromQuery] string? fullname = null,
             [FromQuery] string? priority = null,
-            [FromQuery] string? status = null)
+            [FromQuery] string? status = null,
+            [FromQuery] string? typeName = null)
         {
             try
             {
-                var filterDto = new FilteredRequestDto(fullname,priority,status);
+                var filterDto = new FilteredRequestDto(fullname,priority,status,typeName);
 
                 var operationRequests = await _operationRequestService.GetFilteredRequestAsync(filterDto);
                 return Ok(new { success = true, operationRequests });

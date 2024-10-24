@@ -13,7 +13,7 @@ namespace BackOffice.Domain.OperationRequest
         public RecordNumber Patient { get; set; }
         public LicenseNumber StaffId { get; set; } 
         public Status Status { get; set; }
-        public OperationTypeId OperationTypeId { get; set; }
+        public OperationTypeName OperationTypeId { get; set; }
 
         // Add a type id when created and appointement id when done
 
@@ -21,7 +21,7 @@ namespace BackOffice.Domain.OperationRequest
         {
         }
 
-        public OperationRequest(RequestId requestId, DeadLine deadLine, Priority priority, RecordNumber patient, LicenseNumber staffId, Status status, OperationTypeId operationTypeId)
+        public OperationRequest(RequestId requestId, DeadLine deadLine, Priority priority, RecordNumber patient, LicenseNumber staffId, Status status, OperationTypeName operationTypeId)
         {
             RequestId = requestId ?? throw new BusinessRuleValidationException("Request ID cannot be null.");
             DeadLine = deadLine ?? throw new BusinessRuleValidationException("DeadLine cannot be null.");
