@@ -32,7 +32,8 @@ namespace BackOffice.Application.OperationRequest
                 operationRequest.Priority,
                 operationRequest.RecordNumber,
                 operationRequest.StaffId,
-                Status.StatusType.PENDING.ToString()
+                Status.StatusType.PENDING.ToString(),
+                operationRequest.OperationTypeId
             );
 
             Console.WriteLine($"RecordNumber in DTO: {requestDto.RecordNumber}"); // Before conversion
@@ -56,7 +57,7 @@ namespace BackOffice.Application.OperationRequest
             }
 
         }
-
+      
         public async Task<IEnumerable<OperationRequestDataModel>> GetFilteredRequestAsync(FilteredRequestDto filteredRequest)
         {
             var query = from request in _context.OperationRequests

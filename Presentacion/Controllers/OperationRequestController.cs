@@ -39,6 +39,24 @@ namespace BackOffice.Controllers
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+        //[HttpPut("update")]
+        //public async Task<IActionResult> UpdateOperationRequestAsync([FromBody] OperationRequestDto operationRequest)
+        //{
+           // if (operationRequest == null)
+            //{
+            //    return BadRequest(new { success = false, message = "Operation request details are required." });
+           // }
+
+          //  try
+           // {
+           //     var operationRequestDataModel = await _operationRequestService.UpdateAsync(operationRequest);
+           //     return Ok(new { success = true, operationRequest = operationRequestDataModel });
+           // }
+           // catch (Exception ex)
+            //{
+           //     return BadRequest(new { success = false, message = ex.Message });
+           // }
+       // }
 
         [HttpGet("filter")]
         //[Authorize(Roles = "Doctor")]
