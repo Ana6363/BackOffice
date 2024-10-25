@@ -1,0 +1,42 @@
+@startuml
+
+left to right direction
+
+
+actor Administrator as adm
+
+adm --> (Register backoffice users)
+adm --> (Register patients)
+adm --> (Edit a patients profile)
+adm --> (Delete patients profile)
+adm --> (List/Search patients profiles)
+adm --> (Register staff)
+adm --> (Edit a staff's profile)
+adm --> (Deactivate a staff's profile)
+adm --> (List/Search staff profiles)
+adm --> (Add new operation types)
+adm --> (Edit operation types)
+adm --> (Remove operation types)
+adm --> (List/Search operatio types)
+
+actor Doctor as dc
+
+dc --> (Request an operation)
+dc --> (Update an operation request)
+dc --> (Remove an operation request)
+dc --> (List/Search all operation requests)
+
+actor Patient as pt
+
+pt --> (Register into the backoffice)
+pt --> (Update their profile)
+pt --> (Delete their profile)
+pt --> (Log in)
+
+actor Backoffice User as bu
+
+bu --> (Log in)
+bu --> (Reset password)
+
+
+@enduml
