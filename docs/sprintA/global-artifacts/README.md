@@ -48,24 +48,40 @@ The levels are:
 By combining the two models, it is possible to represent the system from various perspectives, each with different levels of detail. To represent/model the implemented and proposed solutions, we will use Unified Modeling Language (UML) as the notation.
 
 ### **Level 1**
-![Logical View](.../docs/sprintA/global-artifacts/Level1/Logical View.PNG)
+
+![Logical View Level 1](.../docs/sprintA/global-artifacts/Level1/Logical__View.PNG)
 
 ### **Level 2**
-![Logical View](.../docs/sprintA/global-artifacts/Level2/Logical View.PNG)
+
+![Logical View Level 2](.../docs/sprintA/global-artifacts/Level2/Logical__View.PNG)
+
+![Deployment View Level 2](.../docs/sprintA/global-artifacts/Level2/Deployment__View.jpg)
+
+![Physical View Level 2](.../docs/sprintA/global-artifacts/Level2/PhysicalView.PNG)
 
 ### **Level 3**
-![Logical View](.../docs/sprintA/global-artifacts/Level3/Logical View.PNG)
+
+![Logical View Level 3](.../docs/sprintA/global-artifacts/Level3/Logical__View.PNG)
+
+![Deployment View Level 3](.../docs/sprintA/global-artifacts/Level3/Deployment__View.png)
+
 
 ### **Generics**
 
-![Generic PUT](.../docs/sprintA/global-artifacts/Generics/Generic_PUT.svg)
+![Generic PUT](.../docs/sprintA/global-artifacts/Generics/Generic_PUT/Generic_PUT.svg)
 
-![Generic POST](.../docs/sprintA/global-artifacts/Generics/Generic_POST.svg)
+![Generic POST](.../docs/sprintA/global-artifacts/Generics/Generic_POST/Generic_POST.svg)
 
-![Generic DELETE](.../docs/sprintA/global-artifacts/Generics/Generic_DELETE.svg)
+![Generic DELETE](.../docs/sprintA/global-artifacts/Generics/Generic_DELETE/Generic_DELETE.svg)
 
-![Generic GET](.../docs/sprintA/global-artifacts/Generics/Generic_GET.svg)
+![Generic GET](.../docs/sprintA/global-artifacts/Generics/Generic_GET/Generic_GET.svg)
+
 
 ### **4. Domain Model**
 
-![Domain Model](.../docs/DomainModel.svg)
+![Domain Model](.../docs/DomainModel.png)
+
+
+### **5. Use Case Diagram**
+
+![Use Case Diagram](.../docs/sprintA/global-artifacts/UseCaseDiagram.puml)
