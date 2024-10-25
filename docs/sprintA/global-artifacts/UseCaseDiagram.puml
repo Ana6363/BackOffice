@@ -1,4 +1,6 @@
-@startuml
+@startuml 
+
+title Use Case Diagram
 
 left to right direction
 
@@ -17,7 +19,7 @@ adm --> (List/Search staff profiles)
 adm --> (Add new operation types)
 adm --> (Edit operation types)
 adm --> (Remove operation types)
-adm --> (List/Search operatio types)
+adm --> (List/Search operation types)
 
 actor Doctor as dc
 
@@ -28,12 +30,12 @@ dc --> (List/Search all operation requests)
 
 actor Patient as pt
 
-pt --> (Register into the backoffice)
+pt --> (Register into the healthcare application)
 pt --> (Update their profile)
 pt --> (Delete their profile)
 pt --> (Log in)
 
-actor Backoffice User as bu
+actor BackofficeUser as bu
 
 bu --> (Log in)
 bu --> (Reset password)
