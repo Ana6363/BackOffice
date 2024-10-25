@@ -13,90 +13,105 @@ namespace BackOffice.DomainTests.Test.Patients
         public void CreatePatient_WithValidParameters_ShouldCreatePatient()
         {
             // Arrange
-            var recordNumber = new RecordNumber("12345");
-            var userId = new UserId(Guid.NewGuid());
-            var dateOfBirth = new DateOfBirth(new DateTime(1990, 1, 1));
-            var emergencyContact = new PhoneNumber("123-456-7890");
-            var gender = new Gender("Male");
+            var recordNumber = new Mock<RecordNumber>("12345");
+            var userId = new Mock<UserId>("user-12345");
+            var dateOfBirth = new Mock<DateOfBirth>(new DateTime(1990, 1, 1));
+            var emergencyContact = new Mock<PhoneNumber>(1234567890);
+            var gender = new Mock<Gender>(Gender.GenderType.MALE);
 
             var mockPatientRepository = new Mock<IPatientRepository>();
             var mockUserRepository = new Mock<IUserRepository>();
 
             // Act
-            var patient = new Patient(recordNumber, userId, dateOfBirth, emergencyContact, gender);
+            var patient = new Patient(recordNumber.Object, userId.Object, dateOfBirth.Object, emergencyContact.Object, gender.Object);
 
             // Assert
             Assert.NotNull(patient);
-            Assert.Equal(recordNumber, patient.RecordNumber);
-            Assert.Equal(userId, patient.UserId);
-            Assert.Equal(dateOfBirth, patient.DateOfBirth);
-            Assert.Equal(emergencyContact, patient.EmergencyContact);
-            Assert.Equal(gender, patient.Gender);
+            Assert.Equal(recordNumber.Object, patient.RecordNumber);
+            Assert.Equal(userId.Object, patient.UserId);
+            Assert.Equal(dateOfBirth.Object, patient.DateOfBirth);
+            Assert.Equal(emergencyContact.Object, patient.EmergencyContact);
+            Assert.Equal(gender.Object, patient.Gender);
         }
 
         [Fact]
         public void CreatePatient_WithNullRecordNumber_ShouldThrowException()
         {
             // Arrange
-            var userId = new UserId(Guid.NewGuid());
-            var dateOfBirth = new DateOfBirth(new DateTime(1990, 1, 1));
-            var emergencyContact = new PhoneNumber("123-456-7890");
-            var gender = new Gender("Male");
+            var userId = new Mock<UserId>("user-12345");
+            var dateOfBirth = new Mock<DateOfBirth>(new DateTime(1990, 1, 1));
+            var emergencyContact = new Mock<PhoneNumber>(1234567890);
+            var gender = new Mock<Gender>(Gender.GenderType.MALE);
+
+            var mockPatientRepository = new Mock<IPatientRepository>();
+            var mockUserRepository = new Mock<IUserRepository>();
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Patient(null, userId, dateOfBirth, emergencyContact, gender));
+            Assert.Throws<BusinessRuleValidationException>(() => new Patient(null!, userId.Object, dateOfBirth.Object, emergencyContact.Object, gender.Object));
         }
 
         [Fact]
         public void CreatePatient_WithNullUserId_ShouldThrowException()
         {
             // Arrange
-            var recordNumber = new RecordNumber("12345");
-            var dateOfBirth = new DateOfBirth(new DateTime(1990, 1, 1));
-            var emergencyContact = new PhoneNumber("123-456-7890");
-            var gender = new Gender("Male");
+            var recordNumber = new Mock<RecordNumber>("12345");
+            var dateOfBirth = new Mock<DateOfBirth>(new DateTime(1990, 1, 1));
+            var emergencyContact = new Mock<PhoneNumber>(1234567890);
+            var gender = new Mock<Gender>(Gender.GenderType.MALE);
+
+            var mockPatientRepository = new Mock<IPatientRepository>();
+            var mockUserRepository = new Mock<IUserRepository>();
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Patient(recordNumber, null, dateOfBirth, emergencyContact, gender));
+            Assert.Throws<BusinessRuleValidationException>(() => new Patient(recordNumber.Object, null!, dateOfBirth.Object, emergencyContact.Object, gender.Object));
         }
 
         [Fact]
         public void CreatePatient_WithNullDateOfBirth_ShouldThrowException()
         {
             // Arrange
-            var recordNumber = new RecordNumber("12345");
-            var userId = new UserId(Guid.NewGuid());
-            var emergencyContact = new PhoneNumber("123-456-7890");
-            var gender = new Gender("Male");
+            var recordNumber = new Mock<RecordNumber>("12345");
+            var userId = new Mock<UserId>("user-12345");
+            var emergencyContact = new Mock<PhoneNumber>(1234567890);
+            var gender = new Mock<Gender>(Gender.GenderType.MALE);
+
+            var mockPatientRepository = new Mock<IPatientRepository>();
+            var mockUserRepository = new Mock<IUserRepository>();
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Patient(recordNumber, userId, null, emergencyContact, gender));
+            Assert.Throws<BusinessRuleValidationException>(() => new Patient(recordNumber.Object, userId.Object, null!, emergencyContact.Object, gender.Object));
         }
 
         [Fact]
         public void CreatePatient_WithNullEmergencyContact_ShouldThrowException()
         {
             // Arrange
-            var recordNumber = new RecordNumber("12345");
-            var userId = new UserId(Guid.NewGuid());
-            var dateOfBirth = new DateOfBirth(new DateTime(1990, 1, 1));
-            var gender = new Gender("Male");
+            var recordNumber = new Mock<RecordNumber>("12345");
+            var userId = new Mock<UserId>("user-12345");
+            var dateOfBirth = new Mock<DateOfBirth>(new DateTime(1990, 1, 1));
+            var gender = new Mock<Gender>(Gender.GenderType.MALE);
+
+            var mockPatientRepository = new Mock<IPatientRepository>();
+            var mockUserRepository = new Mock<IUserRepository>();
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Patient(recordNumber, userId, dateOfBirth, null, gender));
+            Assert.Throws<BusinessRuleValidationException>(() => new Patient(recordNumber.Object, userId.Object, dateOfBirth.Object, null!, gender.Object));
         }
 
         [Fact]
         public void CreatePatient_WithNullGender_ShouldThrowException()
         {
             // Arrange
-            var recordNumber = new RecordNumber("12345");
-            var userId = new UserId(Guid.NewGuid());
-            var dateOfBirth = new DateOfBirth(new DateTime(1990, 1, 1));
-            var emergencyContact = new PhoneNumber("123-456-7890");
+            var recordNumber = new Mock<RecordNumber>("12345");
+            var userId = new Mock<UserId>("user-12345");
+            var dateOfBirth = new Mock<DateOfBirth>(new DateTime(1990, 1, 1));
+            var emergencyContact = new Mock<PhoneNumber>(1234567890);
+
+            var mockPatientRepository = new Mock<IPatientRepository>();
+            var mockUserRepository = new Mock<IUserRepository>();
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Patient(recordNumber, userId, dateOfBirth, emergencyContact, null));
+            Assert.Throws<BusinessRuleValidationException>(() => new Patient(recordNumber.Object, userId.Object, dateOfBirth.Object, emergencyContact.Object, null!));
         }
     }
 }

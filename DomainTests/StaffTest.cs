@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using BackOffice.Domain.Shared;
 using BackOffice.Domain.Staff;
+using BackOffice.Infrastructure.Staff;
 using Moq;
 using Xunit;
 
@@ -10,33 +11,36 @@ namespace BackOffice.DomainTests.Staff.Tests
     public class StaffTest
     {
         private Mock<IStaffRepository> mockRepository;
+        private Mock<IConfiguration> mockConfiguration;
 
         public StaffTest()
         {
             mockRepository = new Mock<IStaffRepository>();
+            mockConfiguration = new Mock<IConfiguration>();
+            mockConfiguration.Setup(c => c["SomeSetting"]).Returns("SomeValue");
         }
 
         [Fact]
         public void Constructor_ShouldInitializeProperties_WhenValidArguments()
         {
             // Arrange
-            var id = new StaffId(Guid.NewGuid());
-            var licenseNumber = new LicenseNumber("12345");
-            var specialization = new Specializations("Cardiology");
-            var email = new StaffEmail("test@example.com");
+            var id = new Mock<StaffId>("some-id");
+            var licenseNumber = new Mock<LicenseNumber>("12345");
+            var specialization = Specializations.FromString("Cardiology");
+            var email = new Mock<StaffEmail>("test@example.com", mockConfiguration.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
-            var status = new StaffStatus(true);
+            var status = new Mock<StaffStatus>(true);
 
             // Act
-            var staff = new Staff(id, licenseNumber, specialization, email, slots, status);
+            var staff = new BackOffice.Domain.Staff.Staff(id.Object, licenseNumber.Object, specialization, email.Object, slots, status.Object);
 
             // Assert
-            Assert.Equal(id, staff.Id);
-            Assert.Equal(licenseNumber, staff.LicenseNumber);
+            Assert.Equal(id.Object, staff.Id);
+            Assert.Equal(licenseNumber.Object, staff.LicenseNumber);
             Assert.Equal(specialization, staff.Specialization);
-            Assert.Equal(email, staff.Email);
+            Assert.Equal(email.Object, staff.Email);
             Assert.Equal(slots, staff.AvailableSlots);
-            Assert.Equal(status, staff.Status);
+            Assert.Equal(status.Object, staff.Status);
         }
 
         [Fact]
@@ -44,14 +48,14 @@ namespace BackOffice.DomainTests.Staff.Tests
         {
             // Arrange
             StaffId id = null;
-            var licenseNumber = new LicenseNumber("12345");
-            var specialization = new Specializations("Cardiology");
-            var email = new StaffEmail("test@example.com");
+            var licenseNumber = new Mock<LicenseNumber>("12345");
+            var specialization = Specializations.FromString("Cardiology");
+            var email = new Mock<StaffEmail>("test@example.com", mockConfiguration.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
-            var status = new StaffStatus(true);
+            var status = new Mock<StaffStatus>(true);
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Staff(id, licenseNumber, specialization, email, slots, status));
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.Staff.Staff(id, licenseNumber.Object, specialization, email.Object, slots, status.Object));
         }
 
         [Fact]
@@ -80,14 +84,14 @@ namespace BackOffice.DomainTests.Staff.Tests
         }
 
         [Fact]
-        public void AddSlot_ShouldThrowException_WhenSlotConflicts()
+        public async Task AddSlot_ShouldThrowException_WhenSlotConflicts()
         {
             // Arrange
             var staff = CreateValidStaff();
             var conflictingSlot = new Slots(DateTime.Now, DateTime.Now.AddHours(1));
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => staff.AddSlot(conflictingSlot));
+            await Assert.ThrowsAsync<BusinessRuleValidationException>(() => Task.Run(() => staff.AddSlot(conflictingSlot)));
         }
 
         [Fact]
@@ -121,102 +125,102 @@ namespace BackOffice.DomainTests.Staff.Tests
         public void Constructor_ShouldThrowException_WhenLicenseNumberIsNull()
         {
             // Arrange
-            var id = new StaffId(Guid.NewGuid());
+            var id = new Mock<StaffId>("some-id");
             LicenseNumber licenseNumber = null;
-            var specialization = new Specializations("Cardiology");
-            var email = new StaffEmail("test@example.com");
+            var specialization = Specializations.FromString("Cardiology");
+            var email = new Mock<StaffEmail>("test@example.com", mockConfiguration.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
-            var status = new StaffStatus(true);
+            var status = new Mock<StaffStatus>(true);
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Staff(id, licenseNumber, specialization, email, slots, status));
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.Staff.Staff(id.Object, licenseNumber, specialization, email.Object, slots, status.Object));
         }
 
         [Fact]
         public void Constructor_ShouldThrowException_WhenSpecializationIsNull()
         {
             // Arrange
-            var id = new StaffId(Guid.NewGuid());
-            var licenseNumber = new LicenseNumber("12345");
+            var id = new Mock<StaffId>("some-id");
+            var licenseNumber = new Mock<LicenseNumber>("12345");
             Specializations specialization = null;
-            var email = new StaffEmail("test@example.com");
+            var email = new Mock<StaffEmail>("test@example.com", mockConfiguration.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
-            var status = new StaffStatus(true);
+            var status = new Mock<StaffStatus>(true);
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Staff(id, licenseNumber, specialization, email, slots, status));
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.Staff.Staff(id.Object, licenseNumber.Object, specialization, email.Object, slots, status.Object));
         }
 
         [Fact]
         public void Constructor_ShouldThrowException_WhenEmailIsNull()
         {
             // Arrange
-            var id = new StaffId(Guid.NewGuid());
-            var licenseNumber = new LicenseNumber("12345");
-            var specialization = new Specializations("Cardiology");
+            var id = new Mock<StaffId>("some-id");
+            var licenseNumber = new Mock<LicenseNumber>("12345");
+            var specialization = Specializations.FromString("Cardiology");
             StaffEmail email = null;
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
-            var status = new StaffStatus(true);
+            var status = new Mock<StaffStatus>(true);
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Staff(id, licenseNumber, specialization, email, slots, status));
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.Staff.Staff(id.Object, licenseNumber.Object, specialization, email, slots, status.Object));
         }
 
         [Fact]
         public void Constructor_ShouldThrowException_WhenSlotsIsNull()
         {
             // Arrange
-            var id = new StaffId(Guid.NewGuid());
-            var licenseNumber = new LicenseNumber("12345");
-            var specialization = new Specializations("Cardiology");
-            var email = new StaffEmail("test@example.com");
+            var id = new Mock<StaffId>("some-id");
+            var licenseNumber = new Mock<LicenseNumber>("12345");
+            var specialization = Specializations.FromString("Cardiology");
+            var email = new Mock<StaffEmail>("test@example.com", mockConfiguration.Object);
             List<Slots> slots = null;
-            var status = new StaffStatus(true);
+            var status = new Mock<StaffStatus>(true);
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Staff(id, licenseNumber, specialization, email, slots, status));
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.Staff.Staff(id.Object, licenseNumber.Object, specialization, email.Object, slots, status.Object));
         }
 
         [Fact]
         public void Constructor_ShouldThrowException_WhenSlotsIsEmpty()
         {
             // Arrange
-            var id = new StaffId(Guid.NewGuid());
-            var licenseNumber = new LicenseNumber("12345");
-            var specialization = new Specializations("Cardiology");
-            var email = new StaffEmail("test@example.com");
+            var id = new Mock<StaffId>("some-id");
+            var licenseNumber = new Mock<LicenseNumber>("12345");
+            var specialization = Specializations.FromString("Cardiology");
+            var email = new Mock<StaffEmail>("test@example.com", mockConfiguration.Object);
             var slots = new List<Slots>();
-            var status = new StaffStatus(true);
+            var status = new Mock<StaffStatus>(true);
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Staff(id, licenseNumber, specialization, email, slots, status));
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.Staff.Staff(id.Object, licenseNumber.Object, specialization, email.Object, slots, status.Object));
         }
 
         [Fact]
         public void Constructor_ShouldThrowException_WhenStatusIsNull()
         {
             // Arrange
-            var id = new StaffId(Guid.NewGuid());
-            var licenseNumber = new LicenseNumber("12345");
-            var specialization = new Specializations("Cardiology");
-            var email = new StaffEmail("test@example.com");
+            var id = new Mock<StaffId>("some-id");
+            var licenseNumber = new Mock<LicenseNumber>("12345");
+            var specialization = Specializations.FromString("Cardiology");
+            var email = new Mock<StaffEmail>("test@example.com", mockConfiguration.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             StaffStatus status = null;
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new Staff(id, licenseNumber, specialization, email, slots, status));
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.Staff.Staff(id.Object, licenseNumber.Object, specialization, email.Object, slots, status));
         }
 
-        private Staff CreateValidStaff()
+        private BackOffice.Domain.Staff.Staff CreateValidStaff()
         {
-            var id = new StaffId(Guid.NewGuid());
-            var licenseNumber = new LicenseNumber("12345");
-            var specialization = new Specializations("Cardiology");
-            var email = new StaffEmail("test@example.com");
+            var id = new Mock<StaffId>("some-id");
+            var licenseNumber = new Mock<LicenseNumber>("12345");
+            var specialization = Specializations.FromString("Cardiology");
+            var email = new Mock<StaffEmail>("test@example.com", mockConfiguration.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
-            var status = new StaffStatus(true);
+            var status = new Mock<StaffStatus>(true);
 
-            return new Staff(id, licenseNumber, specialization, email, slots, status);
+            return new BackOffice.Domain.Staff.Staff(id.Object, licenseNumber.Object, specialization, email.Object, slots, status.Object);
         }
     }
 }

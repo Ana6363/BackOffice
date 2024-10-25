@@ -23,16 +23,18 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             var mockStatus = new Mock<Status>("Pending");
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
-            // Act
-            var operationRequest = new OperationRequest(
-                mockRequestId.Object, 
-                mockDeadLine.Object, 
-                mockPriority.Object, 
-                mockPatient.Object, 
-                mockStaffId.Object, 
-                mockStatus.Object, 
+            var mockOperationRequest = new Mock<BackOffice.Domain.OperationRequest.OperationRequest>(
+                mockRequestId.Object,
+                mockDeadLine.Object,
+                mockPriority.Object,
+                mockPatient.Object,
+                mockStaffId.Object,
+                mockStatus.Object,
                 mockOperationTypeId.Object
             );
+
+            // Act
+            var operationRequest = mockOperationRequest.Object;
 
             // Assert
             Assert.Equal(mockRequestId.Object, operationRequest.RequestId);
@@ -56,13 +58,13 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new OperationRequest(
-                null, 
-                mockDeadLine.Object, 
-                mockPriority.Object, 
-                mockPatient.Object, 
-                mockStaffId.Object, 
-                mockStatus.Object, 
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.OperationRequest.OperationRequest(
+                null,
+                mockDeadLine.Object,
+                mockPriority.Object,
+                mockPatient.Object,
+                mockStaffId.Object,
+                mockStatus.Object,
                 mockOperationTypeId.Object
             ));
         }
@@ -79,13 +81,13 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new OperationRequest(
-                mockRequestId.Object, 
-                null, 
-                mockPriority.Object, 
-                mockPatient.Object, 
-                mockStaffId.Object, 
-                mockStatus.Object, 
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.OperationRequest.OperationRequest(
+                mockRequestId.Object,
+                null,
+                mockPriority.Object,
+                mockPatient.Object,
+                mockStaffId.Object,
+                mockStatus.Object,
                 mockOperationTypeId.Object
             ));
         }
@@ -102,13 +104,13 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new OperationRequest(
-                mockRequestId.Object, 
-                mockDeadLine.Object, 
-                mockPriority.Object, 
-                null, 
-                mockStaffId.Object, 
-                mockStatus.Object, 
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.OperationRequest.OperationRequest(
+                mockRequestId.Object,
+                mockDeadLine.Object,
+                mockPriority.Object,
+                null,
+                mockStaffId.Object,
+                mockStatus.Object,
                 mockOperationTypeId.Object
             ));
         }
@@ -125,13 +127,13 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new OperationRequest(
-                mockRequestId.Object, 
-                mockDeadLine.Object, 
-                mockPriority.Object, 
-                mockPatient.Object, 
-                null, 
-                mockStatus.Object, 
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.OperationRequest.OperationRequest(
+                mockRequestId.Object,
+                mockDeadLine.Object,
+                mockPriority.Object,
+                mockPatient.Object,
+                null,
+                mockStatus.Object,
                 mockOperationTypeId.Object
             ));
         }
@@ -148,13 +150,13 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             var mockStatus = new Mock<Status>("Pending");
 
             // Act & Assert
-            Assert.Throws<BusinessRuleValidationException>(() => new OperationRequest(
-                mockRequestId.Object, 
-                mockDeadLine.Object, 
-                mockPriority.Object, 
-                mockPatient.Object, 
-                mockStaffId.Object, 
-                mockStatus.Object, 
+            Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.OperationRequest.OperationRequest(
+                mockRequestId.Object,
+                mockDeadLine.Object,
+                mockPriority.Object,
+                mockPatient.Object,
+                mockStaffId.Object,
+                mockStatus.Object,
                 null
             ));
         }
