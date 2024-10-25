@@ -55,7 +55,7 @@ By combining the two models, it is possible to represent the system from various
 
 ![Logical View Level 2](Level2/LogicalView.PNG)
 
-![Deployment View Level 2](Level2/Deployment_View.jpg)
+![Deployment View Level 2](Level2/DeploymentView.jpg)
 
 ![Physical View Level 2](Level2/PhysicalView.PNG)
 
