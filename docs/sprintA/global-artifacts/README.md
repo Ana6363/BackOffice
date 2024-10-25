@@ -49,11 +49,11 @@ By combining the two models, it is possible to represent the system from various
 
 ### **Level 1**
 
-![Logical View Level 1](Level1/Logical_View.PNG)
+![Logical View Level 1](Level1/LogicalView.PNG)
 
 ### **Level 2**
 
-![Logical View Level 2](Level2/Logical_View.PNG)
+![Logical View Level 2](Level2/LogicalView.PNG)
 
 ![Deployment View Level 2](Level2/Deployment_View.jpg)
 
@@ -61,9 +61,9 @@ By combining the two models, it is possible to represent the system from various
 
 ### **Level 3**
 
-![Logical View Level 3](Level3/Logical_View.PNG)
+![Logical View Level 3](Level3/LogicalView.PNG)
 
-![Deployment View Level 3](Level3/Deployment_View.png)
+![Deployment View Level 3](Level3/DeploymentView.png)
 
 
 ### **Generics**
@@ -79,7 +79,7 @@ By combining the two models, it is possible to represent the system from various
 
 ### **4. Domain Model**
 
-![Domain Model](docs/DomainModel.png)
+![Domain Model](DomainModel.png)
 
 
 ### **5. Use Case Diagram**
