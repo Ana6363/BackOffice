@@ -49,39 +49,39 @@ By combining the two models, it is possible to represent the system from various
 
 ### **Level 1**
 
-![Logical View Level 1](.../Level1/Logical__View.PNG)
+![Logical View Level 1](Level1/Logical__View.PNG)
 
 ### **Level 2**
 
-![Logical View Level 2](.../Level2/Logical__View.PNG)
+![Logical View Level 2](Level2/Logical__View.PNG)
 
-![Deployment View Level 2](.../Level2/Deployment__View.jpg)
+![Deployment View Level 2](Level2/Deployment__View.jpg)
 
-![Physical View Level 2](.../Level2/PhysicalView.PNG)
+![Physical View Level 2](Level2/PhysicalView.PNG)
 
 ### **Level 3**
 
-![Logical View Level 3](.../Level3/Logical__View.PNG)
+![Logical View Level 3](Level3/Logical__View.PNG)
 
-![Deployment View Level 3](.../Level3/Deployment__View.png)
+![Deployment View Level 3](Level3/Deployment__View.png)
 
 
 ### **Generics**
 
-![Generic PUT](.../Generics/Generic_PUT/Generic_PUT.svg)
+![Generic PUT](Generics/Generic_PUT/Generic_PUT.svg)
 
-![Generic POST](.../Generics/Generic_POST/Generic_POST.svg)
+![Generic POST](Generics/Generic_POST/Generic_POST.svg)
 
-![Generic DELETE](.../Generics/Generic_DELETE/Generic_DELETE.svg)
+![Generic DELETE](Generics/Generic_DELETE/Generic_DELETE.svg)
 
-![Generic GET](.../Generics/Generic_GET/Generic_GET.svg)
+![Generic GET](Generics/Generic_GET/Generic_GET.svg)
 
 
 ### **4. Domain Model**
 
-![Domain Model](.../docs/DomainModel.png)
+![Domain Model](docs/DomainModel.png)
 
 
 ### **5. Use Case Diagram**
 
-![Use Case Diagram](.../UseCaseDiagram.svg)
+![Use Case Diagram](UseCaseDiagram.svg)
