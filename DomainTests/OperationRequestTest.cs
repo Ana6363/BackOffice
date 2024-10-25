@@ -19,7 +19,7 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             var mockDeadLine = new Mock<DeadLine>(DateTime.Now.AddDays(7));
             var mockPriority = new Mock<Priority>(1);
             var mockPatient = new Mock<RecordNumber>("12345");
-            var mockStaffId = new Mock<StaffId>(Guid.NewGuid());
+            var mockStaffId = new Mock<StaffId>("D202412345");
             var mockStatus = new Mock<Status>("Pending");
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
@@ -53,7 +53,7 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             var mockDeadLine = new Mock<DeadLine>(DateTime.Now.AddDays(7));
             var mockPriority = new Mock<Priority>(1);
             var mockPatient = new Mock<RecordNumber>("12345");
-            var mockStaffId = new Mock<StaffId>(Guid.NewGuid());
+            var mockStaffId = new Mock<StaffId>("D202412345");
             var mockStatus = new Mock<Status>("Pending");
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
@@ -76,7 +76,7 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             var mockRequestId = new Mock<RequestId>(Guid.NewGuid());
             var mockPriority = new Mock<Priority>(1);
             var mockPatient = new Mock<RecordNumber>("12345");
-            var mockStaffId = new Mock<StaffId>(Guid.NewGuid());
+            var mockStaffId = new Mock<StaffId>("D202412345");
             var mockStatus = new Mock<Status>("Pending");
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
@@ -99,7 +99,7 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             var mockRequestId = new Mock<RequestId>(Guid.NewGuid());
             var mockDeadLine = new Mock<DeadLine>(DateTime.Now.AddDays(7));
             var mockPriority = new Mock<Priority>(1);
-            var mockStaffId = new Mock<StaffId>(Guid.NewGuid());
+            var mockStaffId = new Mock<StaffId>("D202412345");
             var mockStatus = new Mock<Status>("Pending");
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
@@ -146,7 +146,7 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             var mockDeadLine = new Mock<DeadLine>(DateTime.Now.AddDays(7));
             var mockPriority = new Mock<Priority>(1);
             var mockPatient = new Mock<RecordNumber>("12345");
-            var mockStaffId = new Mock<StaffId>(Guid.NewGuid());
+            var mockStaffId = new Mock<StaffId>("D202412345");
             var mockStatus = new Mock<Status>("Pending");
 
             // Act & Assert
