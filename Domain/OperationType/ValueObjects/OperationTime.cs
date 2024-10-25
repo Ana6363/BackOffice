@@ -1,7 +1,7 @@
 using BackOffice.Domain.Shared;
 
 namespace BackOffice.Domain.OperationType;
-public class OperationTime : IValueObject
+public class OperationTime
 {
     public float time { get; }
 
@@ -37,10 +37,4 @@ public class OperationTime : IValueObject
         OperationTime operationTime = (OperationTime)obj;
         return time == operationTime.time;
     }
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return time;
-    }
-
 }

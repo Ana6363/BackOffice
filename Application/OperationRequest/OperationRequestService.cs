@@ -121,10 +121,10 @@ namespace BackOffice.Application.OperationRequest
     var loggedInUserEmail = GetLoggedInUserEmail();
     var loggedInUserId = loggedInUserEmail.Split('@')[0]; // Extract ID from email
 
-    if (loggedInUserId != existingRequest.StaffId)
-    {
-        throw new Exception("Only the requesting doctor can update this operation request.");
-    }
+    if (!loggedInUserId.Equals(existingRequest.StaffId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new Exception("Only the requesting doctor can update this operation request.");
+        }
 
     bool isUpdated = false;
 
@@ -142,7 +142,7 @@ namespace BackOffice.Application.OperationRequest
 
     if (isUpdated)
     {
-        await LogUpdateOperation(doctorEmail, updatedRequestDto);
+        await LogUpdateOperation(loggedInUserEmail, updatedRequestDto);
         await _context.SaveChangesAsync();
     }
 
@@ -181,7 +181,7 @@ private async Task LogUpdateOperation(string staffEmail, OperationRequestDto upd
     await _context.SaveChangesAsync();
 }
 
-public async Task<OperationRequestDto> DeleteOperationRequestAsync(OperationRequestDto updatedRequestDto)
+public async Task<DeleteRequestDto> DeleteOperationRequestAsync(DeleteRequestDto updatedRequestDto)
 {
     var existingRequest = await _context.OperationRequests
         .FirstOrDefaultAsync(r => r.RequestId == updatedRequestDto.RequestId);
@@ -191,8 +191,9 @@ public async Task<OperationRequestDto> DeleteOperationRequestAsync(OperationRequ
         throw new Exception("Operation request not found.");
     }
 
+
     var doctor =  await _context.Staff
-        .FirstOrDefaultAsync(s => s.StaffId == updatedRequestDto.StaffId);
+        .FirstOrDefaultAsync(s => s.StaffId == existingRequest.StaffId);
 
     if (doctor == null)
     {
@@ -200,11 +201,13 @@ public async Task<OperationRequestDto> DeleteOperationRequestAsync(OperationRequ
     }
     
     var doctorEmail = await _context.Users
-        .Where(u => u.Id == doctor.Email)
-        .Select(u => u.Id)
-        .FirstOrDefaultAsync();
+    .Where(u => u.Id == doctor.Email)
+    .Select(u => u.Id)
+    .FirstOrDefaultAsync();
 
-    if (existingRequest.StaffId != doctorEmail)
+    var truncatedDoctorEmail = doctorEmail?.Split('@').FirstOrDefault();
+
+    if (!existingRequest.StaffId.Equals(truncatedDoctorEmail, StringComparison.OrdinalIgnoreCase))
     {
         throw new Exception("Only the requesting doctor can delete this operation request.");
     }
@@ -222,7 +225,7 @@ public async Task<OperationRequestDto> DeleteOperationRequestAsync(OperationRequ
     return updatedRequestDto;
 }
 
-private async Task LogDeleteOperation(string doctorEmail, OperationRequestDto updatedRequestDto){
+private async Task LogDeleteOperation(string doctorEmail, DeleteRequestDto updatedRequestDto){
     var log = new Log(
         new LogId(Guid.NewGuid().ToString()),
         new ActionType(ActionTypeEnum.Delete),

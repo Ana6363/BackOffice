@@ -11,7 +11,7 @@ namespace BackOffice.Domain.OperationRequest
         public DeadLine DeadLine { get; private set; }
         public Priority Priority { get; set; }
         public RecordNumber Patient { get; set; }
-        public LicenseNumber StaffId { get; set; } 
+        public StaffId StaffId { get; set; } 
         public Status Status { get; set; }
         public OperationTypeName OperationTypeId { get; set; }
 
@@ -21,7 +21,7 @@ namespace BackOffice.Domain.OperationRequest
         {
         }
 
-        public OperationRequest(RequestId requestId, DeadLine deadLine, Priority priority, RecordNumber patient, LicenseNumber staffId, Status status, OperationTypeName operationTypeId)
+        public OperationRequest(RequestId requestId, DeadLine deadLine, Priority priority, RecordNumber patient, StaffId staffId, Status status, OperationTypeName operationTypeId)
         {
             RequestId = requestId ?? throw new BusinessRuleValidationException("Request ID cannot be null.");
             DeadLine = deadLine ?? throw new BusinessRuleValidationException("DeadLine cannot be null.");

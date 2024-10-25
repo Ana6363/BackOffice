@@ -1,7 +1,7 @@
 using BackOffice.Domain.Shared;
 
 namespace BackOffice.Domain.OperationType;
-public class OperationTypeName : IValueObject
+public class OperationTypeName
 {
     public string Name { get; }
 
@@ -19,7 +19,7 @@ public class OperationTypeName : IValueObject
         Name = name;
     }
 
-    protected override IEnumerable<object> GetEqualityComponents()
+    protected IEnumerable<object> GetEqualityComponents()
     {
         yield return Name;
     }

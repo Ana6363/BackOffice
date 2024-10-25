@@ -46,7 +46,7 @@ namespace BackOffice.Application.OperationRequest
                 new DeadLine(requestDto.DeadLine),
                 new Priority(priorityType), 
                 new RecordNumber(requestDto.RecordNumber),
-                new LicenseNumber(requestDto.StaffId),
+                new StaffId(requestDto.StaffId),
                 new Status(statusType),
                 new OperationTypeName(requestDto.OperationTypeName)
             );
@@ -88,7 +88,7 @@ namespace BackOffice.Application.OperationRequest
                 new DeadLine(request.DeadLine),
                 new Priority(priorityType), 
                 new RecordNumber(request.RecordNumber),
-                new LicenseNumber(request.StaffId),
+                new StaffId(request.StaffId),
                 new Status(statusType),
                 new OperationTypeName(request.OperationType)
             );

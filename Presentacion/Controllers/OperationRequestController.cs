@@ -59,7 +59,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteOperationRequestAsync([FromBody] OperationRequestDto operationRequest)
+        public async Task<IActionResult> DeleteOperationRequestAsync([FromBody] DeleteRequestDto operationRequest)
         {
             if (operationRequest == null)
             {
@@ -76,7 +76,6 @@ namespace BackOffice.Controllers
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
-
 
         [HttpGet("filter")]
         //[Authorize(Roles = "Doctor")]
