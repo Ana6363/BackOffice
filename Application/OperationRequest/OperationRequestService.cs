@@ -118,12 +118,10 @@ namespace BackOffice.Application.OperationRequest
         throw new Exception("Doctor not found.");
     }
 
-    var doctorEmail = await _context.Users
-        .Where(u => u.Id == doctor.Email)
-        .Select(u => u.Id)
-        .FirstOrDefaultAsync();
+    var loggedInUserEmail = GetLoggedInUserEmail();
+    var loggedInUserId = loggedInUserEmail.Split('@')[0]; // Extract ID from email
 
-    if (existingRequest.StaffId != doctorEmail)
+    if (loggedInUserId != existingRequest.StaffId)
     {
         throw new Exception("Only the requesting doctor can update this operation request.");
     }
