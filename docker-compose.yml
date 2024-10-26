@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Path to your Dockerfile for the app
+    container_name: my_application
+    ports:
+      - "5184:5184"  # Map the application port to localhost
+    environment:
+      - DATABASE_URL=mysql://root:K/C0QVM+rsI+@db:3306/hospitaldb
+    depends_on:
+      - db  # Ensures the database is started before the application
+    networks:
+      - app-network
+
+  db:
+    image: mysql:latest  # Or specify a specific MySQL version (e.g., mysql:8.0)
+    container_name: hospitaldb_container
+    environment:
+      MYSQL_ROOT_PASSWORD: K/C0QVM+rsI+   # Root user password
+      MYSQL_DATABASE: hospitaldb          # Initial database name
+    ports:
+      - "11361:3306"  # Expose database for local connections if needed
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

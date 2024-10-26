@@ -15,6 +15,7 @@ using BackOffice.Application.Services;
 using System.Reflection;
 using BackOffice.Domain.Logs;
 using BackOffice.Application.Logs;
+using System.Security.Claims;
 
 namespace BackOffice.Application.Patients
 {
@@ -25,15 +26,49 @@ namespace BackOffice.Application.Patients
         private readonly BackOfficeDbContext _dbContext;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
 
-        public PatientService(IPatientRepository patientRepository, UserService userService, BackOfficeDbContext dbContext, IUnitOfWork unitOfWork, IEmailService emailService)
+        public PatientService(IPatientRepository patientRepository, UserService userService, BackOfficeDbContext dbContext, IUnitOfWork unitOfWork, IEmailService emailService ,IHttpContextAccessor httpContextAccessor)
         {
             _patientRepository = patientRepository;
             _userService = userService;
             _dbContext = dbContext;
             _unitOfWork = unitOfWork;
             _emailService = emailService;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        private string GetLoggedInUserRole()
+        {
+            var claimsIdentity = _httpContextAccessor.HttpContext.User.Identity as ClaimsIdentity;
+            if (claimsIdentity != null)
+            {
+                var roleClaim = claimsIdentity.FindFirst(ClaimTypes.Role);
+                if (roleClaim != null)
+                {
+                    Console.WriteLine(roleClaim.Value);
+                    return roleClaim.Value;
+                }
+            }
+
+            throw new Exception("User email not found in token.");
+        }
+
+        private string GetLoggedInUserEmail()
+        {
+            var claimsIdentity = _httpContextAccessor.HttpContext.User.Identity as ClaimsIdentity;
+            if (claimsIdentity != null)
+            {
+                var emailClaim = claimsIdentity.FindFirst(ClaimTypes.Email);
+                if (emailClaim != null)
+                {
+                    Console.WriteLine(emailClaim.Value);
+                    return emailClaim.Value;
+                }
+            }
+
+            throw new Exception("User email not found in token.");
         }
 
 
@@ -102,6 +137,9 @@ namespace BackOffice.Application.Patients
 
         public async Task<PatientDto> UpdateAsync(PatientDto patientDto)
         {
+            var currentUserRole = GetLoggedInUserRole();
+            var currentUserEmail = GetLoggedInUserEmail();
+
             var patientDataModel = await _dbContext.Patients
                 .FirstOrDefaultAsync(p => p.RecordNumber == patientDto.RecordNumber);
 
@@ -110,6 +148,13 @@ namespace BackOffice.Application.Patients
                 throw new Exception("Patient not found.");
             }
 
+            // Check if the user is an Admin or the owner of the record
+            if (currentUserRole != "Admin" && currentUserEmail != patientDataModel.UserId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to update this patient's information.");
+            }
+
+            // Proceed with the update logic if authorized
             var user = await _dbContext.Users
                 .FirstOrDefaultAsync(u => u.Id == patientDataModel.UserId);
 
@@ -118,6 +163,7 @@ namespace BackOffice.Application.Patients
                 throw new Exception("User associated with this patient not found.");
             }
 
+            // Check if the phone number change is allowed
             if (patientDto.PhoneNumber != user.PhoneNumber)
             {
                 var existingUserWithSamePhoneNumber = await _dbContext.Users
@@ -133,12 +179,11 @@ namespace BackOffice.Application.Patients
 
             bool phoneNumberChanged = false;
             bool emergencyContactChanged = false;
-
             bool isUpdated = false;
             
             isUpdated |= UpdateProperties(patientDto, patientDataModel, ref phoneNumberChanged, ref emergencyContactChanged);
-
             isUpdated |= UpdateProperties(patientDto, user, ref phoneNumberChanged, ref emergencyContactChanged);
+
             if (!isUpdated)
             {
                 var updatedPatientDomain = PatientMapper.ToDomain(patientDataModel);
@@ -148,21 +193,22 @@ namespace BackOffice.Application.Patients
             _dbContext.Patients.Update(patientDataModel);
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
-            if (phoneNumberChanged && _emailService != null)
+
+            if (phoneNumberChanged)
             {
                 await _emailService.SendEmailAsync(user.Id, "Phone number change", $"Your phone number has been changed to {patientDto.PhoneNumber}.");
             }
 
-            if (emergencyContactChanged && _emailService != null)
+            if (emergencyContactChanged)
             {
                 await _emailService.SendEmailAsync(user.Id, "Emergency contact change", $"Your emergency contact has been changed to {patientDto.EmergencyContact}.");
             }
 
-            
             var updatedPatientDomainFinal = PatientMapper.ToDomain(patientDataModel);
             await LogUpdateOperation(patientDto.UserId, patientDto);
             return PatientMapper.ToDto(updatedPatientDomainFinal);
         }
+
 
         // Helper method to update properties and detect changes
         private bool UpdateProperties(object source, object target, ref bool phoneNumberChanged, ref bool emergencyContactChanged)
@@ -227,44 +273,69 @@ namespace BackOffice.Application.Patients
 
         public async Task<PatientDataModel?> DeletePatientAsync(RecordNumber recordNumber)
         {
+            var currentUserRole = GetLoggedInUserRole();
+            var currentUserEmail = GetLoggedInUserEmail();
+
             var patient = await _patientRepository.GetByIdAsync(recordNumber);
             if (patient == null)
             {
                 throw new Exception("Patient not found.");
             }
+
+            // Check if the user is an Admin or the owner of the record
+            if (currentUserRole != "Admin" && currentUserEmail != patient.UserId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to delete this patient's information.");
+            }
+
             var user = await _userService.GetByIdAsync(new UserId(patient.UserId));
             if (user == null || patient.UserId != user.Id)
             {
                 throw new Exception("Patient does not belong to the user.");
             }
 
-            if (!user.IsToBeDeleted)
+            // Skip 'IsToBeDeleted' check if the user is deleting their own account
+            if (currentUserRole == "Admin" || currentUserEmail != user.Id)
             {
-                throw new Exception("User is not marked for deletion.");
-            }
+                if (!user.IsToBeDeleted)
+                {
+                    throw new Exception("User is not marked for deletion.");
+                }
 
-            if (_emailService != null)
-            {
+                // Notify user if they are an admin
                 await _emailService.SendEmailAsync(user.Id, "Account Deletion Scheduled", 
                     $"Your account and related patient information will be deleted in 24 hours.");
+
+                // Delay deletion for admins
+                _ = Task.Delay(TimeSpan.FromHours(24)).ContinueWith(async _ =>
+                {
+                    try
+                    {
+                        await _patientRepository.DeleteAsync(recordNumber);
+                        await _userService.DeleteAsync(new UserId(patient.UserId));
+                        await _unitOfWork.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error during scheduled deletion: {ex.Message}");
+                    }
+                });
+            }
+            else
+            {
+                 _ = Task.Delay(TimeSpan.FromHours(24)).ContinueWith(async _ =>{
+                await _patientRepository.DeleteAsync(recordNumber);
+                await _userService.DeleteAsync(new UserId(patient.UserId));
+                await _unitOfWork.CommitAsync();
+                });
             }
 
-            _ = Task.Delay(TimeSpan.FromHours(24)).ContinueWith(async _ =>  // comentar esta linha para testar q ta a eliminar, se n espera 24 horas 
-            {
-                try
-                {
-                    await _patientRepository.DeleteAsync(recordNumber);
-                    await _userService.DeleteAsync(new UserId(patient.UserId));
-                    await _unitOfWork.CommitAsync();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error during scheduled deletion: {ex.Message}");
-                }
-            }); 
+            // Log the deletion operation
             await LogDeleteOperation(user.Id, patient);
             return patient;
         }
+
+
 
         private async Task LogDeleteOperation(string userEmail, PatientDataModel patientDataModel)
         {

@@ -97,9 +97,6 @@ namespace BackOffice.Domain.Users
             var user = await this._repo.GetByIdAsync(id); 
             if (user == null)
                 return null;   
-
-            if (user.Active)
-                throw new BusinessRuleValidationException("It is not possible to delete an active user.");
             
             this._repo.Delete(user);
             await this._unitOfWork.CommitAsync();

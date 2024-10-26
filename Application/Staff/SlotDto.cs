@@ -12,8 +12,9 @@ namespace BackOffice.Domain.Staff
 
     public SlotDto() {}
 
-    public SlotDto(DateTime startTime, DateTime endTime)
+    public SlotDto(int id,DateTime startTime, DateTime endTime)
     {
+        Id= id;
         StartTime = startTime;
         EndTime = endTime;
     }

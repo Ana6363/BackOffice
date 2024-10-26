@@ -110,35 +110,51 @@ namespace BackOffice.Application.StaffService
             return random.Next(0, 99999);
         }
 
-        public async Task<IEnumerable<StaffDataModel>> GetFilteredStaffAsync(StaffFilterDto filterDto)
+        public async Task<IEnumerable<object>> GetFilteredStaffAsync(StaffFilterDto filterDto)
+        {
+            var query = _dbContext.Staff
+                .Include(s => s.AvailableSlots) 
+                .Join(_dbContext.Users, staff => staff.Email, user => user.Id, (staff, user) => new { staff, user });
+
+            if (!string.IsNullOrWhiteSpace(filterDto.StaffId))
             {
-                var query = _dbContext.Staff
-                    .Include(s => s.AvailableSlots) 
-                    .Join(_dbContext.Users, staff => staff.Email, user => user.Id, (staff, user) => new { staff, user });
-
-                if (filterDto.PhoneNumber.HasValue)
-                {
-                    query = query.Where(s => EF.Functions.Collate(s.user.PhoneNumber.ToString(), "utf8mb4_unicode_ci") == EF.Functions.Collate(filterDto.PhoneNumber.Value.ToString(), "utf8mb4_unicode_ci"));
-                }
-                if (!string.IsNullOrWhiteSpace(filterDto.FirstName))
-                {
-                    query = query.Where(s => EF.Functions.Collate(s.user.FirstName, "utf8mb4_unicode_ci").Contains(EF.Functions.Collate(filterDto.FirstName, "utf8mb4_unicode_ci")));
-                }
-                if (!string.IsNullOrWhiteSpace(filterDto.LastName))
-                {
-                    query = query.Where(s => EF.Functions.Collate(s.user.LastName, "utf8mb4_unicode_ci").Contains(EF.Functions.Collate(filterDto.LastName, "utf8mb4_unicode_ci")));
-                }
-                if (!string.IsNullOrWhiteSpace(filterDto.FullName))
-                {
-                    query = query.Where(s => EF.Functions.Collate(s.user.FullName, "utf8mb4_unicode_ci").Contains(EF.Functions.Collate(filterDto.FullName, "utf8mb4_unicode_ci")));
-                }
-
-                var result = await query
-                    .Select(s => s.staff)
-                    .ToListAsync();
-
-                return result;
+                query = query.Where(s => EF.Functions.Collate(s.staff.StaffId, "utf8mb4_unicode_ci") == EF.Functions.Collate(filterDto.StaffId, "utf8mb4_unicode_ci"));
             }
+            if (filterDto.PhoneNumber.HasValue)
+            {
+                query = query.Where(s => EF.Functions.Collate(s.user.PhoneNumber.ToString(), "utf8mb4_unicode_ci") == EF.Functions.Collate(filterDto.PhoneNumber.Value.ToString(), "utf8mb4_unicode_ci"));
+            }
+            if (!string.IsNullOrWhiteSpace(filterDto.FirstName))
+            {
+                query = query.Where(s => EF.Functions.Collate(s.user.FirstName, "utf8mb4_unicode_ci").Contains(EF.Functions.Collate(filterDto.FirstName, "utf8mb4_unicode_ci")));
+            }
+            if (!string.IsNullOrWhiteSpace(filterDto.LastName))
+            {
+                query = query.Where(s => EF.Functions.Collate(s.user.LastName, "utf8mb4_unicode_ci").Contains(EF.Functions.Collate(filterDto.LastName, "utf8mb4_unicode_ci")));
+            }
+            if (!string.IsNullOrWhiteSpace(filterDto.FullName))
+            {
+                query = query.Where(s => EF.Functions.Collate(s.user.FullName, "utf8mb4_unicode_ci").Contains(EF.Functions.Collate(filterDto.FullName, "utf8mb4_unicode_ci")));
+            }
+
+            var result = await query
+                .Select(s => new 
+                {
+                    StaffId = s.staff.StaffId,
+                    LicenseNumber = s.staff.LicenseNumber,
+                    Specialization = s.staff.Specialization,
+                    Status = s.staff.Status,
+                    AvailableSlots = s.staff.AvailableSlots,
+                    FirstName = s.user.FirstName,
+                    LastName = s.user.LastName,
+                    FullName = s.user.FullName,
+                    PhoneNumber = s.user.PhoneNumber
+                })
+                .ToListAsync();
+
+            return result;
+        }
+
             
 
         public async Task<StaffDto> UpdateAsync(StaffDto staffDto)
@@ -296,9 +312,9 @@ namespace BackOffice.Application.StaffService
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<StaffDto> DeactivateStaff(LicenseNumber licenseNumber)
+       public async Task<StaffDto> DeactivateStaff(StaffDeactivateDto staffDeactivateDto)
         {
-            var staff = await _staffRepository.GetByLicenseNumberAsync(licenseNumber.AsString());
+            var staff = await _staffRepository.GetByStaffIdAsync(staffDeactivateDto.StaffId);
             if (staff == null)
             {
                 throw new Exception("Staff member not found.");
@@ -309,16 +325,17 @@ namespace BackOffice.Application.StaffService
             {
                 throw new Exception("User not found.");
             }
+      
+            var staffDto = StaffMapper.ToDto(staff);
+            staffDto.Status = false;
 
-            var staff1 = StaffMapper.ToDto(staff);
-            staff1.Status = false;
             await _staffRepository.UpdateAsync(staff);
             await _dbContext.SaveChangesAsync();
             await LogDeactivateOperation(user.Id.AsString(), staff);
 
-            var staffDto = StaffMapper.ToDto(staff);
             return staffDto;
         }
+
 
 
 

@@ -5,6 +5,7 @@ using BackOffice.Domain.Staff;
 using BackOffice.Infrastructure.Staff;
 using BackOffice.Application.StaffService;
 using Microsoft.Extensions.Configuration;
+using BackOffice.Application.Staffs;
 
 namespace BackOffice.Controllers
 {
@@ -44,6 +45,7 @@ namespace BackOffice.Controllers
 
         [HttpGet("filter")]
             public async Task<IActionResult> GetAllStaffAsync(
+                [FromQuery] string? staffId = null,
                 [FromQuery] int? phoneNumber = null,
                 [FromQuery] string? firstName = null,
                 [FromQuery] string? lastName = null,
@@ -51,7 +53,7 @@ namespace BackOffice.Controllers
             {
                 try
                 {
-                    var filterDto = new StaffFilterDto(phoneNumber, firstName, lastName, fullName);
+                    var filterDto = new StaffFilterDto(staffId,phoneNumber, firstName, lastName, fullName);
 
                     var staffMembers = await _staffService.GetFilteredStaffAsync(filterDto);
                     return Ok(new { success = true, staffMembers });
@@ -82,16 +84,16 @@ namespace BackOffice.Controllers
             }
     
         [HttpPut("deactivate")]
-        public async Task<IActionResult> DeactivateStaffAsync([FromBody] LicenseNumber licenseNumber)
+        public async Task<IActionResult> DeactivateStaffAsync([FromBody] StaffDeactivateDto staffDeactivateDto)
         {
-            if (licenseNumber == null)
+            if (staffDeactivateDto == null)
             {
                 return BadRequest(new { success = false, message = "Staff lincense number is required." });
             }
 
             try
             {
-                var staffDataModel = await _staffService.DeactivateStaff(licenseNumber);
+                var staffDataModel = await _staffService.DeactivateStaff(staffDeactivateDto);
                 return Ok(new { success = true, staff = staffDataModel });
             }
             catch (Exception ex)

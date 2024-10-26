@@ -1,4 +1,5 @@
 using System;
+using BackOffice.Domain.Users;
 
 namespace BackOffice.Domain.Staff
 {

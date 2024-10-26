@@ -10,10 +10,12 @@ namespace BackOffice.Application.Staffs
     public static class StaffMapper
     {
         // Domain Model to DTO
+
         public static StaffDto ToDto(Staff domainModel)
         {
             return new StaffDto
             {
+                StaffId = domainModel.Id.Value,
                 LicenseNumber = domainModel.LicenseNumber.AsString(),
                 Specialization = domainModel.Specialization.ToString(),
 
@@ -75,9 +77,9 @@ namespace BackOffice.Application.Staffs
         {
             return new StaffDto
             {
+                StaffId = dataModel.StaffId,
                 LicenseNumber = dataModel.LicenseNumber,
                 Specialization = dataModel.Specialization,
-                AvailableSlots = dataModel.AvailableSlots.Select(slot => ToDto(slot)).ToList(),
                 Status = dataModel.Status
             };
         }
@@ -87,7 +89,7 @@ public static SlotDto ToDto(AvailableSlotDataModel slotDataModel)
 {
     return new SlotDto
     {
-        Id = slotDataModel.Id,
+        Id = slotDataModel.Id,          // Includes the database-generated Id
         StartTime = slotDataModel.StartTime,
         EndTime = slotDataModel.EndTime,
         StaffId = slotDataModel.StaffId
