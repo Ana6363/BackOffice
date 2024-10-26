@@ -5,7 +5,7 @@ using BackOffice.Domain.Staff;
 using Moq;
 using Xunit;
 
-namespace BackOffice.Domain.Staff.Tests
+namespace BackOffice.DomainTests
 {
     public class StaffTest
     {
@@ -14,16 +14,17 @@ namespace BackOffice.Domain.Staff.Tests
 
         public StaffTest()
         {
-            domain = mo.Object["EmailSettings:MyDns"];
+            domain = mo.Object["EmailSettings:MyDns"] ?? throw new ArgumentNullException("EmailSettings:MyDns");
         }
+
         [Fact]
         public void Constructor_ShouldInitializeProperties_WhenValidArguments()
         {
             // Arrange
             var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
-            var specialization = Specializations.SpecializationType.Urology;
-            var email = new StaffEmail("D202412345", domain);
+            var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
+            var email = new StaffEmail("D202412345", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
 
@@ -43,10 +44,10 @@ namespace BackOffice.Domain.Staff.Tests
         public void AddSlot_ShouldAddSlot_WhenSlotIsValid()
         {
             // Arrange
-            var id = new StaffId(Guid.NewGuid());
+            var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
-            var specialization = new Specializations("Cardiology");
-            var email = new StaffEmail("test@example.com");
+            var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
+            var email = new StaffEmail("test@example.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
             var staff = new Staff(id, licenseNumber, specialization, email, slots, status);
@@ -63,10 +64,10 @@ namespace BackOffice.Domain.Staff.Tests
         public void AddSlot_ShouldThrowException_WhenSlotConflicts()
         {
             // Arrange
-            var id = new StaffId(Guid.NewGuid());
+            var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
-            var specialization = new Specializations("Cardiology");
-            var email = new StaffEmail("test@example.com");
+            var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
+            var email = new StaffEmail("test@example.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
             var staff = new Staff(id, licenseNumber, specialization, email, slots, status);
@@ -80,10 +81,10 @@ namespace BackOffice.Domain.Staff.Tests
         public void RemoveSlot_ShouldRemoveSlot_WhenSlotExists()
         {
             // Arrange
-            var id = new StaffId(Guid.NewGuid());
+            var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
-            var specialization = new Specializations("Cardiology");
-            var email = new StaffEmail("test@example.com");
+            var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
+            var email = new StaffEmail("test@example.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
             var staff = new Staff(id, licenseNumber, specialization, email, slots, status);
@@ -100,10 +101,10 @@ namespace BackOffice.Domain.Staff.Tests
         public void Deactivate_ShouldSetStatusToInactive_WhenStatusIsActive()
         {
             // Arrange
-            var id = new StaffId(Guid.NewGuid());
+            var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
-            var specialization = new Specializations("Cardiology");
-            var email = new StaffEmail("test@example.com");
+            var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
+            var email = new StaffEmail("test@example.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
             var staff = new Staff(id, licenseNumber, specialization, email, slots, status);
