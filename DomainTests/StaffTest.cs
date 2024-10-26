@@ -14,30 +14,40 @@ namespace BackOffice.DomainTests
 
         public StaffTest()
         {
-            domain = mo.Object["EmailSettings:MyDns"] ?? throw new ArgumentNullException("EmailSettings:MyDns");
+            mo.Setup(c => c["EmailSettings:MyDns"]).Returns("myhospital.com");
+            domain = "@myhospital.com";
         }
+
 
         [Fact]
         public void Constructor_ShouldInitializeProperties_WhenValidArguments()
         {
-            // Arrange
-            var id = new StaffId("D202412345");
-            var licenseNumber = new LicenseNumber("12345");
-            var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
-            var email = new StaffEmail("D202412345", mo.Object);
-            var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
-            var status = new StaffStatus(true);
+            try
+            {
+                // Arrange
+                var id = new StaffId("D202412345");
+                var licenseNumber = new LicenseNumber("12345");
+                var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
+                var email = new StaffEmail("D202412345", mo.Object);
+                var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
+                var status = new StaffStatus(true);
 
-            // Act
-            var staff = new Staff(id, licenseNumber, specialization, email, slots, status);
+                // Act
+                var staff = new Staff(id, licenseNumber, specialization, email, slots, status);
 
-            // Assert
-            Assert.Equal(id, staff.Id);
-            Assert.Equal(licenseNumber, staff.LicenseNumber);
-            Assert.Equal(specialization, staff.Specialization);
-            Assert.Equal(email, staff.Email);
-            Assert.Equal(slots, staff.AvailableSlots);
-            Assert.Equal(status, staff.Status);
+                // Assert
+                Assert.Equal(id, staff.Id);
+                Assert.Equal(licenseNumber, staff.LicenseNumber);
+                Assert.Equal(specialization, staff.Specialization);
+                Assert.Equal(email, staff.Email);
+                Assert.Equal(slots, staff.AvailableSlots);
+                Assert.Equal(status, staff.Status);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Test failed with exception: {ex.Message}");
+                throw;
+            }
         }
 
         [Fact]
@@ -47,7 +57,7 @@ namespace BackOffice.DomainTests
             var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
             var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
-            var email = new StaffEmail("test@example.com", mo.Object);
+            var email = new StaffEmail("test@myhospital.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
             var staff = new Staff(id, licenseNumber, specialization, email, slots, status);
@@ -67,7 +77,7 @@ namespace BackOffice.DomainTests
             var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
             var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
-            var email = new StaffEmail("test@example.com", mo.Object);
+            var email = new StaffEmail("test@myhospital.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
             var staff = new Staff(id, licenseNumber, specialization, email, slots, status);
@@ -84,7 +94,7 @@ namespace BackOffice.DomainTests
             var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
             var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
-            var email = new StaffEmail("test@example.com", mo.Object);
+            var email = new StaffEmail("test@myhospital.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
             var staff = new Staff(id, licenseNumber, specialization, email, slots, status);
@@ -104,7 +114,7 @@ namespace BackOffice.DomainTests
             var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
             var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
-            var email = new StaffEmail("test@example.com", mo.Object);
+            var email = new StaffEmail("test@myhospital.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
             var staff = new Staff(id, licenseNumber, specialization, email, slots, status);
