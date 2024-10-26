@@ -17,11 +17,11 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             // Arrange
             var mockRequestId = new Mock<RequestId>(Guid.NewGuid());
             var mockDeadLine = new Mock<DeadLine>(DateTime.Now.AddDays(7));
-            var mockPriority = new Mock<Priority>(1);
+            var mockPriority = new Mock<Priority>(Priority.PriorityType.MEDIUM);
             var mockPatient = new Mock<RecordNumber>("12345");
             var mockStaffId = new Mock<StaffId>("D202412345");
-            var mockStatus = new Mock<Status>("Pending");
-            var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
+            var mockStatus = new Mock<Status>(Status.StatusType.PENDING);
+            var mockOperationTypeId = new Mock<OperationTypeName>("Urology");
 
             var mockOperationRequest = new Mock<BackOffice.Domain.OperationRequest.OperationRequest>(
                 mockRequestId.Object,
@@ -50,16 +50,17 @@ namespace BackOffice.DomainTests.Test.OperationRequest
         public void CreateOperationRequest_WithNullRequestId_ShouldThrowException()
         {
             // Arrange
+            RequestId? mockRequestId = null;
             var mockDeadLine = new Mock<DeadLine>(DateTime.Now.AddDays(7));
-            var mockPriority = new Mock<Priority>(1);
+            var mockPriority = new Mock<Priority>(Priority.PriorityType.LOW);
             var mockPatient = new Mock<RecordNumber>("12345");
             var mockStaffId = new Mock<StaffId>("D202412345");
-            var mockStatus = new Mock<Status>("Pending");
+            var mockStatus = new Mock<Status>(Status.StatusType.PENDING);
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
             // Act & Assert
             Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.OperationRequest.OperationRequest(
-                null,
+                mockRequestId,
                 mockDeadLine.Object,
                 mockPriority.Object,
                 mockPatient.Object,
@@ -74,16 +75,17 @@ namespace BackOffice.DomainTests.Test.OperationRequest
         {
             // Arrange
             var mockRequestId = new Mock<RequestId>(Guid.NewGuid());
-            var mockPriority = new Mock<Priority>(1);
+            DeadLine? mockDeadLine = null;
+            var mockPriority = new Mock<Priority>(Priority.PriorityType.MEDIUM);
             var mockPatient = new Mock<RecordNumber>("12345");
             var mockStaffId = new Mock<StaffId>("D202412345");
-            var mockStatus = new Mock<Status>("Pending");
+            var mockStatus = new Mock<Status>(Status.StatusType.PENDING);
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
             // Act & Assert
             Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.OperationRequest.OperationRequest(
                 mockRequestId.Object,
-                null,
+                mockDeadLine,
                 mockPriority.Object,
                 mockPatient.Object,
                 mockStaffId.Object,
@@ -98,9 +100,10 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             // Arrange
             var mockRequestId = new Mock<RequestId>(Guid.NewGuid());
             var mockDeadLine = new Mock<DeadLine>(DateTime.Now.AddDays(7));
-            var mockPriority = new Mock<Priority>(1);
+            var mockPriority = new Mock<Priority>(Priority.PriorityType.LOW);
+            RecordNumber? mockPatient = null;
             var mockStaffId = new Mock<StaffId>("D202412345");
-            var mockStatus = new Mock<Status>("Pending");
+            var mockStatus = new Mock<Status>(Status.StatusType.PENDING);
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
             // Act & Assert
@@ -108,7 +111,7 @@ namespace BackOffice.DomainTests.Test.OperationRequest
                 mockRequestId.Object,
                 mockDeadLine.Object,
                 mockPriority.Object,
-                null,
+                mockPatient,
                 mockStaffId.Object,
                 mockStatus.Object,
                 mockOperationTypeId.Object
@@ -121,9 +124,10 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             // Arrange
             var mockRequestId = new Mock<RequestId>(Guid.NewGuid());
             var mockDeadLine = new Mock<DeadLine>(DateTime.Now.AddDays(7));
-            var mockPriority = new Mock<Priority>(1);
+            var mockPriority = new Mock<Priority>(Priority.PriorityType.LOW);
             var mockPatient = new Mock<RecordNumber>("12345");
-            var mockStatus = new Mock<Status>("Pending");
+            StaffId? mockStaffId = null;
+            var mockStatus = new Mock<Status>(Status.StatusType.PENDING);
             var mockOperationTypeId = new Mock<OperationTypeName>("Surgery");
 
             // Act & Assert
@@ -132,7 +136,7 @@ namespace BackOffice.DomainTests.Test.OperationRequest
                 mockDeadLine.Object,
                 mockPriority.Object,
                 mockPatient.Object,
-                null,
+                mockStaffId,
                 mockStatus.Object,
                 mockOperationTypeId.Object
             ));
@@ -144,10 +148,11 @@ namespace BackOffice.DomainTests.Test.OperationRequest
             // Arrange
             var mockRequestId = new Mock<RequestId>(Guid.NewGuid());
             var mockDeadLine = new Mock<DeadLine>(DateTime.Now.AddDays(7));
-            var mockPriority = new Mock<Priority>(1);
+            var mockPriority = new Mock<Priority>(Priority.PriorityType.LOW);
             var mockPatient = new Mock<RecordNumber>("12345");
             var mockStaffId = new Mock<StaffId>("D202412345");
-            var mockStatus = new Mock<Status>("Pending");
+            var mockStatus = new Mock<Status>(Status.StatusType.PENDING);
+            OperationTypeName? mockOperationTypeId = null;
 
             // Act & Assert
             Assert.Throws<BusinessRuleValidationException>(() => new BackOffice.Domain.OperationRequest.OperationRequest(
@@ -157,7 +162,7 @@ namespace BackOffice.DomainTests.Test.OperationRequest
                 mockPatient.Object,
                 mockStaffId.Object,
                 mockStatus.Object,
-                null
+                mockOperationTypeId
             ));
         }
     }

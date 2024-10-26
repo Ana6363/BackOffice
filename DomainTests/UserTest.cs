@@ -12,7 +12,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Throw_Exception_When_Email_Is_Empty()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockLastName = new Mock<Name>("Doe");
             var mockFullName = new Mock<Name>("John Doe");
@@ -23,7 +23,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Throw_Exception_When_Role_Is_Empty()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockLastName = new Mock<Name>("Doe");
             var mockFullName = new Mock<Name>("John Doe");
@@ -44,7 +44,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Throw_Exception_When_FirstName_Is_Null()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockLastName = new Mock<Name>("Doe");
             var mockFullName = new Mock<Name>("John Doe");
 
@@ -54,7 +54,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Throw_Exception_When_LastName_Is_Null()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockFullName = new Mock<Name>("John Doe");
 
@@ -64,7 +64,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Throw_Exception_When_FullName_Is_Null()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockLastName = new Mock<Name>("Doe");
 
@@ -74,7 +74,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Generate_Activation_Token()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockLastName = new Mock<Name>("Doe");
             var mockFullName = new Mock<Name>("John Doe");
@@ -89,7 +89,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Validate_Activation_Token()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockLastName = new Mock<Name>("Doe");
             var mockFullName = new Mock<Name>("John Doe");
@@ -103,7 +103,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Change_Role()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockLastName = new Mock<Name>("Doe");
             var mockFullName = new Mock<Name>("John Doe");
@@ -118,7 +118,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Throw_Exception_When_Changing_Role_Of_Inactive_User()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockLastName = new Mock<Name>("Doe");
             var mockFullName = new Mock<Name>("John Doe");
@@ -131,7 +131,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Mark_As_Inactive()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockLastName = new Mock<Name>("Doe");
             var mockFullName = new Mock<Name>("John Doe");
@@ -145,7 +145,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Mark_As_Active()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockLastName = new Mock<Name>("Doe");
             var mockFullName = new Mock<Name>("John Doe");
@@ -159,7 +159,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Mark_As_To_Be_Deleted()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockLastName = new Mock<Name>("Doe");
             var mockFullName = new Mock<Name>("John Doe");
@@ -173,7 +173,7 @@ namespace BackOffice.DomainTests.Users.Tests
         [Fact]
         public void User_Should_Update_Name()
         {
-            var mockPhoneNumber = new Mock<PhoneNumber>("123456789");
+            var mockPhoneNumber = new Mock<PhoneNumber>(123456789);
             var mockName = new Mock<Name>("John");
             var mockLastName = new Mock<Name>("Doe");
             var mockFullName = new Mock<Name>("John Doe");
@@ -184,8 +184,8 @@ namespace BackOffice.DomainTests.Users.Tests
 
             user.UpdateName(newFirstName.Object, newLastName.Object);
 
-            Assert.Equal("Jane", user.FirstName.ToString());
-            Assert.Equal("Smith", user.LastName.ToString());
+            Assert.Equal("Jane", user.FirstName.NameValue);
+            Assert.Equal("Smith", user.LastName.NameValue);
         }
     }
 }
