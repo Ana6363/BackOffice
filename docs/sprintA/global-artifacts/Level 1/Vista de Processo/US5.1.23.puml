@@ -1,0 +1,16 @@
+@startuml
+
+autonumber
+
+participant "<<system(c4)>> \nHospital" as sys
+
+-> sys: GET /operationType {operationTypeId}
+
+activate sys
+alt If successful
+    <- sys: 200 response code \n [{operationTypeId: id, name: "name", time: time, specializations: [...] }]
+else Error
+    <- sys: 500 response code
+end
+
+@enduml

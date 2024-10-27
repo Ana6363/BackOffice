@@ -1,0 +1,16 @@
+@startuml
+
+autonumber
+
+participant "<<system(c4)>> \nHospital" as sys
+
+-> sys: DELETE /operationType/{operationTypeId}
+
+activate sys
+alt If successful
+    <- sys: 204 response code
+else Not Found
+    <- sys: 404 response code
+end
+
+@enduml

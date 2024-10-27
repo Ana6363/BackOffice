@@ -1,0 +1,10 @@
+@startuml
+'https://plantuml.com/use-case-diagram
+
+:Admin: as Actor
+
+
+Actor -> (Remove an Operation Type)
+
+
+@enduml

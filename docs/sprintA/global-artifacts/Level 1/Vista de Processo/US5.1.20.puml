@@ -1,0 +1,27 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title US20 - Create an Operation Type
+
+
+autonumber
+
+participant "<<system(c4)>> \nHospital" as sys
+
+-> sys: POST /operationType { \n \
+    "name": name,  \n \
+    "time": time,\n \
+    "specializations": [\n \
+        { "name": specializationName1 },\n \
+    ]\n \
+
+
+activate sys
+alt If successful
+    <-sys: 201 response code
+else Error
+    <-sys: 400 response code
+end
+
+
+@enduml

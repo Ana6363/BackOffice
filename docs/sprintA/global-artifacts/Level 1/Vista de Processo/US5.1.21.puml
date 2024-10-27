@@ -1,0 +1,23 @@
+@startuml
+
+autonumber
+
+participant "<<system(c4)>> \nHospital" as sys
+
+-> sys: PUT /operationType { \n \
+    "id": id, \n \
+    "name": name,  \n \
+    "time": time, \n \
+    "specializations": [ \n \
+        { "name": specializationName },\n \
+    ]\n \
+}
+
+activate sys
+alt If successful
+    <- sys: 200 response code
+else Error
+    <- sys: 400 or 404 response code
+end
+
+@enduml

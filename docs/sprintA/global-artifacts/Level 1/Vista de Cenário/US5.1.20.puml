@@ -1,0 +1,12 @@
+@startuml
+'https://plantuml.com/use-case-diagram
+
+title US20 - Create an Operation Type
+
+:Admin: as Actor
+
+
+Actor -> (Create an Operation Type)
+
+
+@enduml
