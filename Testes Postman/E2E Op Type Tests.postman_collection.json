@@ -1,0 +1,234 @@
+{
+	"info": {
+		"_postman_id": "e1bb5e68-4564-45d2-815f-fe3bd85a77a8",
+		"name": "E2E Op Type Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38420964"
+	},
+	"item": [
+		{
+			"name": "Create Op Type - Admin Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const randomNumber = Math.floor(Math.random() * 90) + 10;\r",
+							"\r",
+							"pm.environment.set(\"operationTypeName\", `${randomNumber}Surgery`);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Request was successful\", function () {\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.environment.set(\"operationTypeId\", jsonData.operationType.operationTypeId);\r",
+							"pm.environment.set(\"operationTypeName\", jsonData.operationType.operationTypeName);\r",
+							"\r",
+							"pm.test(\"operationTypeId and operationTypeName stored successfully\", function () {\r",
+							"    pm.expect(pm.environment.get(\"operationTypeId\")).to.eql(jsonData.operationType.operationTypeId);\r",
+							"    pm.expect(pm.environment.get(\"operationTypeName\")).to.eql(jsonData.operationType.operationTypeName);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"operationTypeName\": \"{{operationTypeName}}\",\r\n  \"operationTime\": 4,\r\n  \"specializations\": [\r\n    {\r\n      \"name\": \"Cardiology\"\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/api/operationType/Create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"api",
+						"operationType",
+						"Create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Op Types - Admin Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains an operationType array\", () => {\r",
+							"    pm.expect(jsonData).to.have.property(\"operationType\");\r",
+							"    pm.expect(jsonData.operationType).to.have.property(\"$values\").that.is.an(\"array\");\r",
+							"});\r",
+							"\r",
+							"const firstOperationType = jsonData.operationType.$values[0];\r",
+							"\r",
+							"pm.test(\"First operationType has valid properties\", () => {\r",
+							"    pm.expect(firstOperationType).to.have.property(\"operationTypeId\").that.is.a(\"string\").and.is.not.empty;\r",
+							"    pm.expect(firstOperationType).to.have.property(\"operationTypeName\").that.matches(/^(?:\\d{2}Surgery|[A-Za-z\\s]+)$/);\r",
+							"    pm.expect(firstOperationType).to.have.property(\"operationTime\").that.is.a(\"number\").and.is.above(0);\r",
+							"    pm.expect(firstOperationType).to.have.property(\"specializations\").that.is.an(\"object\");\r",
+							"});\r",
+							"\r",
+							"const firstSpecialization = firstOperationType.specializations.$values[0];\r",
+							"\r",
+							"pm.test(\"First specialization has valid properties\", () => {\r",
+							"    pm.expect(firstSpecialization).to.have.property(\"specializationId\").that.is.a(\"string\").and.is.not.empty;\r",
+							"    pm.expect(firstSpecialization).to.have.property(\"name\").that.is.a(\"string\").and.is.not.empty;\r",
+							"    pm.expect(firstSpecialization).to.have.property(\"operationTypeId\").that.equals(firstOperationType.operationTypeId);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5184/api/operationType/GetAllOperationTypes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"api",
+						"operationType",
+						"GetAllOperationTypes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Op Type - Admin Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const randomDigits = Math.floor(Math.random() * 90 + 10);\r",
+							"\r",
+							"const operationTypeName = `Changed${randomDigits}`;\r",
+							"pm.environment.set(\"operationTypeName\", operationTypeName);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"const expectedOperationTypeName = pm.environment.get(\"operationTypeName\");\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"OperationTypeName matches generated value\", function () {\r",
+							"    pm.expect(jsonData.operationTypeName).to.eql(expectedOperationTypeName);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"OperationTime is 3\", function () {\r",
+							"    pm.expect(jsonData.operationTime).to.equal(3);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Specialization is Cardiology\", function () {\r",
+							"    pm.expect(jsonData.specializations.$values[0].name).to.eql(\"Cardiology\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"operationTypeId\": \"{{operationTypeId}}\",\r\n  \"operationTypeName\": \"{{operationTypeName}}\",\r\n  \"operationTime\": 3,\r\n  \"specializations\": [\r\n    {\r\n      \"name\": \"Cardiology\"\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/api/operationType/Update",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"api",
+						"operationType",
+						"Update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Op Type - Admin Copy",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5184/api/operationType/{{operationTypeId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"api",
+						"operationType",
+						"{{operationTypeId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

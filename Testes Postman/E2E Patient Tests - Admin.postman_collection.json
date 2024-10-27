@@ -1,0 +1,403 @@
+{
+	"info": {
+		"_postman_id": "b5d0f8bc-ec18-4ae6-b893-d687e4046e0c",
+		"name": "E2E Patient Tests - Admin",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38420964"
+	},
+	"item": [
+		{
+			"name": "Create Patient - Admin Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const randomPhoneNumber = Math.floor(100000000 + Math.random() * 900000000); \r",
+							"pm.environment.set(\"randomPhoneNumber\", randomPhoneNumber);\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parse response JSON\r",
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"// Check if the response was successful\r",
+							"pm.test(\"Request was successful\", function () {\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"// Store userId and recordNumber in environment variables\r",
+							"pm.environment.set(\"userId\", jsonData.patient.userId);\r",
+							"pm.environment.set(\"recordNumber\", jsonData.patient.recordNumber);\r",
+							"\r",
+							"// Optional: Confirm values were stored\r",
+							"pm.test(\"userId and recordNumber stored successfully\", function () {\r",
+							"    pm.expect(pm.environment.get(\"userId\")).to.eql(jsonData.patient.userId);\r",
+							"    pm.expect(pm.environment.get(\"recordNumber\")).to.eql(jsonData.patient.recordNumber);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyYWZvaWRlMThAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJleHAiOjE3MzAwMTYxMjMsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.-3_0pN-D2Jr5SOiF2KPTkDQ-wQwezgAMVQ0XOPSWfA0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"dateOfBirth\": \"2024-10-26T04:27:41.025Z\",\r\n  \"phoneNumber\": {{randomPhoneNumber}},\r\n  \"emergencyContact\": 123321123,\r\n  \"gender\": \"MALE\",\r\n  \"userId\": \"user_{{$guid}}@gmail.com\",\r\n  \"firstName\": \"string\",\r\n  \"lastName\": \"string\",\r\n  \"fullName\": \"string\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/patient/create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"patient",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get/Filter patients - Admin Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response has the expected structure\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property(\"patients\");\r",
+							"    pm.expect(jsonData.patients).to.have.property(\"$values\");\r",
+							"    pm.expect(jsonData.patients.$values).to.be.an(\"array\"); \r",
+							"});\r",
+							"\r",
+							"pm.test(\"All patients have required fields\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    var patientsArray = jsonData.patients.$values;\r",
+							"\r",
+							"    patientsArray.forEach(function (patient) {\r",
+							"        pm.expect(patient).to.have.property(\"recordNumber\");\r",
+							"        pm.expect(patient).to.have.property(\"userId\");\r",
+							"        pm.expect(patient).to.have.property(\"dateOfBirth\");\r",
+							"        pm.expect(patient).to.have.property(\"emergencyContact\");\r",
+							"        pm.expect(patient).to.have.property(\"gender\");\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyYWZvaWRlMThAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJleHAiOjE3MzAwMTYxMjMsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.-3_0pN-D2Jr5SOiF2KPTkDQ-wQwezgAMVQ0XOPSWfA0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5184/patient/filter?UserId={{userId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"patient",
+						"filter"
+					],
+					"query": [
+						{
+							"key": "UserId",
+							"value": "{{userId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Patient Profile - Admin Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const randomPhoneNumber = Math.floor(100000000 + Math.random() * 900000000); \r",
+							"pm.environment.set(\"randomPhoneNumber\", randomPhoneNumber);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Update operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Update operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyYWZvaWRlMThAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJleHAiOjE3MzAwMTYxMjMsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.-3_0pN-D2Jr5SOiF2KPTkDQ-wQwezgAMVQ0XOPSWfA0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"recordNumber\": \"{{recordNumber}}\",\r\n  \"dateOfBirth\": \"2024-10-26T03:52:26.389Z\",\r\n  \"phoneNumber\": {{randomPhoneNumber}},\r\n  \"emergencyContact\": 123456789,\r\n  \"gender\": \"MALE\",\r\n  \"userId\": \"{{userId}}\",\r\n  \"firstName\": \"string\",\r\n  \"lastName\": \"string\",\r\n  \"fullName\": \"string\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/patient/update",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"patient",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Mark for deletion - Admin Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response has the expected structure\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property(\"success\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"recordNumber\": \"{{recordNumber}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/patient/markToDelete",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"patient",
+						"markToDelete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Patient - Admin Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Delete operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.sendRequest({\r",
+							"    url: \"http://localhost:5184/patient/filter?recordNumber=00002\", \r",
+							"    method: \"GET\"\r",
+							"}, function (err, res) {\r",
+							"    pm.test(\"Patient record still exists in the system\", function () {\r",
+							"        pm.expect(res.code).to.eql(200);  \r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyYWZvaWRlMThAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJleHAiOjE3MzAwMTYxMjMsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.-3_0pN-D2Jr5SOiF2KPTkDQ-wQwezgAMVQ0XOPSWfA0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5184/patient/delete/{{recordNumber}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"patient",
+						"delete",
+						"{{recordNumber}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyYWZvaWRlMThAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJleHAiOjE3MzAwMTYxMjMsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.-3_0pN-D2Jr5SOiF2KPTkDQ-wQwezgAMVQ0XOPSWfA0",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

@@ -1,0 +1,1740 @@
+{
+	"info": {
+		"_postman_id": "48a04bed-8008-412b-9e45-6853fcaa6d1d",
+		"name": "Container Integration Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38420964"
+	},
+	"item": [
+		{
+			"name": "Patient",
+			"item": [
+				{
+					"name": "Delete Patient - Patient",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Delete operation was initiated successfully\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"const recordNumberToDelete = \"00011\";\r",
+									"pm.environment.set(\"recordNumberToDelete\", recordNumberToDelete);\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `http://localhost:5184/patient/filter?recordNumber=${recordNumberToDelete}`,\r",
+									"    method: \"GET\"\r",
+									"}, function (err, res) {\r",
+									"    pm.test(\"Patient record still exists in the system after delete initiation\", function () {\r",
+									"        pm.expect(res).to.have.status(200);\r",
+									"        var responseData = res.json();\r",
+									"        pm.expect(responseData.patients.$values.some(patient => patient.recordNumber === recordNumberToDelete)).to.be.true;\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"const unauthorizedRecordNumber = \"00002\";\r",
+									"pm.sendRequest({\r",
+									"    url: `http://localhost:5184/patient/delete/${unauthorizedRecordNumber}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Content-Type\": \"application/json\",\r",
+									"        \"Authorization\": \"Bearer INVALID_OR_MISSING_TOKEN\"\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    pm.test(\"Unauthorized delete attempt is blocked\", function () {\r",
+									"        pm.expect(res).to.have.status(400);\r",
+									"        var responseData = res.json();\r",
+									"        pm.expect(responseData.success).to.be.false;\r",
+									"        pm.expect(responseData.message).to.satisfy(msg => msg.includes(\"not authorized to delete this profile\") || msg.includes(\"User email not found in token.\"));\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyYWZhMTcxMjAwMkBnbWFpbC5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQYXRpZW50IiwiZXhwIjoxNzI5OTMzOTQ0LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjUxODQiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUxODQifQ.BCKeLz9RKSbeMf_oG-jZ9AW8kjyBynsPuhF0VZSAuLY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5184/patient/delete/00011",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"patient",
+								"delete",
+								"00011"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Patient Profile - Patient",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const randomPhoneNumber = Math.floor(100000000 + Math.random() * 900000000); \r",
+									"pm.environment.set(\"randomPhoneNumber\", randomPhoneNumber);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Pre-request setup for random phone number\r",
+									"if (!pm.environment.has(\"randomPhoneNumber\")) {\r",
+									"    const randomPhoneNumber = Math.floor(100000000 + Math.random() * 900000000);\r",
+									"    pm.environment.set(\"randomPhoneNumber\", randomPhoneNumber);\r",
+									"}\r",
+									"\r",
+									"// Test Script\r",
+									"// Ensure status code is 200\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Check that the update operation was successful\r",
+									"pm.test(\"Update operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"// Validate that response data matches the input data\r",
+									"pm.test(\"Updated patient data matches expected values\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.patient.recordNumber).to.eql(\"00011\");\r",
+									"    pm.expect(jsonData.patient.dateOfBirth).to.eql(\"2024-10-26T03:52:26.389\");\r",
+									"    pm.expect(jsonData.patient.emergencyContact).to.eql(123456789);\r",
+									"    pm.expect(jsonData.patient.gender).to.eql(\"MALE\");\r",
+									"    pm.expect(jsonData.patient.userId).to.eql(\"rafa1712002@gmail.com\");\r",
+									"});\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: \"http://localhost:5184/patient/update\",\r",
+									"    method: \"PUT\",\r",
+									"    header: {\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\r",
+									"            \"recordNumber\": \"00011\",\r",
+									"            \"dateOfBirth\": \"2024-10-26T03:52:26.389Z\",\r",
+									"            \"phoneNumber\": pm.environment.get(\"randomPhoneNumber\"),\r",
+									"            \"emergencyContact\": 123456789,\r",
+									"            \"gender\": \"MALE\",\r",
+									"            \"userId\": \"unauthorized_user@gmail.com\", // Simulate an unauthorized user\r",
+									"            \"firstName\": \"string\",\r",
+									"            \"lastName\": \"string\",\r",
+									"            \"fullName\": \"string\"\r",
+									"        })\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    pm.test(\"Unauthorized update attempt is blocked\", function () {\r",
+									"        pm.expect(res).to.have.status(400); // Status 400 based on the observed response\r",
+									"\r",
+									"        var responseData = res.json();\r",
+									"        pm.expect(responseData.success).to.be.false;\r",
+									"        pm.expect(responseData.message).to.satisfy(function(message) {\r",
+									"            return message.includes(\"not authorized to update this profile\") || \r",
+									"                   message.includes(\"User email not found in token.\");\r",
+									"        });\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyYWZhMTcxMjAwMkBnbWFpbC5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQYXRpZW50IiwiZXhwIjoxNzI5OTMzOTQ0LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjUxODQiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUxODQifQ.BCKeLz9RKSbeMf_oG-jZ9AW8kjyBynsPuhF0VZSAuLY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"recordNumber\": \"00011\",\r\n  \"dateOfBirth\": \"2024-10-26T03:52:26.389Z\",\r\n  \"phoneNumber\": {{randomPhoneNumber}},\r\n  \"emergencyContact\": 123456789,\r\n  \"gender\": \"MALE\",\r\n  \"userId\": \"rafa1712002@gmail.com\",\r\n  \"firstName\": \"string\",\r\n  \"lastName\": \"string\",\r\n  \"fullName\": \"string\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/patient/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"patient",
+								"update"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Update Patient Profile - Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const randomPhoneNumber = Math.floor(100000000 + Math.random() * 900000000); \r",
+									"pm.environment.set(\"randomPhoneNumber\", randomPhoneNumber);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Update operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Update operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyYWZvaWRlMThAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJleHAiOjE3Mjk5MzA5OTcsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.16jNEzPyO4aZpzNoj9YxmUXIobtm8vIQg7WdfFQSBMc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"recordNumber\": \"00002\",\r\n  \"dateOfBirth\": \"2024-10-26T03:52:26.389Z\",\r\n  \"phoneNumber\": {{randomPhoneNumber}},\r\n  \"emergencyContact\": 123456789,\r\n  \"gender\": \"MALE\",\r\n  \"userId\": \"b@gmail.com\",\r\n  \"firstName\": \"string\",\r\n  \"lastName\": \"string\",\r\n  \"fullName\": \"string\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/patient/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"patient",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Patient - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Delete operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: \"http://localhost:5184/patient/filter?recordNumber=00002\", \r",
+									"    method: \"GET\"\r",
+									"}, function (err, res) {\r",
+									"    pm.test(\"Patient record still exists in the system\", function () {\r",
+									"        pm.expect(res.code).to.eql(200);  \r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyYWZvaWRlMThAZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJleHAiOjE3Mjk5MzA5OTcsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.16jNEzPyO4aZpzNoj9YxmUXIobtm8vIQg7WdfFQSBMc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5184/patient/delete/00002",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"patient",
+								"delete",
+								"00002"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Backoffice User - Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"\r",
+									"if (!pm.environment.get(\"randomPhoneNumber\")) {\r",
+									"    const randomPhoneNumber = Math.floor(100000000 + Math.random() * 900000000);\r",
+									"    pm.environment.set(\"randomPhoneNumber\", randomPhoneNumber);\r",
+									"}\r",
+									"\r",
+									"\r",
+									"if (!pm.environment.get(\"guid\")) {\r",
+									"    pm.environment.set(\"guid\", pm.variables.replaceIn(\"{{$guid}}\"));\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Creation operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Returned data matches expected values\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    const expectedPhoneNumber = parseInt(pm.environment.get(\"randomPhoneNumber\"));\r",
+									"    pm.expect(jsonData.user.role).to.eql(\"Admin\");\r",
+									"    pm.expect(jsonData.user.active).to.eql(false);\r",
+									"    pm.expect(jsonData.user.phoneNumber).to.eql(expectedPhoneNumber);\r",
+									"    pm.expect(jsonData.user.firstName).to.eql(\"first\");\r",
+									"    pm.expect(jsonData.user.lastName).to.eql(\"last\");\r",
+									"    pm.expect(jsonData.user.fullName).to.eql(\"first last\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"role\": \"Nurse\",\r\n  \"active\": false,\r\n  \"phoneNumber\": {{randomPhoneNumber}},\r\n  \"firstName\": \"first\",\r\n  \"lastName\": \"last\",\r\n  \"fullName\": \"first last\",\r\n  \"activationToken\": null,\r\n  \"tokenExpiration\": null,\r\n  \"isToBeDeleted\": false\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/auth/send-conf-admin",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"auth",
+								"send-conf-admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send confirmation email to patient",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Email activation request was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true; \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/auth/send-activation?email=rafa172002@gmail.com",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"auth",
+								"send-activation"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "rafa172002@gmail.com"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Patient - Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const randomPhoneNumber = Math.floor(100000000 + Math.random() * 900000000); \r",
+									"pm.environment.set(\"randomPhoneNumber\", randomPhoneNumber);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User creation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Returned data matches expected values\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.patient.dateOfBirth).to.eql(\"2024-10-26T04:27:41.025Z\");\r",
+									"    pm.expect(jsonData.patient.emergencyContact).to.eql(123321123);\r",
+									"    pm.expect(jsonData.patient.gender).to.eql(\"MALE\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"dateOfBirth\": \"2024-10-26T04:27:41.025Z\",\r\n  \"phoneNumber\": {{randomPhoneNumber}},\r\n  \"emergencyContact\": 123321123,\r\n  \"gender\": \"MALE\",\r\n  \"userId\": \"user_{{$guid}}@gmail.com\",\r\n  \"firstName\": \"string\",\r\n  \"lastName\": \"string\",\r\n  \"fullName\": \"string\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/patient/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"patient",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get/Filter patients - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response has the expected structure\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property(\"patients\");\r",
+									"    pm.expect(jsonData.patients).to.have.property(\"$values\");\r",
+									"    pm.expect(jsonData.patients.$values).to.be.an(\"array\"); \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Patient data matches expected values\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var patientsArray = jsonData.patients.$values;\r",
+									"\r",
+									"    pm.expect(patientsArray.length).to.be.greaterThan(0);\r",
+									"\r",
+									"    var firstPatient = patientsArray[0];\r",
+									"\r",
+									"    pm.expect(firstPatient).to.have.property(\"recordNumber\");\r",
+									"    pm.expect(firstPatient).to.have.property(\"userId\");\r",
+									"    pm.expect(firstPatient).to.have.property(\"dateOfBirth\");\r",
+									"    pm.expect(firstPatient).to.have.property(\"emergencyContact\");\r",
+									"    pm.expect(firstPatient).to.have.property(\"gender\");\r",
+									"\r",
+									"    pm.expect(firstPatient.recordNumber).to.eql(\"00002\");\r",
+									"    pm.expect(firstPatient.userId).to.eql(\"b@gmail.com\");\r",
+									"    pm.expect(firstPatient.dateOfBirth).to.eql(\"2024-10-26T03:52:26.389\");\r",
+									"    pm.expect(firstPatient.emergencyContact).to.eql(123456789);\r",
+									"    pm.expect(firstPatient.gender).to.eql(\"MALE\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"All patients have required fields\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var patientsArray = jsonData.patients.$values;\r",
+									"\r",
+									"    patientsArray.forEach(function (patient) {\r",
+									"        pm.expect(patient).to.have.property(\"recordNumber\");\r",
+									"        pm.expect(patient).to.have.property(\"userId\");\r",
+									"        pm.expect(patient).to.have.property(\"dateOfBirth\");\r",
+									"        pm.expect(patient).to.have.property(\"emergencyContact\");\r",
+									"        pm.expect(patient).to.have.property(\"gender\");\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5184/patient/filter",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"patient",
+								"filter"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark for deletion - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response has the expected structure\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property(\"success\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"recordNumber\": \"00002\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/patient/markToDelete",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"patient",
+								"markToDelete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Staff Profile - Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (!pm.environment.has(\"licenseNumber\")) {\r",
+									"    pm.environment.set(\"licenseNumber\", Math.floor(10000 + Math.random() * 90000).toString()); // 5-digit license number\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Creation operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Staff data matches expected values\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    const expectedLicenseNumber = pm.environment.get(\"licenseNumber\");\r",
+									"\r",
+									"    pm.expect(jsonData.staff.staffId).to.match(/^[DON][0-9]{9}$/);\r",
+									"    pm.expect(jsonData.staff.licenseNumber).to.eql(expectedLicenseNumber);\r",
+									"    pm.expect(jsonData.staff.specialization).to.eql(\"Cardiology\");\r",
+									"    pm.expect(jsonData.staff.email).to.match(/@myhospital\\.com$/);\r",
+									"    pm.expect(jsonData.staff.status).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Available slots are as expected\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.staff.availableSlots.$values).to.have.lengthOf(1);\r",
+									"\r",
+									"    var slot = jsonData.staff.availableSlots.$values[0];\r",
+									"    pm.expect(slot.startTime).to.eql(\"2024-11-26T04:56:49.471Z\");\r",
+									"    pm.expect(slot.endTime).to.eql(\"2024-11-26T07:56:49.471Z\");\r",
+									"    pm.expect(slot.staffId).to.eql(jsonData.staff.staffId);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"staffId\": \"N202480106\",\r\n \"licenseNumber\": \"{{licenseNumber}}\",\r\n  \"specialization\": \"Cardiology\",\r\n  \"phoneNumber\": 804426467,\r\n  \"availableSlots\": [\r\n    {\r\n      \"startTime\": \"2024-11-26T04:56:49.471Z\",\r\n      \"endTime\": \"2024-11-26T07:56:49.471Z\"\r\n    }\r\n  ],\r\n  \"status\": true,\r\n  \"firstName\": \"string\",\r\n  \"lastName\": \"string\",\r\n  \"fullName\": \"string\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/staff/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"staff",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get/Filter staff - Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (!pm.environment.has(\"staffId\")) {\r",
+									"    pm.environment.set(\"staffId\", \"D202468843\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Filter operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"const expectedStaffId = pm.environment.get(\"staffId\");\r",
+									"\r",
+									"const specializations = [\r",
+									"    \"Cardiology\",\r",
+									"    \"Orthopedics\",\r",
+									"    \"Dermatology\",\r",
+									"    \"Neurology\",\r",
+									"    \"Pediatrics\",\r",
+									"    \"Radiology\",\r",
+									"    \"GeneralSurgery\",\r",
+									"    \"Anesthesiology\",\r",
+									"    \"Oncology\",\r",
+									"    \"Ophthalmology\",\r",
+									"    \"Psychiatry\",\r",
+									"    \"Urology\",\r",
+									"    \"Endocrinology\",\r",
+									"    \"Gastroenterology\",\r",
+									"    \"Rheumatology\",\r",
+									"    \"Pulmonology\",\r",
+									"    \"Nephrology\",\r",
+									"    \"ObstetricsGynecology\",\r",
+									"    \"EmergencyMedicine\",\r",
+									"    \"FamilyMedicine\"\r",
+									"];\r",
+									"\r",
+									"pm.test(\"Staff data matches expected values\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(jsonData.staffMembers.$values).to.be.an('array').that.is.not.empty;\r",
+									"    var staffMember = jsonData.staffMembers.$values.find(s => s.staffId === expectedStaffId);\r",
+									"\r",
+									"    pm.expect(staffMember).to.exist;\r",
+									"    pm.expect(staffMember.licenseNumber).to.eql(\"12547\");\r",
+									"    pm.expect(staffMember.specialization).to.be.oneOf(specializations);\r",
+									"    pm.expect(staffMember.status).to.be.true;\r",
+									"    pm.expect(staffMember.firstName).to.eql(\"string\");\r",
+									"    pm.expect(staffMember.lastName).to.eql(\"string\");\r",
+									"    pm.expect(staffMember.fullName).to.eql(\"string\");\r",
+									"    pm.expect(staffMember.phoneNumber).to.eql(123323321);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Available slots are correctly associated with staff\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var staffMember = jsonData.staffMembers.$values.find(s => s.staffId === expectedStaffId);\r",
+									"\r",
+									"    pm.expect(staffMember.availableSlots.$values).to.be.an('array').that.is.not.empty;\r",
+									"\r",
+									"    var slot = staffMember.availableSlots.$values[0];\r",
+									"    pm.expect(slot.startTime).to.be.a(\"string\");\r",
+									"    pm.expect(slot.endTime).to.be.a(\"string\");\r",
+									"    pm.expect(slot.staffId).to.eql(expectedStaffId);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/staff/filter?staffId=d202468843",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"staff",
+								"filter"
+							],
+							"query": [
+								{
+									"key": "staffId",
+									"value": "d202468843"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Staff Profile - Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"randomPhoneNumber\", Math.floor(100000000+ Math.random() * 90000000));\r",
+									"\r",
+									"// Define the list of specializations based on your enum\r",
+									"const specializations = [\r",
+									"    \"Cardiology\",\r",
+									"    \"Orthopedics\",\r",
+									"    \"Dermatology\",\r",
+									"    \"Neurology\",\r",
+									"    \"Pediatrics\",\r",
+									"    \"Radiology\",\r",
+									"    \"GeneralSurgery\",\r",
+									"    \"Anesthesiology\",\r",
+									"    \"Oncology\",\r",
+									"    \"Ophthalmology\",\r",
+									"    \"Psychiatry\",\r",
+									"    \"Urology\",\r",
+									"    \"Endocrinology\",\r",
+									"    \"Gastroenterology\",\r",
+									"    \"Rheumatology\",\r",
+									"    \"Pulmonology\",\r",
+									"    \"Nephrology\",\r",
+									"    \"ObstetricsGynecology\",\r",
+									"    \"EmergencyMedicine\",\r",
+									"    \"FamilyMedicine\"\r",
+									"];\r",
+									"\r",
+									"const randomSpecialization = specializations[Math.floor(Math.random() * specializations.length)];\r",
+									"\r",
+									"pm.environment.set(\"specialization\", randomSpecialization);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check for successful status code\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Check for successful update operation\r",
+									"pm.test(\"Update operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"// Check if updated staff data matches expected values\r",
+									"pm.test(\"Staff data matches updated values\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    const expectedSpecialization = pm.environment.get(\"specialization\");\r",
+									"\r",
+									"    pm.expect(jsonData.staff.staffId).to.eql(\"D202468843\");\r",
+									"    pm.expect(jsonData.staff.licenseNumber).to.eql(\"12547\");\r",
+									"    pm.expect(jsonData.staff.specialization).to.eql(expectedSpecialization);\r",
+									"    pm.expect(jsonData.staff.status).to.be.true;\r",
+									"});\r",
+									"\r",
+									"// Set the staff ID if not already set\r",
+									"if (!pm.environment.has(\"staffId\")) {\r",
+									"    pm.environment.set(\"staffId\", \"D202468843\");\r",
+									"}\r",
+									"\r",
+									"const staffId = pm.environment.get(\"staffId\");\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `http://localhost:5184/staff/filter?staffId=${staffId}`,\r",
+									"    method: \"GET\"\r",
+									"}, function (err, res) {\r",
+									"    pm.test(\"Slot with ID 21 updated for updated staff\", function () {\r",
+									"        pm.expect(res).to.have.status(200);\r",
+									"        var responseData = res.json();\r",
+									"\r",
+									"        const staffMember = responseData.staffMembers.$values.find(s => s.staffId === staffId);\r",
+									"        pm.expect(staffMember).to.exist;\r",
+									"        pm.expect(staffMember.availableSlots.$values).to.be.an('array').that.is.not.empty;\r",
+									"\r",
+									"        const slot = staffMember.availableSlots.$values.find(slot => slot.id === 21);\r",
+									"        pm.expect(slot).to.exist;\r",
+									"        pm.expect(slot.startTime).to.eql(\"2024-11-26T05:05:50\");\r",
+									"        pm.expect(slot.endTime).to.eql(\"2024-11-26T07:05:50\");\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"staffId\": \"D202468843\",\r\n  \"licenseNumber\": \"12547\",\r\n  \"specialization\": \"{{specialization}}\",\r\n  \"phoneNumber\": {{randomPhoneNumber}},\r\n  \"availableSlots\": [\r\n    {\r\n      \"id\": 21,\r\n      \"startTime\": \"2024-11-26T05:05:50.192Z\",\r\n      \"endTime\": \"2024-11-26T07:05:50.192Z\"\r\n    }\r\n  ],\r\n  \"status\": true,\r\n  \"firstName\": \"string\",\r\n  \"lastName\": \"string\",\r\n  \"fullName\": \"string\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/staff/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"staff",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate Staff - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const staffId = \"D202425081\";\r",
+									"pm.environment.set(\"staffId\", staffId);\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Deactivate operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Correct staff member was deactivated\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.staff).to.exist;\r",
+									"    pm.expect(jsonData.staff.staffId).to.eql(staffId);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Staff member status is set to inactive\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.staff.status).to.be.false;\r",
+									"});\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `http://localhost:5184/staff/filter?staffId=${staffId}`,\r",
+									"    method: \"GET\"\r",
+									"}, function (err, res) {\r",
+									"    pm.test(\"Staff member is inactive after deactivation\", function () {\r",
+									"        pm.expect(res).to.have.status(200);\r",
+									"        var responseData = res.json();\r",
+									"        const staffMember = responseData.staffMembers.$values.find(s => s.staffId === staffId);\r",
+									"        \r",
+									"        pm.expect(staffMember).to.exist;\r",
+									"        pm.expect(staffMember.status).to.be.true;  // 0 means its deactivated\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"staffId\": \"D202425081\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/staff/deactivate",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"staff",
+								"deactivate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Op Type - Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const randomNumber = Math.floor(Math.random() * 90) + 10;\r",
+									"\r",
+									"pm.environment.set(\"operationTypeName\", `${randomNumber}Surgery`);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Success is true\", function () {\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"OperationTypeName matches generated value\", function () {\r",
+									"    pm.expect(jsonData.operationType.operationTypeName).to.equal(pm.environment.get(\"operationTypeName\"));\r",
+									"});\r",
+									"\r",
+									"pm.test(\"OperationTime is 4\", function () {\r",
+									"    pm.expect(jsonData.operationType.operationTime).to.equal(4);\r",
+									"});\r",
+									"\r",
+									"const allowedSpecializations = [\r",
+									"    \"Cardiology\",\r",
+									"    \"Orthopedics\",\r",
+									"    \"Dermatology\",\r",
+									"    \"Neurology\",\r",
+									"    \"Pediatrics\",\r",
+									"    \"Radiology\",\r",
+									"    \"GeneralSurgery\",\r",
+									"    \"Anesthesiology\",\r",
+									"    \"Oncology\",\r",
+									"    \"Ophthalmology\",\r",
+									"    \"Psychiatry\",\r",
+									"    \"Urology\",\r",
+									"    \"Endocrinology\",\r",
+									"    \"Gastroenterology\",\r",
+									"    \"Rheumatology\",\r",
+									"    \"Pulmonology\",\r",
+									"    \"Nephrology\",\r",
+									"    \"ObstetricsGynecology\",\r",
+									"    \"EmergencyMedicine\",\r",
+									"    \"FamilyMedicine\"\r",
+									"];\r",
+									"\r",
+									"pm.test(\"Specialization name is valid\", function () {\r",
+									"    jsonData.operationType.specializations.$values.forEach(spec => {\r",
+									"        pm.expect(allowedSpecializations).to.include(spec.name);\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"operationTypeName\": \"{{operationTypeName}}\",\r\n  \"operationTime\": 4,\r\n  \"specializations\": [\r\n    {\r\n      \"name\": \"Cardiology\"\r\n    }\r\n  ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/api/operationType/Create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"api",
+								"operationType",
+								"Create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Op Type - Admin",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const randomDigits = Math.floor(Math.random() * 90 + 10);\r",
+									"\r",
+									"const operationTypeName = `Changed${randomDigits}`;\r",
+									"pm.environment.set(\"operationTypeName\", operationTypeName);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();\r",
+									"\r",
+									"const expectedOperationTypeName = pm.environment.get(\"operationTypeName\");\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"OperationTypeId is correct\", function () {\r",
+									"    pm.expect(jsonData.operationTypeId).to.eql(\"f8386cb3-9e78-4b9b-af2b-db2c3db0f329\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"OperationTypeName matches generated value\", function () {\r",
+									"    pm.expect(jsonData.operationTypeName).to.eql(expectedOperationTypeName);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"OperationTime is 3\", function () {\r",
+									"    pm.expect(jsonData.operationTime).to.equal(3);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Specialization is Cardiology\", function () {\r",
+									"    pm.expect(jsonData.specializations.$values[0].name).to.eql(\"Cardiology\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"operationTypeId\": \"f8386cb3-9e78-4b9b-af2b-db2c3db0f329\",\r\n  \"operationTypeName\": \"{{operationTypeName}}\",\r\n  \"operationTime\": 3,\r\n  \"specializations\": [\r\n    {\r\n      \"name\": \"Cardiology\"\r\n    }\r\n  ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/api/operationType/Update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"api",
+								"operationType",
+								"Update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Op Type - Admin",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5184/api/operationType/{2affd50a-768a-4cf3-a71c-2144ac5f852b}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"api",
+								"operationType",
+								"{2affd50a-768a-4cf3-a71c-2144ac5f852b}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Op Types - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response contains an operationType array\", () => {\r",
+									"    pm.expect(jsonData).to.have.property(\"operationType\");\r",
+									"    pm.expect(jsonData.operationType).to.have.property(\"$values\").that.is.an(\"array\");\r",
+									"});\r",
+									"\r",
+									"const firstOperationType = jsonData.operationType.$values[0];\r",
+									"\r",
+									"pm.test(\"First operationType has valid properties\", () => {\r",
+									"    pm.expect(firstOperationType).to.have.property(\"operationTypeId\").that.is.a(\"string\").and.is.not.empty;\r",
+									"    pm.expect(firstOperationType).to.have.property(\"operationTypeName\").that.matches(/^(?:\\d{2}Surgery|[A-Za-z\\s]+)$/);\r",
+									"    pm.expect(firstOperationType).to.have.property(\"operationTime\").that.is.a(\"number\").and.is.above(0);\r",
+									"    pm.expect(firstOperationType).to.have.property(\"specializations\").that.is.an(\"object\");\r",
+									"});\r",
+									"\r",
+									"const firstSpecialization = firstOperationType.specializations.$values[0];\r",
+									"\r",
+									"pm.test(\"First specialization has valid properties\", () => {\r",
+									"    pm.expect(firstSpecialization).to.have.property(\"specializationId\").that.is.a(\"string\").and.is.not.empty;\r",
+									"    pm.expect(firstSpecialization).to.have.property(\"name\").that.is.a(\"string\").and.is.not.empty;\r",
+									"    pm.expect(firstSpecialization).to.have.property(\"operationTypeId\").that.equals(firstOperationType.operationTypeId);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5184/api/operationType/GetAllOperationTypes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"api",
+								"operationType",
+								"GetAllOperationTypes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Op Type By Id - Admin",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5184/api/operationType/GetByID/{f8386cb3-9e78-4b9b-af2b-db2c3db0f329111}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"api",
+								"operationType",
+								"GetByID",
+								"{f8386cb3-9e78-4b9b-af2b-db2c3db0f329111}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Doctor",
+			"item": [
+				{
+					"name": "Create Op Request - Doctor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response has the expected structure\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property(\"success\");\r",
+									"    pm.expect(jsonData).to.have.property(\"operationRequest\");\r",
+									"\r",
+									"    var operationRequest = jsonData.operationRequest;\r",
+									"    pm.expect(operationRequest).to.have.property(\"requestId\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"deadLine\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"priority\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"recordNumber\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"staffId\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"status\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"operationType\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Returned data matches expected values\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var operationRequest = jsonData.operationRequest;\r",
+									"\r",
+									"    pm.expect(operationRequest.deadLine).to.eql(\"2024-11-29T06:05:23.383Z\");\r",
+									"    pm.expect(operationRequest.priority).to.eql(\"LOW\");\r",
+									"    pm.expect(operationRequest.recordNumber).to.eql(\"00005\");\r",
+									"    pm.expect(operationRequest.staffId).to.eql(\"D202468843\");\r",
+									"    pm.expect(operationRequest.status).to.eql(\"PENDING\");\r",
+									"    pm.expect(operationRequest.operationType).to.eql(\"Surgery\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJkMjAyNDY4ODQzQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlBhdGllbnQiLCJleHAiOjE3Mjk5MzMyNDIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.B6-l2nidgk98JyFPvE2keMXV6jAD4yURslxgZfkle3g",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"deadLine\": \"2024-11-29T06:05:23.383Z\",\r\n  \"priority\": \"LOW\",\r\n  \"recordNumber\": \"00005\",\r\n  \"staffId\": \"D202468843\",\r\n  \"status\": \"PENDING\",\r\n  \"operationTypeName\": \"Surgery\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/operationRequest/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"operationRequest",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get/Filter Op Requests - Doctor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response has the expected structure\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property(\"success\");\r",
+									"    pm.expect(jsonData).to.have.property(\"operationRequests\");\r",
+									"\r",
+									"    var operationRequests = jsonData.operationRequests;\r",
+									"    pm.expect(operationRequests).to.have.property(\"$values\").that.is.an(\"array\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Operation requests data matches expected values\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var operationRequests = jsonData.operationRequests.$values;\r",
+									"\r",
+									"    pm.expect(operationRequests).to.be.an(\"array\").that.is.not.empty;\r",
+									"\r",
+									"    operationRequests.forEach(function(operationRequest) {\r",
+									"        pm.expect(operationRequest).to.have.property(\"requestId\");\r",
+									"        pm.expect(operationRequest).to.have.property(\"deadLine\");\r",
+									"        pm.expect(operationRequest).to.have.property(\"priority\").that.is.oneOf([\"LOW\", \"MEDIUM\", \"HIGH\"]);\r",
+									"        pm.expect(operationRequest).to.have.property(\"recordNumber\").that.is.a(\"string\");\r",
+									"        pm.expect(operationRequest).to.have.property(\"staffId\").that.is.a(\"string\");\r",
+									"        pm.expect(operationRequest).to.have.property(\"status\").that.is.oneOf([\"PENDING\", \"ACCEPTED\", \"REJECTED\"]);\r",
+									"        pm.expect(operationRequest).to.have.property(\"operationType\").that.is.a(\"string\");\r",
+									"\r",
+									"        if (operationRequest.recordNumber === \"00005\") {\r",
+									"            pm.expect(operationRequest.staffId).to.eql(\"D202468843\");\r",
+									"            pm.expect(operationRequest.priority).to.eql(\"LOW\");\r",
+									"            pm.expect(operationRequest.operationType).to.eql(\"Surgery\");\r",
+									"        }\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJkMjAyNDY4ODQzQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlBhdGllbnQiLCJleHAiOjE3Mjk5MzMyNDIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.B6-l2nidgk98JyFPvE2keMXV6jAD4yURslxgZfkle3g",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5184/operationRequest/filter",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"operationRequest",
+								"filter"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Op Request - Doctor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Update operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response has the expected structure\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property(\"operationRequest\");\r",
+									"    \r",
+									"    var operationRequest = jsonData.operationRequest;\r",
+									"    pm.expect(operationRequest).to.have.property(\"requestId\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"deadLine\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"priority\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"recordNumber\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"staffId\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"status\");\r",
+									"    pm.expect(operationRequest).to.have.property(\"operationTypeName\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Returned data matches updated values\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var operationRequest = jsonData.operationRequest;\r",
+									"\r",
+									"    pm.expect(operationRequest.requestId).to.eql(\"47f71712-725f-4318-a467-57afe7800959\");\r",
+									"    pm.expect(operationRequest.deadLine).to.eql(\"2024-12-26T06:07:21.078Z\");\r",
+									"    pm.expect(operationRequest.priority).to.eql(\"HIGH\");\r",
+									"    pm.expect(operationRequest.recordNumber).to.eql(\"00005\");\r",
+									"    pm.expect(operationRequest.staffId).to.eql(\"D202468843\");\r",
+									"    pm.expect(operationRequest.status).to.eql(\"ACCEPTED\");\r",
+									"    pm.expect(operationRequest.operationTypeName).to.eql(\"Surgery\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJkMjAyNDY4ODQzQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlBhdGllbnQiLCJleHAiOjE3Mjk5MzMyNDIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.B6-l2nidgk98JyFPvE2keMXV6jAD4yURslxgZfkle3g",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"requestId\": \"47f71712-725f-4318-a467-57afe7800959\",\r\n  \"deadLine\": \"2024-12-26T06:07:21.078Z\",\r\n  \"priority\": \"HIGH\",\r\n  \"recordNumber\": \"00005\",\r\n  \"staffId\": \"D202468843\",\r\n  \"status\": \"ACCEPTED\",\r\n  \"operationTypeName\": \"Surgery\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/operationRequest/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"operationRequest",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Op Request - Doctor",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check for 200 status code\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Check that the delete operation was successful\r",
+									"pm.test(\"Delete operation was successful\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.success).to.be.true;\r",
+									"});\r",
+									"\r",
+									"// Store the requestId used in deletion for further verification\r",
+									"const deletedRequestId = pm.environment.get(\"requestIdToDelete\");\r",
+									"\r",
+									"// Verify that the deleted requestId no longer exists in the system\r",
+									"pm.sendRequest({\r",
+									"    url: `http://localhost:5184/operationRequest/filter?requestId=${deletedRequestId}`,\r",
+									"    method: \"GET\"\r",
+									"}, function (err, res) {\r",
+									"    pm.test(\"Deleted requestId no longer exists\", function () {\r",
+									"        pm.expect(res).to.have.status(400); // Expecting a 404 or similar not-found status\r",
+									"        var responseData = res.json();\r",
+									"        pm.expect(responseData.success).to.eql(false); // Or use appropriate failure indicator if available\r",
+									"    });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJkMjAyNDY4ODQzQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlBhdGllbnQiLCJleHAiOjE3Mjk5MzMyNDIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.B6-l2nidgk98JyFPvE2keMXV6jAD4yURslxgZfkle3g",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"requestId\": \"37ec295c-c81e-40ca-8255-789345061f54\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5184/operationRequest/delete",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5184",
+							"path": [
+								"operationRequest",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

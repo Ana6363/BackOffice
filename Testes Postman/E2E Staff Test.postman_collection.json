@@ -1,0 +1,419 @@
+{
+	"info": {
+		"_postman_id": "bcf420ae-c719-45cf-931e-6856f2741b13",
+		"name": "E2E Staff Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38420964"
+	},
+	"item": [
+		{
+			"name": "Create Backoffice User - Admin Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"\r",
+							"if (!pm.environment.get(\"randomPhoneNumber\")) {\r",
+							"    const randomPhoneNumber = Math.floor(100000000 + Math.random() * 900000000);\r",
+							"    pm.environment.set(\"randomPhoneNumber\", randomPhoneNumber);\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"var fullStaffId = jsonData.user.id;\r",
+							"var staffId = fullStaffId.split('@')[0];\r",
+							"\r",
+							"pm.environment.set(\"staffId\", staffId);\r",
+							"pm.environment.set(\"phoneNumber\", jsonData.user.phoneNumber);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"role\": \"Nurse\",\r\n  \"active\": false,\r\n  \"phoneNumber\": {{randomPhoneNumber}},\r\n  \"firstName\": \"first\",\r\n  \"lastName\": \"last\",\r\n  \"fullName\": \"first last\",\r\n  \"activationToken\": null,\r\n  \"tokenExpiration\": null,\r\n  \"isToBeDeleted\": false\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/auth/send-conf-admin",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"auth",
+						"send-conf-admin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Staff Profile - Admin Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if (!pm.environment.has(\"licenseNumber\")) {\r",
+							"    pm.environment.set(\"licenseNumber\", Math.floor(10000 + Math.random() * 90000).toString()); // 5-digit license number\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Creation operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Staff data matches expected values\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    const expectedLicenseNumber = pm.environment.get(\"licenseNumber\");\r",
+							"\r",
+							"    pm.expect(jsonData.staff.staffId).to.match(/^[DON][0-9]{9}$/);\r",
+							"    pm.expect(jsonData.staff.licenseNumber).to.eql(expectedLicenseNumber);\r",
+							"    pm.expect(jsonData.staff.specialization).to.eql(\"Cardiology\");\r",
+							"    pm.expect(jsonData.staff.email).to.match(/@myhospital\\.com$/);\r",
+							"    pm.expect(jsonData.staff.status).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Available slots are as expected\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.staff.availableSlots.$values).to.have.lengthOf(1);\r",
+							"\r",
+							"    var slot = jsonData.staff.availableSlots.$values[0];\r",
+							"    pm.expect(slot.startTime).to.eql(\"2024-11-26T04:56:49.471Z\");\r",
+							"    pm.expect(slot.endTime).to.eql(\"2024-11-26T07:56:49.471Z\");\r",
+							"    pm.expect(slot.staffId).to.eql(jsonData.staff.staffId);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"staffId\": \"{{staffId}}\",\r\n \"licenseNumber\": \"{{licenseNumber}}\",\r\n  \"specialization\": \"Cardiology\",\r\n  \"phoneNumber\": {{phoneNumber}},\r\n  \"availableSlots\": [\r\n    {\r\n      \"startTime\": \"2024-11-26T04:56:49.471Z\",\r\n      \"endTime\": \"2024-11-26T07:56:49.471Z\"\r\n    }\r\n  ],\r\n  \"status\": true,\r\n  \"firstName\": \"string\",\r\n  \"lastName\": \"string\",\r\n  \"fullName\": \"string\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/staff/create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"staff",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get/Filter staff - Admin Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if (!pm.environment.has(\"staffId\")) {\r",
+							"    pm.environment.set(\"staffId\", \"D202468843\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Filter operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"const expectedStaffId = pm.environment.get(\"staffId\");\r",
+							"\r",
+							"const specializations = [\r",
+							"    \"Cardiology\",\r",
+							"    \"Orthopedics\",\r",
+							"    \"Dermatology\",\r",
+							"    \"Neurology\",\r",
+							"    \"Pediatrics\",\r",
+							"    \"Radiology\",\r",
+							"    \"GeneralSurgery\",\r",
+							"    \"Anesthesiology\",\r",
+							"    \"Oncology\",\r",
+							"    \"Ophthalmology\",\r",
+							"    \"Psychiatry\",\r",
+							"    \"Urology\",\r",
+							"    \"Endocrinology\",\r",
+							"    \"Gastroenterology\",\r",
+							"    \"Rheumatology\",\r",
+							"    \"Pulmonology\",\r",
+							"    \"Nephrology\",\r",
+							"    \"ObstetricsGynecology\",\r",
+							"    \"EmergencyMedicine\",\r",
+							"    \"FamilyMedicine\"\r",
+							"];\r",
+							"\r",
+							"\r",
+							"pm.test(\"Available slots are correctly associated with staff\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    var staffMember = jsonData.staffMembers.$values.find(s => s.staffId === expectedStaffId);\r",
+							"\r",
+							"    pm.expect(staffMember.availableSlots.$values).to.be.an('array').that.is.not.empty;\r",
+							"\r",
+							"    var slot = staffMember.availableSlots.$values[0];\r",
+							"    pm.expect(slot.startTime).to.be.a(\"string\");\r",
+							"    pm.expect(slot.endTime).to.be.a(\"string\");\r",
+							"    pm.expect(slot.staffId).to.eql(expectedStaffId);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/staff/filter?staffId={{staffId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"staff",
+						"filter"
+					],
+					"query": [
+						{
+							"key": "staffId",
+							"value": "{{staffId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Staff Profile - Admin Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"randomPhoneNumber\", Math.floor(100000000+ Math.random() * 90000000));\r",
+							"\r",
+							"// Define the list of specializations based on your enum\r",
+							"const specializations = [\r",
+							"    \"Cardiology\",\r",
+							"    \"Orthopedics\",\r",
+							"    \"Dermatology\",\r",
+							"    \"Neurology\",\r",
+							"    \"Pediatrics\",\r",
+							"    \"Radiology\",\r",
+							"    \"GeneralSurgery\",\r",
+							"    \"Anesthesiology\",\r",
+							"    \"Oncology\",\r",
+							"    \"Ophthalmology\",\r",
+							"    \"Psychiatry\",\r",
+							"    \"Urology\",\r",
+							"    \"Endocrinology\",\r",
+							"    \"Gastroenterology\",\r",
+							"    \"Rheumatology\",\r",
+							"    \"Pulmonology\",\r",
+							"    \"Nephrology\",\r",
+							"    \"ObstetricsGynecology\",\r",
+							"    \"EmergencyMedicine\",\r",
+							"    \"FamilyMedicine\"\r",
+							"];\r",
+							"\r",
+							"const randomSpecialization = specializations[Math.floor(Math.random() * specializations.length)];\r",
+							"\r",
+							"pm.environment.set(\"specialization\", randomSpecialization);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Check for successful status code\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Check for successful update operation\r",
+							"pm.test(\"Update operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"// Check if updated staff data matches expected values\r",
+							"pm.test(\"Staff data matches updated values\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    const expectedSpecialization = pm.environment.get(\"specialization\");\r",
+							"    pm.expect(jsonData.staff.specialization).to.eql(expectedSpecialization);\r",
+							"    pm.expect(jsonData.staff.status).to.be.true;\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"staffId\": \"{{staffId}}\",\r\n  \"licenseNumber\": \"{{licenseNumber}}\",\r\n  \"specialization\": \"{{specialization}}\",\r\n  \"phoneNumber\": {{randomPhoneNumber}},\r\n  \"availableSlots\": [\r\n    {\r\n      \"id\": 41,\r\n      \"startTime\": \"2024-11-26T05:05:50.192Z\",\r\n      \"endTime\": \"2024-11-26T07:05:50.192Z\"\r\n    }\r\n  ],\r\n  \"status\": true,\r\n  \"firstName\": \"string\",\r\n  \"lastName\": \"string\",\r\n  \"fullName\": \"string\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/staff/update",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"staff",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Deactivate Staff - Admin Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const staffId = \"D202425081\";\r",
+							"pm.environment.set(\"staffId\", staffId);\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Deactivate operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"staffId\": \"{{staffId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/staff/deactivate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"staff",
+						"deactivate"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

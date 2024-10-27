@@ -1,0 +1,215 @@
+{
+	"info": {
+		"_postman_id": "3445e6bd-bf78-42d3-bfef-219ac7bbbbf3",
+		"name": "E2E Patient Tests - Patient",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38420964"
+	},
+	"item": [
+		{
+			"name": "Update Patient Profile - Patient Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const randomPhoneNumber = Math.floor(100000000 + Math.random() * 900000000); \r",
+							"pm.environment.set(\"randomPhoneNumber\", randomPhoneNumber);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Pre-request setup for random phone number\r",
+							"if (!pm.environment.has(\"randomPhoneNumber\")) {\r",
+							"    const randomPhoneNumber = Math.floor(100000000 + Math.random() * 900000000);\r",
+							"    pm.environment.set(\"randomPhoneNumber\", randomPhoneNumber);\r",
+							"}\r",
+							"\r",
+							"// Test Script\r",
+							"// Ensure status code is 200\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Check that the update operation was successful\r",
+							"pm.test(\"Update operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"// Validate that response data matches the input data\r",
+							"pm.test(\"Updated patient data matches expected values\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.patient.recordNumber).to.eql(\"00011\");\r",
+							"    pm.expect(jsonData.patient.dateOfBirth).to.eql(\"2024-10-26T03:52:26.389\");\r",
+							"    pm.expect(jsonData.patient.emergencyContact).to.eql(123456789);\r",
+							"    pm.expect(jsonData.patient.gender).to.eql(\"MALE\");\r",
+							"    pm.expect(jsonData.patient.userId).to.eql(\"rafa1712002@gmail.com\");\r",
+							"});\r",
+							"\r",
+							"pm.sendRequest({\r",
+							"    url: \"http://localhost:5184/patient/update\",\r",
+							"    method: \"PUT\",\r",
+							"    header: {\r",
+							"        \"Content-Type\": \"application/json\"\r",
+							"    },\r",
+							"    body: {\r",
+							"        mode: \"raw\",\r",
+							"        raw: JSON.stringify({\r",
+							"            \"recordNumber\": \"00011\",\r",
+							"            \"dateOfBirth\": \"2024-10-26T03:52:26.389Z\",\r",
+							"            \"phoneNumber\": pm.environment.get(\"randomPhoneNumber\"),\r",
+							"            \"emergencyContact\": 123456789,\r",
+							"            \"gender\": \"MALE\",\r",
+							"            \"userId\": \"unauthorized_user@gmail.com\", // Simulate an unauthorized user\r",
+							"            \"firstName\": \"string\",\r",
+							"            \"lastName\": \"string\",\r",
+							"            \"fullName\": \"string\"\r",
+							"        })\r",
+							"    }\r",
+							"}, function (err, res) {\r",
+							"    pm.test(\"Unauthorized update attempt is blocked\", function () {\r",
+							"        pm.expect(res).to.have.status(400); // Status 400 based on the observed response\r",
+							"\r",
+							"        var responseData = res.json();\r",
+							"        pm.expect(responseData.success).to.be.false;\r",
+							"        pm.expect(responseData.message).to.satisfy(function(message) {\r",
+							"            return message.includes(\"not authorized to update this profile\") || \r",
+							"                   message.includes(\"User email not found in token.\");\r",
+							"        });\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyYWZhMTcxMjAwMkBnbWFpbC5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQYXRpZW50IiwiZXhwIjoxNzI5OTMzOTQ0LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjUxODQiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUxODQifQ.BCKeLz9RKSbeMf_oG-jZ9AW8kjyBynsPuhF0VZSAuLY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"recordNumber\": \"00011\",\r\n  \"dateOfBirth\": \"2024-10-26T03:52:26.389Z\",\r\n  \"phoneNumber\": {{randomPhoneNumber}},\r\n  \"emergencyContact\": 123456789,\r\n  \"gender\": \"MALE\",\r\n  \"userId\": \"rafa1712002@gmail.com\",\r\n  \"firstName\": \"string\",\r\n  \"lastName\": \"string\",\r\n  \"fullName\": \"string\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/patient/update",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"patient",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Patient - Patient Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Delete operation was initiated successfully\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"const recordNumberToDelete = \"00011\";\r",
+							"pm.environment.set(\"recordNumberToDelete\", recordNumberToDelete);\r",
+							"\r",
+							"pm.sendRequest({\r",
+							"    url: `http://localhost:5184/patient/filter?recordNumber=${recordNumberToDelete}`,\r",
+							"    method: \"GET\"\r",
+							"}, function (err, res) {\r",
+							"    pm.test(\"Patient record still exists in the system after delete initiation\", function () {\r",
+							"        pm.expect(res).to.have.status(200);\r",
+							"        var responseData = res.json();\r",
+							"        pm.expect(responseData.patients.$values.some(patient => patient.recordNumber === recordNumberToDelete)).to.be.true;\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"const unauthorizedRecordNumber = \"00002\";\r",
+							"pm.sendRequest({\r",
+							"    url: `http://localhost:5184/patient/delete/${unauthorizedRecordNumber}`,\r",
+							"    method: \"DELETE\",\r",
+							"    header: {\r",
+							"        \"Content-Type\": \"application/json\",\r",
+							"        \"Authorization\": \"Bearer INVALID_OR_MISSING_TOKEN\"\r",
+							"    }\r",
+							"}, function (err, res) {\r",
+							"    pm.test(\"Unauthorized delete attempt is blocked\", function () {\r",
+							"        pm.expect(res).to.have.status(400);\r",
+							"        var responseData = res.json();\r",
+							"        pm.expect(responseData.success).to.be.false;\r",
+							"        pm.expect(responseData.message).to.satisfy(msg => msg.includes(\"not authorized to delete this profile\") || msg.includes(\"User email not found in token.\"));\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyYWZhMTcxMjAwMkBnbWFpbC5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJQYXRpZW50IiwiZXhwIjoxNzI5OTMzOTQ0LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjUxODQiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUxODQifQ.BCKeLz9RKSbeMf_oG-jZ9AW8kjyBynsPuhF0VZSAuLY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5184/patient/delete/00011",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"patient",
+						"delete",
+						"00011"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

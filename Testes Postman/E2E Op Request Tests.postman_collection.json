@@ -1,0 +1,301 @@
+{
+	"info": {
+		"_postman_id": "e3d90730-f694-4055-b171-7409b3320d5b",
+		"name": "E2E Op Request Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38420964"
+	},
+	"item": [
+		{
+			"name": "Create Op Request - Doctor Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Request was successful\", function () {\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.environment.set(\"requestId\", jsonData.operationRequest.requestId);\r",
+							"pm.environment.set(\"staffId\", jsonData.operationRequest.staffId);\r",
+							"pm.environment.set(\"recordNumber\", jsonData.operationRequest.recordNumber);\r",
+							"\r",
+							"pm.test(\"requestId and staffId stored successfully\", function () {\r",
+							"    pm.expect(pm.environment.get(\"requestId\")).to.eql(jsonData.operationRequest.requestId);\r",
+							"    pm.expect(pm.environment.get(\"staffId\")).to.eql(jsonData.operationRequest.staffId);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJkMjAyNDY4ODQzQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlBhdGllbnQiLCJleHAiOjE3MzAwMTcyNTEsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.j2Lt8QD9DZUZL6olN3hGtUxd3yGPKfxvdRSod3Eqiuc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"deadLine\": \"2024-11-29T06:05:23.383Z\",\r\n  \"priority\": \"LOW\",\r\n  \"recordNumber\": \"00005\",\r\n  \"staffId\": \"D202468843\",\r\n  \"status\": \"PENDING\",\r\n  \"operationTypeName\": \"Teste123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/operationRequest/create",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"operationRequest",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get/Filter Op Requests - Doctor Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response has the expected structure\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property(\"success\");\r",
+							"    pm.expect(jsonData).to.have.property(\"operationRequests\");\r",
+							"\r",
+							"    var operationRequests = jsonData.operationRequests;\r",
+							"    pm.expect(operationRequests).to.have.property(\"$values\").that.is.an(\"array\");\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJkMjAyNDY4ODQzQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlBhdGllbnQiLCJleHAiOjE3MzAwMTcyNTEsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.j2Lt8QD9DZUZL6olN3hGtUxd3yGPKfxvdRSod3Eqiuc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5184/operationRequest/filter?patientName={{recordNumber}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"operationRequest",
+						"filter"
+					],
+					"query": [
+						{
+							"key": "patientName",
+							"value": "{{recordNumber}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Op Request - Doctor Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Update operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response has the expected structure\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property(\"operationRequest\");\r",
+							"    \r",
+							"    var operationRequest = jsonData.operationRequest;\r",
+							"    pm.expect(operationRequest).to.have.property(\"requestId\");\r",
+							"    pm.expect(operationRequest).to.have.property(\"deadLine\");\r",
+							"    pm.expect(operationRequest).to.have.property(\"priority\");\r",
+							"    pm.expect(operationRequest).to.have.property(\"recordNumber\");\r",
+							"    pm.expect(operationRequest).to.have.property(\"staffId\");\r",
+							"    pm.expect(operationRequest).to.have.property(\"status\");\r",
+							"    pm.expect(operationRequest).to.have.property(\"operationTypeName\");\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJkMjAyNDY4ODQzQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlBhdGllbnQiLCJleHAiOjE3MzAwMTcyNTEsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.j2Lt8QD9DZUZL6olN3hGtUxd3yGPKfxvdRSod3Eqiuc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"requestId\": \"{{requestId}}\",\r\n  \"deadLine\": \"2024-12-26T06:07:21.078Z\",\r\n  \"priority\": \"HIGH\",\r\n  \"recordNumber\": \"{{recordNumber}}\",\r\n  \"staffId\": \"{{staffId}}\",\r\n  \"status\": \"ACCEPTED\",\r\n  \"operationTypeName\": \"Teste123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/operationRequest/update",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"operationRequest",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Op Request - Doctor Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Check for 200 status code\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Check that the delete operation was successful\r",
+							"pm.test(\"Delete operation was successful\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.success).to.be.true;\r",
+							"});\r",
+							"\r",
+							"// Store the requestId used in deletion for further verification\r",
+							"const deletedRequestId = pm.environment.get(\"requestIdToDelete\");\r",
+							"\r",
+							"// Verify that the deleted requestId no longer exists in the system\r",
+							"pm.sendRequest({\r",
+							"    url: `http://localhost:5184/operationRequest/filter?requestId=${deletedRequestId}`,\r",
+							"    method: \"GET\"\r",
+							"}, function (err, res) {\r",
+							"    pm.test(\"Deleted requestId no longer exists\", function () {\r",
+							"        pm.expect(res).to.have.status(400); // Expecting a 404 or similar not-found status\r",
+							"        var responseData = res.json();\r",
+							"        pm.expect(responseData.success).to.eql(false); // Or use appropriate failure indicator if available\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJkMjAyNDY4ODQzQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlBhdGllbnQiLCJleHAiOjE3MzAwMTcyNTEsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE4NCJ9.j2Lt8QD9DZUZL6olN3hGtUxd3yGPKfxvdRSod3Eqiuc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"requestId\": \"{{requestId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5184/operationRequest/delete",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5184",
+					"path": [
+						"operationRequest",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
