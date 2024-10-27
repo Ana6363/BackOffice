@@ -2,6 +2,7 @@ using BackOffice.Application.OperationRequest;
 using BackOffice.Domain.OperationType;
 using BackOffice.Infrastructure;
 using BackOffice.Infrastructure.OperationTypes;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackOffice.Application.OperationTypes
 {
@@ -20,25 +21,22 @@ namespace BackOffice.Application.OperationTypes
 
         public async Task<OperationTypeDataModel> CreateOperationType(OperationTypeDTO operationTypeDTO)
         {
-            var existingOperationType = await _operationTypeRepository.GetByIdAsync(operationTypeDTO.OperationTypeId);
-            if (existingOperationType != null)
-            {
-                throw new ArgumentException("Operation Type already exists"); // ($"Operation Type with ID '{operationTypeDTO.OperationTypeId}' already exists.")
-            }
-            // name must be unique
             var existingOperationTypeByName = await _operationTypeRepository.GetByNameAsync(operationTypeDTO.OperationTypeName);
             if (existingOperationTypeByName != null)
             {
                 throw new ArgumentException($"Operation Type with name '{operationTypeDTO.OperationTypeName}' already exists.");
             }
 
-            var operationType = OperationTypeMapper.ToDomain(operationTypeDTO);
+            string nextId = Guid.NewGuid().ToString();
+
+            var domainId = new OperationTypeId(nextId);
+            var operationType = OperationTypeMapper.ToDomain(operationTypeDTO, domainId);
+            Console.WriteLine(operationType.Id.AsString());
 
             try
             {
-                
-                return  await _operationTypeRepository.AddAsync(operationType);
-            } 
+                return await _operationTypeRepository.AddAsync(operationType);
+            }
             catch (Exception ex)
             {
                 throw new InvalidOperationException("Failed to create Operation Type.", ex);
@@ -52,7 +50,7 @@ namespace BackOffice.Application.OperationTypes
             {
                 throw new ArgumentException("Operation Type does not exist"); // ($"Operation Type with ID '{operationTypeDTO.OperationTypeId}' does not exists.")
             }
-            var operationTypeDomain = OperationTypeMapper.fromDataModelToDomain(existingOperationType);
+            var operationTypeDomain = OperationTypeMapper.FromDataModelToDomain(existingOperationType);
             
             await _operationTypeRepository.UpdateAsync(operationTypeDomain);
 
@@ -69,7 +67,7 @@ namespace BackOffice.Application.OperationTypes
                 //throw new ArgumentException("Operation Type does not exist"); // ($"Operation Type with ID '{operationTypeDTO.OperationTypeId}' does not exists.")
                 return false;
             }
-            var operationTypeDomain = OperationTypeMapper.fromDataModelToDomain(existingOperationType);
+            var operationTypeDomain = OperationTypeMapper.FromDataModelToDomain(existingOperationType);
             
             await _operationTypeRepository.DeleteAsync(operationTypeId);
 

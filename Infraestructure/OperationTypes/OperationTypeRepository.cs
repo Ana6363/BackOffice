@@ -24,7 +24,7 @@ namespace BackOffice.Infraestructure.OperationTypes
             {
                 OperationTypeId = operationType.Id.AsString(),
                 OperationTime = operationType.OperationTime.AsFloat(),
-                OperationTypeName = operationType.OperationTypeName.ToString(),
+                OperationTypeName = operationType.OperationTypeName.Name,
                 Specializations = operationType.Specializations.Select(s => new SpecializationDataModel
                 {
                     SpecializationId = Guid.NewGuid().ToString(), 
@@ -45,7 +45,7 @@ namespace BackOffice.Infraestructure.OperationTypes
 
             var operationType = await _context.OperationType
                 .Include(o => o.Specializations)
-                .FirstOrDefaultAsync(o => o.OperationTypeId == operationId) ?? throw new KeyNotFoundException($"OperationType with ID '{operationId}' not found.");
+                .FirstOrDefaultAsync(o => o.OperationTypeId == operationId) ?? null;
             return operationType;
         }
         
@@ -61,12 +61,12 @@ namespace BackOffice.Infraestructure.OperationTypes
             var operationTypeDataModel = await GetByIdAsync(operationType.Id.AsString());
             if (operationTypeDataModel == null)
             {
-                throw new KeyNotFoundException($"OperationType with ID '{operationType.Id}' not found.");
+                throw new KeyNotFoundException($"OperationType with ID '{operationType.Id.AsString()}' not found.");
             }
 
 
             operationTypeDataModel.OperationTypeId = operationType.Id.AsString();
-            operationTypeDataModel.OperationTypeName = operationType.OperationTypeName.ToString();
+            operationTypeDataModel.OperationTypeName = operationType.OperationTypeName.Name;
             operationTypeDataModel.OperationTime = operationType.OperationTime.AsFloat();
 
             var existingSpecializations = await _context.Specializations
@@ -121,8 +121,14 @@ namespace BackOffice.Infraestructure.OperationTypes
 
             var operationType = await _context.OperationType
                 .Include(o => o.Specializations)
-                .FirstOrDefaultAsync(o => o.OperationTypeId == operationName) ?? throw new KeyNotFoundException($"OperationType with name '{operationName}' not found.");
+                .FirstOrDefaultAsync(o => o.OperationTypeId == operationName) ?? null;
             return operationType;
+        }
+
+        public async Task<string> GetMaxOperationTypeIdAsync()
+        {
+            return await _context.OperationType
+                .MaxAsync(o => o.OperationTypeId);
         }
 
         

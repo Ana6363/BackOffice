@@ -1,1 +1,1 @@
-DESCRIBE Staff;
+SELECT * FROM Staff;

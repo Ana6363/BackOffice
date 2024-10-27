@@ -13,5 +13,6 @@ namespace BackOffice.Domain.OperationType
         Task UpdateAsync (OperationType operationType);
         Task DeleteAsync (string id);
         Task<OperationTypeDataModel> GetByNameAsync (string name);
+        Task<string> GetMaxOperationTypeIdAsync();
     }
 }
