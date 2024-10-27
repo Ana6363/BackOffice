@@ -121,7 +121,7 @@ namespace BackOffice.Infraestructure.OperationTypes
 
             var operationType = await _context.OperationType
                 .Include(o => o.Specializations)
-                .FirstOrDefaultAsync(o => o.OperationTypeId == operationName) ?? null;
+                .FirstOrDefaultAsync(o => o.OperationTypeName == operationName) ?? null;
             return operationType;
         }
 
