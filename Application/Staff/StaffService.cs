@@ -67,7 +67,7 @@ namespace BackOffice.Application.StaffService
             }
 
             // Map to the domain model
-            var staffIdDomain = new StaffId(staffId);w
+            var staffIdDomain = new StaffId(staffId);
             var staffDomain = StaffMapper.ToDomain(staffDto, staffIdDomain, configuration);
 
             // Create and save the staff data model without deleting the user
