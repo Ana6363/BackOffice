@@ -1,6 +1,7 @@
 using BackOffice.Application.OperationTypes;
 using BackOffice.Domain.OperationType;
 using BackOffice.Domain.Shared;
+using BackOffice.Domain.Staff;
 using BackOffice.Infrastructure;
 using BackOffice.Infrastructure.OperationTypes;
 using Microsoft.EntityFrameworkCore;
@@ -95,6 +96,79 @@ namespace BackOffice.BackOfficeModuleTest.Unit.OperationTypeServiceTest
 
 
         }
+
+        [Fact]
+        public async Task createOperationTypeTest()
+        {
+            
+            // create dto
+            var id = Guid.NewGuid().ToString();
+            var operationTypeDTO = new OperationTypeDTO
+            {
+                OperationTypeId = id,
+                OperationTypeName = "Cardiology",
+                OperationTime = 2.5f,
+                Specializations = new List<SpecializationDTO>
+                {
+                    new SpecializationDTO
+                    {
+                        Name = "Cardiology"
+                    }
+                } 
+            };
+            // create operation type from dto data
+            var operationType = new OperationType(
+            new OperationTypeId(operationTypeDTO.OperationTypeId),
+            new OperationTypeName(operationTypeDTO.OperationTypeName),
+            new OperationTime(operationTypeDTO.OperationTime),
+            operationTypeDTO.Specializations.Select(s => Specializations.FromString(s.Name)).ToList() // Convert to Specializations
+            );
+
+
+            var _operationTypeRepositoryMock = new Mock<IOperationTypeRepository>();
+
+            
+            // Mock AddAsync to return the OperationTypeDataModel
+            _operationTypeRepositoryMock
+                .Setup(repo => repo.AddAsync(It.IsAny<OperationType>()))
+                .ReturnsAsync(new OperationTypeDataModel
+                {
+                    OperationTypeId = operationType.Id.Value,
+                    OperationTypeName = operationType.OperationTypeName.Name,
+                    OperationTime = operationType.OperationTime.AsFloat(),
+                    Specializations = operationType.Specializations.Select(s => new SpecializationDataModel
+                    {
+                        SpecializationId = Guid.NewGuid().ToString(), 
+                        Name = s.ToString(),
+                        OperationTypeId = operationType.Id.Value
+                    }).ToList()
+                });
+
+
+            var options = new DbContextOptionsBuilder<BackOfficeDbContext>()
+                .Options;
+
+            using var context = new BackOfficeDbContext(options);
+
+            
+            var service = new OperationTypeService(_operationTypeRepositoryMock.Object, context);
+            
+            // Act
+            var result = await service.CreateOperationType(operationTypeDTO);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(operationType.OperationTypeName.Name, result.OperationTypeName);
+            Assert.Equal(operationType.OperationTime.AsFloat(), result.OperationTime);
+            Assert.Equal(operationType.Id.Value, result.OperationTypeId);
+            Assert.Single(result.Specializations); // Check if it has one Specialization (Cardiology)
+            Assert.Equal("Cardiology", result.Specializations[0].Name); // Check Specialization
+
+
+            
+        }
+
+
 
 
 

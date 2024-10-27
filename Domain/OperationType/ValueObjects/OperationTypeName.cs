@@ -14,8 +14,9 @@ public class OperationTypeName
         
         if (double.TryParse(name, out _))
         {
-            throw new BusinessRuleValidationException("Operation Type name must be a String.");
+            throw new BusinessRuleValidationException("Operation Type name must be a String");
         }
+        
         Name = name;
     }
 

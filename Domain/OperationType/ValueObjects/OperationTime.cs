@@ -9,8 +9,13 @@ public class OperationTime
 
     public OperationTime(float time)
     {
-        if(time < 0)
+        if(time < 0){
             throw new BusinessRuleValidationException("Duration of operations cannot be negative.");
+        }    
+        if (time > 8)
+        {
+            throw new BusinessRuleValidationException("Duration of operations cannot exceed 8 hours");
+        }    
         this.time = time;
 
     }
