@@ -1,5 +1,6 @@
 using BackOffice.Application.OperationTypes;
 using BackOffice.Domain.OperationType;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackOffice.Controllers
@@ -23,6 +24,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpPost("Create")]
+        [Authorize(Roles = "Admin")]
 
             public async Task<IActionResult> Create([FromBody] OperationTypeDTO operationTypeDTO)
             {
@@ -45,6 +47,7 @@ namespace BackOffice.Controllers
             }
 
         [HttpPut("Update")]
+        [Authorize(Roles = "Admin")]
 
             public async Task<IActionResult> Update([FromBody] OperationTypeDTO operationTypeDTO)
             {
@@ -79,6 +82,7 @@ namespace BackOffice.Controllers
 
         
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
             public async Task<IActionResult> Delete(string id)
             {
                 var deleted = await _operationTypeService.DeleteOperationTypeAsync(id);
@@ -91,6 +95,7 @@ namespace BackOffice.Controllers
 
 
         [HttpGet("GetAllOperationTypes")]
+        [Authorize(Roles = "Admin")]
             public async Task<IActionResult> GetAll()
             {
                 try
@@ -105,7 +110,8 @@ namespace BackOffice.Controllers
 
             } 
 
-        [HttpGet("GetByID/{id}")]       
+        [HttpGet("GetByID/{id}")]
+        [Authorize(Roles = "Admin")]       
         public async Task<IActionResult> GetById(string id)
         {
             if (string.IsNullOrWhiteSpace(id))

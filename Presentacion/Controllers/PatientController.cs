@@ -21,7 +21,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpPost("create")]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreatePatientAsync([FromBody] PatientDto patientDto)
         {
             if (patientDto == null)
@@ -42,7 +42,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpGet("filter")]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllPatientsAsync(
             [FromQuery] string? userId = null,
             [FromQuery] string? firstName = null,
@@ -64,8 +64,8 @@ namespace BackOffice.Controllers
         }
 
         [HttpPut("update")]
-        //[Authorize(Roles = "Admin")]
-        //[Authorize(Roles = "Patient")]
+        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Patient")]
         public async Task<IActionResult> UpdatePatientAsync([FromBody] PatientDto patientDto)
         {
             if (patientDto == null || string.IsNullOrWhiteSpace(patientDto.RecordNumber))
@@ -85,6 +85,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpPut("markToDelete")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> MarkPatientToDeleteAsync([FromBody] RecordNumberDto recordNumberDto)
         {
             try
@@ -102,8 +103,8 @@ namespace BackOffice.Controllers
 
 
         [HttpDelete("delete/{recordNumber}")]
-        //[Authorize(Roles = "Admin")]
-        //[Authorize(Roles = "Patient")]
+        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Patient")]
         public async Task<IActionResult> DeletePatientAsync([FromRoute] string recordNumber)
         {
             if (string.IsNullOrWhiteSpace(recordNumber))
@@ -127,7 +128,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpGet("allPatients")]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllAsync()
         {
             try

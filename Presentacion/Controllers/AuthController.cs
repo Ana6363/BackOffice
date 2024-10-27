@@ -88,7 +88,7 @@ namespace BackOffice.Controllers
 
         
     [HttpPost("send-conf-admin")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> RegisterUserAsync([FromBody] UserDto userDto)
     {
         try

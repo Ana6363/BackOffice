@@ -21,7 +21,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpPost("create")]
-        //[Authorize(Roles = "Doctor")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> CreateOperationRequestAsync([FromBody] OperationRequestDto operationRequest)
         {
             if (operationRequest == null)
@@ -40,6 +40,7 @@ namespace BackOffice.Controllers
             }
         }
         [HttpPut("update")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> UpdateOperationRequestAsync([FromBody] OperationRequestDto operationRequest)
         {
             if (operationRequest == null)
@@ -59,6 +60,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpDelete("delete")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> DeleteOperationRequestAsync([FromBody] DeleteRequestDto operationRequest)
         {
             if (operationRequest == null)
@@ -78,7 +80,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpGet("filter")]
-        //[Authorize(Roles = "Doctor")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> GetAllOperationRequestsAsync(
             [FromQuery] string? fullname = null,
             [FromQuery] string? priority = null,

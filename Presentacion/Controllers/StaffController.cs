@@ -25,6 +25,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpPost("create")]
+        [Authorize(Roles = "Admin")]
             public async Task<IActionResult> CreateStaffAsync([FromBody] StaffDto staffDto)
             {
                 if (staffDto == null)
@@ -44,6 +45,7 @@ namespace BackOffice.Controllers
             }
 
         [HttpGet("filter")]
+        [Authorize(Roles = "Admin")]
             public async Task<IActionResult> GetAllStaffAsync(
                 [FromQuery] string? staffId = null,
                 [FromQuery] int? phoneNumber = null,
@@ -65,6 +67,7 @@ namespace BackOffice.Controllers
             }
 
         [HttpPut("update")]
+        [Authorize(Roles = "Admin")]
             public async Task<IActionResult> UpdateStaffAsync([FromBody] StaffDto updatedStaffDto)
             {
                 if (updatedStaffDto == null)
@@ -84,6 +87,7 @@ namespace BackOffice.Controllers
             }
     
         [HttpPut("deactivate")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeactivateStaffAsync([FromBody] StaffDeactivateDto staffDeactivateDto)
         {
             if (staffDeactivateDto == null)
