@@ -1,3 +1,4 @@
+using BackOffice.Application.OperationTypes;
 using BackOffice.Domain.OperationType;
 using BackOffice.Domain.Staff;
 using BackOffice.Infrastructure;
@@ -18,19 +19,17 @@ namespace BackOffice.Infraestructure.OperationTypes
 
         public async Task<OperationTypeDataModel> AddAsync(OperationType operationType)
         {
-            if(operationType == null){
-                throw new ArgumentNullException(nameof(operationType));
-            }
+            ArgumentNullException.ThrowIfNull(operationType);
             var operationTypeDataModel = new OperationTypeDataModel
             {
-                OperationTypeId = operationType.Id.ToString(),
+                OperationTypeId = operationType.Id.AsString(),
                 OperationTime = operationType.OperationTime.AsFloat(),
                 OperationTypeName = operationType.OperationTypeName.ToString(),
                 Specializations = operationType.Specializations.Select(s => new SpecializationDataModel
                 {
-                    SpecializationId = Guid.NewGuid().ToString(), // Gera um novo ID único para a especialização
-                    Name = s.ToString(), // Nome da especialização
-                    OperationTypeId = operationType.Id.ToString() // Associar o ID do OperationType
+                    SpecializationId = Guid.NewGuid().ToString(), 
+                    Name = s.ToString(), 
+                    OperationTypeId = operationType.Id.AsString() 
                 }).ToList()
             };
 
@@ -40,15 +39,17 @@ namespace BackOffice.Infraestructure.OperationTypes
             return operationTypeDataModel;
         }
 
-        public async Task<OperationTypeDataModel> GetByIdAsync (OperationTypeId id)
+        public async Task<OperationTypeDataModel> GetByIdAsync (string id)
         {
-            var operationId = id.ToString();
+            var operationId = id;
 
             var operationType = await _context.OperationType
                 .Include(o => o.Specializations)
                 .FirstOrDefaultAsync(o => o.OperationTypeId == operationId) ?? throw new KeyNotFoundException($"OperationType with ID '{operationId}' not found.");
             return operationType;
         }
+        
+        
         public async Task<List<OperationTypeDataModel>> GetAllAsync()
         {
             return await _context.OperationType
@@ -57,14 +58,14 @@ namespace BackOffice.Infraestructure.OperationTypes
         }
         public async Task UpdateAsync (OperationType operationType)
         {
-            var operationTypeDataModel = await GetByIdAsync(operationType.Id);
+            var operationTypeDataModel = await GetByIdAsync(operationType.Id.AsString());
             if (operationTypeDataModel == null)
             {
                 throw new KeyNotFoundException($"OperationType with ID '{operationType.Id}' not found.");
             }
 
 
-            operationTypeDataModel.OperationTypeId = operationType.Id.ToString();
+            operationTypeDataModel.OperationTypeId = operationType.Id.AsString();
             operationTypeDataModel.OperationTypeName = operationType.OperationTypeName.ToString();
             operationTypeDataModel.OperationTime = operationType.OperationTime.AsFloat();
 
@@ -104,7 +105,7 @@ namespace BackOffice.Infraestructure.OperationTypes
 
 
 
-        public async Task DeleteAsync (OperationTypeId id)
+        public async Task DeleteAsync (string id)
         {
             var operationTypeDataModel = await GetByIdAsync(id);
             if (operationTypeDataModel != null)
@@ -112,6 +113,16 @@ namespace BackOffice.Infraestructure.OperationTypes
                 _context.OperationType.Remove(operationTypeDataModel);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<OperationTypeDataModel> GetByNameAsync (string name)
+        {
+            var operationName = name;
+
+            var operationType = await _context.OperationType
+                .Include(o => o.Specializations)
+                .FirstOrDefaultAsync(o => o.OperationTypeId == operationName) ?? throw new KeyNotFoundException($"OperationType with name '{operationName}' not found.");
+            return operationType;
         }
 
         
