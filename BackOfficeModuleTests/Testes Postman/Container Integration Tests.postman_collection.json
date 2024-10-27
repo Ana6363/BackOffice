@@ -1288,11 +1288,35 @@
 				},
 				{
 					"name": "Delete Op Type - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204 - No Content\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "DELETE",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "http://localhost:5184/api/operationType/{2affd50a-768a-4cf3-a71c-2144ac5f852b}",
+							"raw": "http://localhost:5184/api/operationType/Teste123",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1301,7 +1325,7 @@
 							"path": [
 								"api",
 								"operationType",
-								"{2affd50a-768a-4cf3-a71c-2144ac5f852b}"
+								"Teste123"
 							]
 						}
 					},
