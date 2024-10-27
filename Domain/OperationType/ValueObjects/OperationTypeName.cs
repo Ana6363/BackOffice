@@ -9,7 +9,7 @@ public class OperationTypeName
 
         if (string.IsNullOrEmpty(name))
         {
-            throw new BusinessRuleValidationException("Operation Type name can´t be null or empty");
+            throw new BusinessRuleValidationException("Operation Type name connot be null or empty");
         }
         
         if (double.TryParse(name, out _))
