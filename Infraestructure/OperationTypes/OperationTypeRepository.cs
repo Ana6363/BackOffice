@@ -105,9 +105,9 @@ namespace BackOffice.Infraestructure.OperationTypes
 
 
 
-        public async Task DeleteAsync (string id)
+        public async Task DeleteAsync (string name)
         {
-            var operationTypeDataModel = await GetByIdAsync(id);
+            var operationTypeDataModel = await GetByNameAsync(name);
             if (operationTypeDataModel != null)
             {
                 _context.OperationType.Remove(operationTypeDataModel);

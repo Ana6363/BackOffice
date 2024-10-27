@@ -81,14 +81,14 @@ namespace BackOffice.Controllers
 
 
         
-        [HttpDelete("{id}")]
+        [HttpDelete("{name}")]
         [Authorize(Roles = "Admin")]
-            public async Task<IActionResult> Delete(string id)
+            public async Task<IActionResult> Delete(string name)
             {
-                var deleted = await _operationTypeService.DeleteOperationTypeAsync(id);
+                var deleted = await _operationTypeService.DeleteOperationTypeAsync(name);
                 if (!deleted)
                 {
-                    return NotFound($"OperationType with ID {id} not found.");
+                    return NotFound($"OperationType with name {name} not found.");
                 }
                 return NoContent();
             }

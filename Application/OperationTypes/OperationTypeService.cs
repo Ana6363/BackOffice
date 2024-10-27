@@ -59,9 +59,9 @@ namespace BackOffice.Application.OperationTypes
 
         }
 
-        public async Task<bool> DeleteOperationTypeAsync(string operationTypeId)
+        public async Task<bool> DeleteOperationTypeAsync(string operationTypeName)
         {
-            var existingOperationType = await _operationTypeRepository.GetByIdAsync(operationTypeId);
+            var existingOperationType = await _operationTypeRepository.GetByNameAsync(operationTypeName);
             if (existingOperationType == null)
             {
                 //throw new ArgumentException("Operation Type does not exist"); // ($"Operation Type with ID '{operationTypeDTO.OperationTypeId}' does not exists.")
@@ -69,7 +69,7 @@ namespace BackOffice.Application.OperationTypes
             }
             var operationTypeDomain = OperationTypeMapper.FromDataModelToDomain(existingOperationType);
             
-            await _operationTypeRepository.DeleteAsync(operationTypeId);
+            await _operationTypeRepository.DeleteAsync(operationTypeName);
 
             return true;
             
