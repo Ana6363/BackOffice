@@ -1,139 +1,63 @@
-@startuml Process View - Level 3
-
+@startuml
 autonumber
 skinparam packageStyle rect
 
-title Create backOffice user
+title Register User and Send Activation Email
 
-participant "Back-End" as BE <<component>>
-database "DataBase" as DB <<component>>
+actor "Admin" as Admin
+participant "RegisterUserAsync" as RegisterUser <<component>>
+database "User Database" as DB <<component>>
+participant "UserMapper" as Mapper <<component>>
+participant "SendActivationEmailAsync" as SendEmail <<component>>
+participant "Email Service" as EmailService <<component>>
 
--> POST : GET /auth/send-conf-admin
+Admin -> RegisterUser : Call RegisterUserAsync(role, phoneNumber, firstName, lastName, fullName)
 
-alt user authorized
+alt Invalid inputs
+    RegisterUser -> RegisterUser : Throws ArgumentException
+else Valid inputs
+    RegisterUser -> RegisterUser : Generate staffId
+    RegisterUser -> DB : Check if email exists
+    DB --> RegisterUser : User not found
+    RegisterUser -> DB : Check if phone number exists
+    DB --> RegisterUser : Phone number not found
+    
+    RegisterUser -> RegisterUser : Create User object with generated email and phone number
+    RegisterUser -> RegisterUser : Generate Activation Token
+    
+    RegisterUser -> Mapper : ToDataModel(newUser)
+    Mapper --> RegisterUser : UserDataModel
 
-activate BE
+    RegisterUser -> DB : Add UserDataModel
+    DB --> RegisterUser : Save successful
+    
+    RegisterUser -> SendEmail : Call SendActivationEmailAsync(email)
 
-BE -> DB: check if there is not duplicate email in database
+    activate SendEmail
+    SendEmail -> DB : Fetch UserDataModel by email
+    DB --> SendEmail : UserDataModel
+    
+    alt User not found
+        SendEmail -> SendEmail : Throws Exception("User not found.")
+    else User found
+        alt User already active
+            SendEmail -> SendEmail : Throws Exception("User is already active.")
+        else Activation token invalid or missing
+            SendEmail -> SendEmail : Generate Activation Token
+            SendEmail -> Mapper : ToDataModel(updated User)
+            Mapper --> SendEmail : Updated UserDataModel
+            SendEmail -> DB : Update UserDataModel
+            DB --> SendEmail : Save successful
+        end
+    end
+    
+    SendEmail -> EmailService : Send Email (activation URL)
+    EmailService --> SendEmail : Email sent
+    deactivate SendEmail
+    
+    SendEmail --> RegisterUser : SendEmailAsync completed
 
-activate DB
-
-DB --> BE:
-
-deactivate DB
-
-alt user not found
-
-<-- BE: Response status code - 404
-
-else database unavailable
-
-<-- BE: Response status code - 503
-
-else user found
-
-<-- BE: Response status code - 200
-
-end
-
-BE -> DB: find by first name
-
-activate DB
-
-DB --> BE:
-
-deactivate DB
-
-alt user not found
-
-<-- BE: Response status code - 404
-
-else database unavailable
-
-<-- BE: Response status code - 503
-
-else user found
-
-<-- BE: Response status code - 200
-
-end
-
-BE -> DB: find by last name
-
-activate DB
-
-DB --> BE:
-
-deactivate DB
-
-alt user not found
-
-<-- BE: Response status code - 404
-
-else database unavailable
-
-<-- BE: Response status code - 503
-
-else user found
-
-<-- BE: Response status code - 200
-
-end
-
-BE -> DB: find by full name
-
-activate DB
-
-DB --> BE:
-
-deactivate DB
-
-alt user not found
-
-<-- BE: Response status code - 404
-
-else database unavailable
-
-<-- BE: Response status code - 503
-
-else user found
-
-<-- BE: Response status code - 200
-
-end
-
-BE -> DB: update
-
-activate DB
-
-DB --> BE:
-
-deactivate DB
-
-<-- BE: Response status code - 200
-
-deactivate BE
-
-alt database unavailable
-
-<-- BE: Response status code - 503
-
-else database error
-
-<-- BE: Response status code - 500
-
-end
-
-else user not authorized
-
-<-- BE: Response status code - 401
-
+    RegisterUser --> Admin : UserDto (Registration successful)
 end
 
 @enduml
-
-
-
-
-
-

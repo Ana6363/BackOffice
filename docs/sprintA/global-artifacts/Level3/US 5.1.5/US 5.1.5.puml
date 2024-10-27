@@ -1,0 +1,65 @@
+@startuml
+autonumber
+skinparam packageStyle rect
+
+title Delete Patient Account and Associated Data
+
+actor "Patient/Admin" as User
+participant "DeletePatientAsync" as DeletePatient <<component>>
+database "Patient Repository" as PatientRepo <<component>>
+database "User Service" as UserService <<component>>
+participant "Email Service" as EmailService <<component>>
+participant "Log Service" as LogService <<component>>
+participant "Unit of Work" as UnitOfWork <<component>>
+
+User -> DeletePatient : Call DeletePatientAsync(recordNumber)
+
+== Authorization Checks ==
+alt Check if patient exists
+    DeletePatient -> PatientRepo : Get patient by RecordNumber
+    PatientRepo --> DeletePatient : patientDataModel
+
+    alt Patient not found
+        DeletePatient -> DeletePatient : Throws Exception("Patient not found.")
+    end
+else Patient found
+    DeletePatient -> DeletePatient : Get current user role and email
+
+    alt User is not Admin and not owner
+        DeletePatient -> DeletePatient : Throws UnauthorizedAccessException
+    end
+end
+
+== Ownership and Deletion Authorization ==
+DeletePatient -> UserService : Get user by UserId
+UserService --> DeletePatient : user
+
+alt User not found or mismatch with patient
+    DeletePatient -> DeletePatient : Throws Exception("Patient does not belong to the user.")
+else User is authorized
+    alt User is Admin or user email does not match patient email
+        alt User is not marked for deletion
+            DeletePatient -> DeletePatient : Throws Exception("User is not marked for deletion.")
+        else User marked for deletion
+            DeletePatient -> EmailService : Send deletion notification email
+            EmailService --> DeletePatient : Email sent
+            DeletePatient -> DeletePatient : Schedule 24-hour deletion delay
+        end
+    else Direct delete for user (non-admin)
+        DeletePatient -> DeletePatient : Schedule 24-hour deletion delay
+    end
+end
+
+== Deferred Deletion Task ==
+DeletePatient -> PatientRepo : Delete patient after delay
+DeletePatient -> UserService : Delete user after delay
+DeletePatient -> UnitOfWork : Commit transaction
+UnitOfWork --> DeletePatient : Commit successful
+
+== Log Operation ==
+DeletePatient -> LogService : LogDeleteOperation(user.Id, patient)
+LogService --> DeletePatient : Log created
+
+DeletePatient --> User : Return patientDataModel
+
+@enduml

@@ -1,1 +1,1 @@
-SELECT * FROM Staff;
+SELECT * FROM OperationType;

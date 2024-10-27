@@ -1,0 +1,39 @@
+@startuml
+autonumber
+skinparam packageStyle rect
+
+title OAuth Callback Handling
+
+actor "OAuth Service" as OAuthService
+participant "HandleOAuthCallbackAsync" as HandleOAuth <<component>>
+database "User Database" as DB <<component>>
+participant "UserMapper" as Mapper <<component>>
+participant "Email Service" as EmailService <<component>>
+
+OAuthService -> HandleOAuth : Call HandleOAuthCallbackAsync(code)
+
+HandleOAuth -> OAuthService : ExchangeCodeForTokensAsync(code)
+OAuthService --> HandleOAuth : tokenResponse
+
+HandleOAuth -> OAuthService : ValidateToken(tokenResponse.IdToken)
+OAuthService --> HandleOAuth : payload (contains email)
+
+HandleOAuth -> DB : Check if user exists by email
+DB --> HandleOAuth : userDataModel
+
+alt User not found
+    HandleOAuth --> OAuthService : Return (false, null, null, "User not in the system. An admin has to register the user.")
+else User exists
+    HandleOAuth -> Mapper : Map userDataModel to domain object
+    Mapper --> HandleOAuth : existingUser (domain object)
+
+    alt User is inactive
+        HandleOAuth -> HandleOAuth : Call SendActivationEmailAsync(existingUser.Id.AsString())
+        HandleOAuth -> EmailService : Send activation email
+        EmailService --> HandleOAuth : Email sent
+        HandleOAuth --> OAuthService : Return (false, null, null, "User is inactive. An activation email has been sent.")
+    else User is active
+        HandleOAuth --> OAuthService : Return (true, existingUser.Role, existingUser.Id.AsString(), "User is active")
+    end
+end
+@enduml

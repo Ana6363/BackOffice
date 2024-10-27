@@ -1,0 +1,50 @@
+@startuml
+autonumber
+skinparam packageStyle rect
+
+title Create Patient Account
+
+actor "Admin" as Admin
+participant "CreatePatientAsync" as CreatePatient <<component>>
+database "User Database" as UserDB <<component>>
+database "Patient Database" as PatientDB <<component>>
+participant "UserService" as UserService <<component>>
+participant "PatientMapper" as Mapper <<component>>
+
+Admin -> CreatePatient : Call CreatePatientAsync(patientDto)
+
+== User Existence Checks ==
+CreatePatient -> UserService : Get user by UserId
+UserService --> CreatePatient : existingUser
+
+alt User already registered
+    CreatePatient -> CreatePatient : Throws Exception("User is already registered in the database.")
+else User not registered
+    CreatePatient -> UserDB : Check if phone number already exists
+    UserDB --> CreatePatient : existingUserWithPhoneNumber
+
+    alt Phone number already exists
+        CreatePatient -> CreatePatient : Throws Exception("A user with this phone number already exists.")
+    else Phone number unique
+        CreatePatient -> CreatePatient : Initialize UserDto
+        CreatePatient -> UserService : Add new user to database
+        UserService --> CreatePatient : User added successfully
+
+        == Record Number Generation ==
+        CreatePatient -> PatientDB : Get latest patient by RecordNumber
+        PatientDB --> CreatePatient : latestPatient
+        CreatePatient -> CreatePatient : Generate next RecordNumber as generatedRecordNumber
+
+        CreatePatient -> Mapper : Map patientDto to domain object
+        Mapper --> CreatePatient : patient
+
+        alt Patient mapping successful
+            CreatePatient -> PatientDB : Add new patient to database
+            PatientDB --> CreatePatient : Patient added successfully
+            CreatePatient --> Admin : Return PatientDataModel
+        else Mapping failed
+            CreatePatient -> CreatePatient : Throws Exception("Error mapping the patient object.")
+        end
+    end
+end
+@enduml

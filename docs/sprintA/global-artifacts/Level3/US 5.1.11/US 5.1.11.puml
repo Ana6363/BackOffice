@@ -1,0 +1,50 @@
+@startuml
+autonumber
+skinparam packageStyle rect
+
+title Get Filtered Patients
+
+actor "Admin/Patient" as Requester
+participant "GetFilteredPatientsAsync" as GetFilteredPatients <<component>>
+database "Patient Database" as PatientDB <<component>>
+database "User Database" as UserDB <<component>>
+
+Requester -> GetFilteredPatients : Call GetFilteredPatientsAsync(filterDto)
+
+== Query Initialization ==
+GetFilteredPatients -> PatientDB : Start query on Patients table
+GetFilteredPatients -> UserDB : Join with Users table on UserId
+
+== Apply Filters ==
+alt Filter by UserId
+    GetFilteredPatients -> GetFilteredPatients : Check if filterDto.UserId is specified
+    GetFilteredPatients -> PatientDB : Apply UserId filter
+end
+
+alt Filter by PhoneNumber
+    GetFilteredPatients -> GetFilteredPatients : Check if filterDto.PhoneNumber is specified
+    GetFilteredPatients -> UserDB : Apply PhoneNumber filter
+end
+
+alt Filter by FirstName
+    GetFilteredPatients -> GetFilteredPatients : Check if filterDto.FirstName is specified
+    GetFilteredPatients -> UserDB : Apply FirstName filter with Contains
+end
+
+alt Filter by LastName
+    GetFilteredPatients -> GetFilteredPatients : Check if filterDto.LastName is specified
+    GetFilteredPatients -> UserDB : Apply LastName filter with Contains
+end
+
+alt Filter by FullName
+    GetFilteredPatients -> GetFilteredPatients : Check if filterDto.FullName is specified
+    GetFilteredPatients -> UserDB : Apply FullName filter with Contains
+end
+
+== Execute Query ==
+GetFilteredPatients -> PatientDB : Execute query and select filtered patients
+PatientDB --> GetFilteredPatients : Return filtered PatientDataModel list
+
+GetFilteredPatients --> Requester : Return IEnumerable<PatientDataModel>
+
+@enduml
