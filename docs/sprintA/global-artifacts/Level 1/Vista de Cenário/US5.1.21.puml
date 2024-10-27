@@ -1,6 +1,9 @@
 @startuml
 'https://plantuml.com/use-case-diagram
 
+title US21 - Update an Operation Type
+
+
 :Admin: as Actor
 
 

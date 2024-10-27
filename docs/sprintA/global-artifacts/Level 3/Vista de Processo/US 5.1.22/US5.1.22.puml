@@ -1,0 +1,31 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title US22 - Delete an OperationType
+
+autonumber
+
+participant "Back-End (BE)" as sys
+database "Database (DB)" as db
+
+-> sys +: DELETE /operationType/{id}
+
+activate sys
+
+sys -> db : findById(operationType.id)
+activate db
+alt if OperationType found
+    db --> sys : operationType
+    deactivate db
+    sys -> db : delete(operationType)
+    activate db
+    db --> sys : deletion success
+    deactivate db
+    <-- sys : 200 Response Code (Deleted)
+else if OperationType not found
+    db --> sys : null
+    deactivate db
+    <-- sys : 404 Response Code (Not Found)
+end
+
+@enduml

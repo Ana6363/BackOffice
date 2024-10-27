@@ -1,0 +1,38 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title US21 - Edit an OperationType
+
+autonumber
+
+participant "Back-End (BE)" as sys
+database "Database (DB)" as db
+
+-> sys +: PATCH /operationType/{id} { \n \
+"operationTypeName": New Operation Type Name,  \n \
+"operationTime": New Operation Time,\n \
+"specializations": [\n \
+"Specialization1", \n \
+] \n \
+
+
+activate sys
+
+sys -> db : findById(operationType.id)
+activate db
+alt if OperationType found
+    db --> sys : operationType
+    deactivate db
+    sys -> sys : update fields with new info
+    sys -> db : save(operationType)
+    activate db
+    db --> sys : updatedOperationType
+    deactivate db
+    <-- sys : 200 Response Code with updatedOperationType
+else if OperationType not found
+    db --> sys : null
+    deactivate db
+    <-- sys : 404 Response Code (Not Found)
+end
+
+@enduml

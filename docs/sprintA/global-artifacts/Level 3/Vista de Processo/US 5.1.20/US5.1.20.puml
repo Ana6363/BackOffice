@@ -1,0 +1,30 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title US20 - Create Operation Type
+
+autonumber
+
+participant "Back-End (BE)" as sys
+database "Database (DB)" as db
+
+-> sys: POST /api/operationType { \n \
+"name": Operation Type Name,  \n \
+"time": Operation Type duration,  \n \
+"specializations": [\n \
+    {"name": Name of Specialization for Operation Type}\n \
+]  \n \
+
+
+activate sys
+sys -> db : save(operationType)
+activate db
+db --> sys : operationType
+deactivate db
+alt If successful
+    <-sys: 201 response code
+else Error
+    <-sys: 400 response code
+end
+
+@enduml

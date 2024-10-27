@@ -1,0 +1,28 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title US23 - List OperationTypes
+
+autonumber
+
+participant "Back-End (BE)" as sys
+database "(DB)" as db
+
+-> sys +: GET /operationType
+
+activate sys
+
+sys -> db : findAll(operationTypes)
+activate db
+alt if OperationTypes found
+    db --> sys : List of operationTypes
+    note over sys : Return list of operation types
+    deactivate db
+    <-- sys : 200 Response Code, with data
+else if no OperationTypes found
+    db --> sys : []
+    note over sys : Return empty list
+    deactivate db
+    <-- sys : 200 Response Code, empty data set
+end
+@enduml
