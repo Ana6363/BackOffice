@@ -1,0 +1,42 @@
+@startuml
+autonumber
+skinparam packageStyle rect
+
+title Get Filtered Staff Function
+
+actor "Admin" as Admin
+participant "StaffService" as Service <<component>>
+database "BackOfficeDbContext" as DbContext <<component>>
+
+Admin -> Service : Request to get filtered staff with StaffFilterDto
+
+activate Service
+Service -> DbContext : Create query on DbContext.Staff (including AvailableSlots and Users)
+
+alt StaffId filter provided
+    Service -> DbContext : Apply StaffId filter with collation
+end
+
+alt PhoneNumber filter provided
+    Service -> DbContext : Apply PhoneNumber filter with collation
+end
+
+alt FirstName filter provided
+    Service -> DbContext : Apply FirstName filter with collation
+end
+
+alt LastName filter provided
+    Service -> DbContext : Apply LastName filter with collation
+end
+
+alt FullName filter provided
+    Service -> DbContext : Apply FullName filter with collation
+end
+
+Service -> DbContext : Execute query with filters and retrieve results
+DbContext --> Service : Return filtered staff data
+
+Service --> Admin : Return filtered staff list (StaffId, LicenseNumber, Specialization, Status, AvailableSlots, FirstName, LastName, FullName, PhoneNumber)
+
+deactivate Service
+@enduml

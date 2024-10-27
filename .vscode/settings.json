@@ -14,5 +14,6 @@
             "database": "hospitaldb",
             "username": "root"
         }
-    ]
+    ],
+    "svg.preview.background": "editor"
 }

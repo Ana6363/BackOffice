@@ -1,0 +1,61 @@
+@startuml
+autonumber
+skinparam packageStyle rect
+
+title Create Staff Function
+
+actor "Admin" as Admin
+participant "StaffService" as Service <<component>>
+database "Staff Repository" as StaffRepo <<component>>
+database "User Repository" as UserRepo <<component>>
+database "BackOfficeDbContext" as DbContext <<component>>
+
+Admin -> Service : Request to create staff with StaffDto
+
+Service -> StaffRepo : GetByLicenseNumberAsync(staffDto.LicenseNumber)
+
+alt Staff with license exists
+ Admin   <-- Service : Exception: "Staff member with this license number already exists"
+else Staff not found
+    Service -> UserRepo : GetByPhoneNumberAsync(staffDto.PhoneNumber)
+
+    alt User not found
+      Admin   <-- Service : Exception: "No user matches this phone number"
+    else User found
+        alt User Role is "Patient"
+         Admin    <-- Service : Exception: "User is not part of Staff"
+        else User Role is Staff
+            Service -> Service : Generate sequential Staff ID
+            
+            loop Check for existing Staff ID
+                Service -> StaffRepo : GetByStaffIdAsync(generatedStaffId)
+                alt Staff ID unique
+                    break
+                else Staff ID exists
+                    Service -> Service : Generate new Staff ID
+                end
+            end
+            
+            Service -> Service : Map to Domain (StaffMapper.ToDomain)
+            
+            Service -> DbContext : Find User by ID in DbContext.Users
+
+            alt User not found in DbContext
+            Admin     <-- Service : Exception: "Existing user not found in the database"
+            else User found
+                Service -> DbContext : Remove existing user
+                Service -> DbContext : Save changes
+
+                Service -> DbContext : Create new User DataModel
+                Service -> DbContext : Add new User to DbContext.Users
+                Service -> DbContext : Save changes
+
+                Service -> DbContext : Add new Staff DataModel
+                Service -> DbContext : Save changes
+
+           Admin      <-- Admin : Return created StaffDataModel
+            end
+        end
+    end
+end
+@enduml

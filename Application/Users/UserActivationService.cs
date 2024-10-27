@@ -8,6 +8,7 @@ using BackOffice.Application.Users;
 using Microsoft.EntityFrameworkCore;
 using BackOffice.Domain.Patients;
 using Microsoft.EntityFrameworkCore.Storage;
+using BackOffice.Domain.Staff;
 
 namespace BackOffice.Application.Users
 {
@@ -82,13 +83,21 @@ namespace BackOffice.Application.Users
         }
 
 
-        public async Task<UserDto> RegisterUserAsync(string email, string role,int phoneNumber, string firstName, string lastName, string fullName)
+        public async Task<UserDto> RegisterUserAsync(string role,int phoneNumber, string firstName, string lastName, string fullName)
         {
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) || string.IsNullOrWhiteSpace(fullName))
+            if (string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) || string.IsNullOrWhiteSpace(fullName))
             {
                 throw new ArgumentException("Email, role, first name, last name, and full name must be provided.");
             }
+            
+            var recruitmentYear = DateTime.Now.Year;
+            StaffId staffId;
+            
+                var sequentialNumber = GenerateSequentialNumber();
+                staffId = new StaffId(role, recruitmentYear, sequentialNumber);
+       
 
+            var email = staffId.AsString() + "@myhospital.com";
             var existingUserDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == email);
             if (existingUserDataModel != null)
             {
@@ -153,5 +162,11 @@ namespace BackOffice.Application.Users
 
             await _emailService.SendEmailAsync(email, subject, body);
         }
+
+        private int GenerateSequentialNumber()
+        {
+            var random = new Random();
+            return random.Next(0, 99999);
+        }
+        }
     }
-}

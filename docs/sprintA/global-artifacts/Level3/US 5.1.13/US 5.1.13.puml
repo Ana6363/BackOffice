@@ -1,0 +1,62 @@
+@startuml
+autonumber
+skinparam packageStyle rect
+
+title Update Staff Function
+
+actor "Admin" as Admin
+participant "StaffService" as Service <<component>>
+database "BackOfficeDbContext" as DbContext <<component>>
+database "User Repository" as UserRepo <<component>>
+database "Log Repository" as LogRepo <<component>>
+
+Admin -> Service : Request to update staff with StaffDto
+
+Service -> DbContext : Find Staff by StaffId in DbContext.Staff (Include AvailableSlots)
+
+alt Staff not found
+    Admin <-- Service : Exception: "Staff member not found."
+else Staff found
+    Service -> DbContext : Find User by StaffId in DbContext.Users
+
+    alt User not found
+        Admin <-- Service : Exception: "User associated with this staff not found."
+    else User found
+        Service -> Service : UpdateProperties(staffDto, staffDataModel)
+        Service -> Service : UpdateProperties(staffDto, user)
+
+        loop Process AvailableSlots
+            Service -> Service : Map slotDto to DataModel
+            alt Slot exists
+                alt Slot timing changed
+                    Service -> DbContext : Update existing slot in DbContext.Staff.AvailableSlots
+                else No timing change
+                    Service -> Service : Skip slot update
+                end
+            else New slot
+                Service -> DbContext : Add new slot to DbContext.Staff.AvailableSlots
+            end
+        end
+
+        alt No properties updated
+            Service -> Service : Map to Domain and return StaffDto
+            Admin <-- Service : Return updated StaffDto
+        else Properties updated
+            Service -> DbContext : Update Staff and User in DbContext
+            Service -> DbContext : Save changes
+
+            alt Phone number changed
+                Service -> EmailService : Send email notification about phone number change
+            end
+
+            Service -> DbContext : Find updated Staff with AvailableSlots in DbContext.Staff
+
+            Service -> Service : LogUpdateOperation(user.Id)
+
+            Service -> LogRepo : Save log entry
+
+            Admin <-- Service : Return updated StaffDto
+        end
+    end
+end
+@enduml

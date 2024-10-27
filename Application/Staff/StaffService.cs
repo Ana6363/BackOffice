@@ -43,16 +43,15 @@ namespace BackOffice.Application.StaffService
 
     public async Task<StaffDataModel> CreateStaffAsync(StaffDto staffDto, IConfiguration configuration)
         {
-            var existingStaff = await _staffRepository.GetByLicenseNumberAsync(staffDto.LicenseNumber);
-            if (existingStaff != null)
-            {
-                throw new Exception("A staff member with this license number already exists.");
-            }
+  
+            var staffId = staffDto.StaffId;
+            var staffEmail = $"{staffId}@myhospital.com";
 
-            var existingUser = await _userRepository.GetByPhoneNumberAsync(staffDto.PhoneNumber);
+            // Check if the user with the staff email already exists in the database
+            var existingUser = await _userRepository.GetByEmailAsync(staffEmail);
             if (existingUser == null)
             {
-                throw new Exception("No user in the database matches this phone number.");
+                throw new Exception("No user in the database matches this staff ID email.");
             }
 
             if (existingUser.Role == "Patient")
@@ -60,55 +59,27 @@ namespace BackOffice.Application.StaffService
                 throw new Exception("User is not part of the Staff.");
             }
 
-            var recruitmentYear = DateTime.Now.Year;
-            StaffId staffId;
-            do
+            // Check if a staff member with this license number already exists
+            var existingStaff = await _staffRepository.GetByLicenseNumberAsync(staffDto.LicenseNumber);
+            if (existingStaff != null)
             {
-                var sequentialNumber = GenerateSequentialNumber();
-                staffId = new StaffId(existingUser.Role, recruitmentYear, sequentialNumber);
+                throw new Exception("A staff member with this license number already exists.");
             }
-            while (await _staffRepository.GetByStaffIdAsync(staffId.AsString()) != null);
 
-            var staffDomain = StaffMapper.ToDomain(staffDto, staffId, configuration);
-            var generatedEmail = staffDomain.Email.Value;
+            // Map to the domain model
+            var staffIdDomain = new StaffId(staffId);w
+            var staffDomain = StaffMapper.ToDomain(staffDto, staffIdDomain, configuration);
 
-            var existingUserDataModel = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == existingUser.Id.AsString());
-
-            if (existingUserDataModel == null)
-            {
-                throw new Exception("Existing user not found in the database.");
-            }
-            _dbContext.Users.Remove(existingUserDataModel);
-            await _dbContext.SaveChangesAsync();
-            var newUserDataModel = new UserDataModel
-            {
-                Id = generatedEmail,
-                Role = existingUser.Role,
-                PhoneNumber = existingUser.PhoneNumber.Number,
-                FirstName = existingUser.FirstName.NameValue,
-                LastName = existingUser.LastName.NameValue,
-                FullName = existingUser.FullName.NameValue,
-                Active = existingUser.Active,
-                IsToBeDeleted = existingUser.IsToBeDeleted,
-                ActivationToken = existingUser.ActivationToken,
-                TokenExpiration = existingUser.TokenExpiration
-            };
-
-            _dbContext.Users.Add(newUserDataModel);
-            await _dbContext.SaveChangesAsync();
-
+            // Create and save the staff data model without deleting the user
             var staffDataModel = StaffMapper.ToDataModel(staffDomain);
+            staffDataModel.Email = staffEmail;  // Associate with the user's email
+
             _dbContext.Staff.Add(staffDataModel);
             await _dbContext.SaveChangesAsync();
 
             return staffDataModel;
         }
 
-    private int GenerateSequentialNumber()
-        {
-            var random = new Random();
-            return random.Next(0, 99999);
-        }
 
         public async Task<IEnumerable<object>> GetFilteredStaffAsync(StaffFilterDto filterDto)
         {
