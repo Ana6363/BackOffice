@@ -49,21 +49,27 @@ By combining the two models, it is possible to represent the system from various
 
 ### **Level 1**
 
+## **Logical View**
 ![Logical View Level 1](Level1/LogicalView.PNG)
 
 ### **Level 2**
 
+## **Logical View**
 ![Logical View Level 2](Level2/LogicalView.PNG)
 
+## **Deployment View**
 ![Deployment View Level 2](Level2/DeploymentView.jpg)
 
+## **Physical View**
 ![Physical View Level 2](Level2/PhysicalView.PNG)
 
 ### **Level 3**
 
+## **Logical View**
 ![Logical View Level 3](Level3/LogicalView.PNG)
 
-![Deployment View Level 3](Level3/DeploymentView.png)
+## **Deployment View**
+![Deployment View Level 3](Level3/DeploymentView.jpg)
 
 
 ### **Generics**
