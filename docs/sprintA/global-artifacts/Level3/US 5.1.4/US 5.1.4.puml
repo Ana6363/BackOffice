@@ -1,64 +1,139 @@
-@startuml
+@startuml Process View - Level 3
+
 autonumber
 skinparam packageStyle rect
 
 title Update Patient Profile
 
-actor "Patient" as Patient
-participant "UpdateAsync" as UpdateProfile <<component>>
-database "Patient Database" as PatientDB <<component>>
-database "User Database" as UserDB <<component>>
-participant "PatientMapper" as Mapper <<component>>
-participant "Email Service" as EmailService <<component>>
+participant "Back-End" as BE <<component>>
+database "DataBase" as DB <<component>>
 
-Patient -> UpdateProfile : Call UpdateAsync(PatientDto)
+-> BE : GET patients/{dateOfBirth}/{firstName}/{lastName}/{fullName}/{phoneNumber}/{emergencyContact}/{gender}
 
-== Authorization Checks ==
-alt Check if patient exists
-    UpdateProfile -> PatientDB : Query patient by RecordNumber
-    PatientDB --> UpdateProfile : patientDataModel
+alt user authorized
 
-    alt Patient not found
-        UpdateProfile -> UpdateProfile : Throws Exception("Patient not found.")
-    end
-else Patient found
-    UpdateProfile -> UpdateProfile : Get current user's role and email
-    alt User is not Admin and not owner
-        UpdateProfile -> UpdateProfile : Throws UnauthorizedAccessException
-    end
-end
+activate BE
 
-== Update Logic ==
-alt User is authorized
-    UpdateProfile -> UserDB : Query user by UserId
-    UserDB --> UpdateProfile : user
+BE -> DB: find by user id
 
-    alt User not found
-        UpdateProfile -> UpdateProfile : Throws Exception("User associated with this patient not found.")
-    end
+activate DB
 
-    alt Phone number change allowed
-        UpdateProfile -> UserDB : Check if phone number already exists
-        UserDB --> UpdateProfile : No existing user with same phone number
-        UpdateProfile -> UpdateProfile : Set new phone number on user
-    else Phone number change not allowed
-        UpdateProfile -> UpdateProfile : Throws Exception("A user with this phone number already exists.")
-    end
+DB --> BE:
 
-    == Property Updates ==
-    UpdateProfile -> UpdateProfile : Call UpdateProperties(patientDto, patientDataModel)
-    UpdateProfile -> UpdateProfile : Call UpdateProperties(patientDto, user)
-    
-    alt Properties updated
-        UpdateProfile -> PatientDB : Update patientDataModel
-        UpdateProfile -> UserDB : Update user
-        UpdateProfile -> EmailService : Send notifications if phone or emergency contact changed
-        EmailService --> UpdateProfile : Email sent
-    end
+deactivate DB
 
-    UpdateProfile -> Mapper : Map updated patient to domain object
-    Mapper --> UpdateProfile : updatedPatientDomainFinal
-    UpdateProfile --> Patient : Return updated PatientDto
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
 
 end
+
+BE -> DB: find by first name
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
+
+end
+
+BE -> DB: find by last name
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
+
+end
+
+BE -> DB: find by full name
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
+
+end
+
+BE -> DB: update
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+<-- BE: Response status code - 200
+
+deactivate BE
+
+alt database unavailable
+
+<-- BE: Response status code - 503
+
+else database error
+
+<-- BE: Response status code - 500
+
+end
+
+else user not authorized
+
+<-- BE: Response status code - 401
+
+end
+
 @enduml
+
+
+
+
+
+

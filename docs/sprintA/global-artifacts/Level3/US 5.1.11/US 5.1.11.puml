@@ -1,50 +1,133 @@
-@startuml
+@startuml Process View - Level 3
+
 autonumber
 skinparam packageStyle rect
 
-title Get Filtered Patients
+title List Patient
 
-actor "Admin/Patient" as Requester
-participant "GetFilteredPatientsAsync" as GetFilteredPatients <<component>>
-database "Patient Database" as PatientDB <<component>>
-database "User Database" as UserDB <<component>>
+participant "Back-End" as BE <<component>>
+database "DataBase" as DB <<component>>
 
-Requester -> GetFilteredPatients : Call GetFilteredPatientsAsync(filterDto)
+-> BE: GET patients/ {fullName} / {userId} / {firstName} / {LastName}
 
-== Query Initialization ==
-GetFilteredPatients -> PatientDB : Start query on Patients table
-GetFilteredPatients -> UserDB : Join with Users table on UserId
+alt user authorized
 
-== Apply Filters ==
-alt Filter by UserId
-    GetFilteredPatients -> GetFilteredPatients : Check if filterDto.UserId is specified
-    GetFilteredPatients -> PatientDB : Apply UserId filter
+activate BE
+
+BE -> DB: find by full name
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
+
 end
 
-alt Filter by PhoneNumber
-    GetFilteredPatients -> GetFilteredPatients : Check if filterDto.PhoneNumber is specified
-    GetFilteredPatients -> UserDB : Apply PhoneNumber filter
+BE -> DB: find by userId
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
+
 end
 
-alt Filter by FirstName
-    GetFilteredPatients -> GetFilteredPatients : Check if filterDto.FirstName is specified
-    GetFilteredPatients -> UserDB : Apply FirstName filter with Contains
+BE -> DB: find by FirstName
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
+
 end
 
-alt Filter by LastName
-    GetFilteredPatients -> GetFilteredPatients : Check if filterDto.LastName is specified
-    GetFilteredPatients -> UserDB : Apply LastName filter with Contains
+BE -> DB: find by LastName
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+alt user not found
+
+<-- BE: Response status code - 404
+
+else database unavailable
+
+<-- BE: Response status code - 503
+
+else user found
+
+<-- BE: Response status code - 200
+
 end
 
-alt Filter by FullName
-    GetFilteredPatients -> GetFilteredPatients : Check if filterDto.FullName is specified
-    GetFilteredPatients -> UserDB : Apply FullName filter with Contains
+BE -> DB: update
+
+activate DB
+
+DB --> BE:
+
+deactivate DB
+
+<-- BE: Response status code - 200
+
+deactivate BE
+
+alt database unavailable
+
+<-- BE: Response status code - 503
+
+else database error
+
+<-- BE: Response status code - 500
+
 end
 
-== Execute Query ==
-GetFilteredPatients -> PatientDB : Execute query and select filtered patients
-PatientDB --> GetFilteredPatients : Return filtered PatientDataModel list
+else user not authorized
 
-GetFilteredPatients --> Requester : Return IEnumerable<PatientDataModel>
+<-- BE: Response status code - 401
+
+end
 
 @enduml

@@ -1,50 +1,44 @@
-@startuml
+@startuml Process View - Level 3
+
 autonumber
 skinparam packageStyle rect
 
-title Create Patient Account
+title Create Patient
 
-actor "Admin" as Admin
-participant "CreatePatientAsync" as CreatePatient <<component>>
-database "User Database" as UserDB <<component>>
-database "Patient Database" as PatientDB <<component>>
-participant "UserService" as UserService <<component>>
-participant "PatientMapper" as Mapper <<component>>
+participant "Back-End" as BE <<component>>
+database "DataBase" as DB <<component>>
 
-Admin -> CreatePatient : Call CreatePatientAsync(patientDto)
+-> BE: POST /patient {patient}
 
-== User Existence Checks ==
-CreatePatient -> UserService : Get user by UserId
-UserService --> CreatePatient : existingUser
+alt user authorized
 
-alt User already registered
-    CreatePatient -> CreatePatient : Throws Exception("User is already registered in the database.")
-else User not registered
-    CreatePatient -> UserDB : Check if phone number already exists
-    UserDB --> CreatePatient : existingUserWithPhoneNumber
+activate BE
 
-    alt Phone number already exists
-        CreatePatient -> CreatePatient : Throws Exception("A user with this phone number already exists.")
-    else Phone number unique
-        CreatePatient -> CreatePatient : Initialize UserDto
-        CreatePatient -> UserService : Add new user to database
-        UserService --> CreatePatient : User added successfully
+BE -> DB: save(request)
 
-        == Record Number Generation ==
-        CreatePatient -> PatientDB : Get latest patient by RecordNumber
-        PatientDB --> CreatePatient : latestPatient
-        CreatePatient -> CreatePatient : Generate next RecordNumber as generatedRecordNumber
+activate DB
 
-        CreatePatient -> Mapper : Map patientDto to domain object
-        Mapper --> CreatePatient : patient
+DB --> BE:
 
-        alt Patient mapping successful
-            CreatePatient -> PatientDB : Add new patient to database
-            PatientDB --> CreatePatient : Patient added successfully
-            CreatePatient --> Admin : Return PatientDataModel
-        else Mapping failed
-            CreatePatient -> CreatePatient : Throws Exception("Error mapping the patient object.")
-        end
-    end
+deactivate DB
+
+alt request valid
+
+<-- BE: Response status code -200
+
+else database unavailable
+
+<-- BE: Response status code -503
+
 end
+
+else user unauthorized
+
+<-- BE: Response status code -401
+
+end
+
+deactivate BE
+
 @enduml
+
