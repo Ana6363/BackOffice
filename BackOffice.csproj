@@ -44,11 +44,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="docs\sprintA\global-artifacts\Level3\US 5.1.14\" />
-    <Folder Include="docs\sprintA\global-artifacts\Level3\US 5.1.19\" />
-    <Folder Include="docs\sprintA\global-artifacts\Level3\US 5.1.16\" />
-    <Folder Include="docs\sprintA\global-artifacts\Level3\US 5.1.10\" />
-    <Folder Include="docs\sprintA\global-artifacts\Level3\US 5.1.9\" />
     <Folder Include="docs\sprintA\global-artifacts\Generics\" />
   </ItemGroup>
   <!--
