@@ -14,13 +14,13 @@ namespace BackOffice.Domain.Appointement
         public Schedule Schedule { get; set; }
         public RequestId Request { get; set; }
         public RecordNumber Patient { get; set;}
-        public LicenseNumber Staff { get; set; }
+        public StaffId Staff { get; set; }
 
         private Appointement()
         {
         }
 
-        public Appointement(AppointementId appointementId, Schedule schedule, RequestId request, RecordNumber patient, LicenseNumber staff)
+        public Appointement(AppointementId appointementId, Schedule schedule, RequestId request, RecordNumber patient, StaffId staff)
         {
             AppointementId = appointementId ?? throw new BusinessRuleValidationException("Appointement ID cannot be null.");
             Schedule = schedule ?? throw new BusinessRuleValidationException("Schedule cannot be null.");
