@@ -8,7 +8,7 @@ using BackOffice.Infrastructure.Patients;
 namespace BackOffice.Controllers
 {
     [ApiController]
-    [Route("patient")]
+    [Route("api/v1/patient")]
     public class PatientController : ControllerBase
     {
         private readonly IPatientRepository _patientRepository;
@@ -64,8 +64,7 @@ namespace BackOffice.Controllers
         }
 
         [HttpPut("update")]
-        [Authorize(Roles = "Admin")]
-        [Authorize(Roles = "Patient")]
+        [Authorize(Roles = "Admin, Patient")]
         public async Task<IActionResult> UpdatePatientAsync([FromBody] PatientDto patientDto)
         {
             if (patientDto == null || string.IsNullOrWhiteSpace(patientDto.RecordNumber))
@@ -103,8 +102,7 @@ namespace BackOffice.Controllers
 
 
         [HttpDelete("delete/{recordNumber}")]
-        [Authorize(Roles = "Admin")]
-        [Authorize(Roles = "Patient")]
+        [Authorize(Roles = "Admin, Patient")]
         public async Task<IActionResult> DeletePatientAsync([FromRoute] string recordNumber)
         {
             if (string.IsNullOrWhiteSpace(recordNumber))
