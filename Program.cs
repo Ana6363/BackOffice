@@ -35,6 +35,16 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
 
+// Add CORS policy to allow any origin
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAnyOrigin", builder =>
+    {
+        builder.AllowAnyOrigin() // Allow any origin
+               .AllowAnyMethod() // Allow any HTTP method
+               .AllowAnyHeader(); // Allow any header
+    });
+});
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle  
@@ -93,6 +103,9 @@ builder.Services.AddScoped<OperationTypeService>();
     });
 
     var app = builder.Build();
+
+// Use CORS
+app.UseCors("AllowAnyOrigin"); // Apply the CORS policy
 
 // Configure the HTTP request pipeline.  
 if (app.Environment.IsDevelopment())
