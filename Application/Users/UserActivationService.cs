@@ -156,7 +156,7 @@ namespace BackOffice.Application.Users
             }
 
             // Send email
-            string activationUrl = $"http://localhost:5184/auth/activate?token={user.ActivationToken}";
+            string activationUrl = $"http://localhost:5184/api/v1/auth/activate?token={user.ActivationToken}";
             string subject = "Activate Your Account";
             string body = $"Please activate your account by clicking on the following link: {activationUrl}";
 

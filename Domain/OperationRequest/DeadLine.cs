@@ -10,7 +10,9 @@ namespace BackOffice.Domain.OperationRequest
         {
             if(deadLine < DateTime.UtcNow)
                 throw new BusinessRuleValidationException("DeadLine cannot be in the past.");
+            Value = deadLine;  
         }
+
 
         public override string ToString()
         {

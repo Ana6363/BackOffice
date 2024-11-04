@@ -1,16 +1,14 @@
 ﻿using BackOffice.Domain.Shared;
 
-namespace BackOffice.Domain.Appointement // Corrected namespace
+namespace BackOffice.Domain.Appointement
 {
-    public class AppointementId : EntityId // Corrected class name
+    public class AppointementId : EntityId
     {
-        public AppointementId(Guid id) : base(id)
-        {
-        }
+        public AppointementId(Guid id) : base(id) { }
 
         public override string AsString()
         {
-            return Value.ToString();
+            return ObjValue.ToString();
         }
 
         protected override object CreateFromString(string text)

@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using BackOffice.Application.Appointement;
 using BackOffice.Application.Logs;
 using BackOffice.Domain.Appointement;
 using BackOffice.Domain.Logs;
@@ -71,34 +72,25 @@ namespace BackOffice.Application.OperationRequest
 
         }
       
-        public async Task<IEnumerable<OperationRequestDataModel>> GetFilteredRequestAsync(FilteredRequestDto filteredRequest)
-        {
-            GetLoggedInUserEmail();
-            var query = from request in _context.OperationRequests
-                        join patient in _context.Patients on request.RecordNumber equals patient.RecordNumber
-                        join user in _context.Users on patient.UserId equals user.Id
-                        select new { request, patient, user };
+    public async Task<IEnumerable<OperationRequestDataModel>> GetFilteredRequestAsync(FilteredRequestDto filteredRequest)
+{
+    var query = _context.OperationRequests.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(filteredRequest.PatientName))
-            {
-                query = query.Where(p => p.user.FullName.Contains(filteredRequest.PatientName));
-            }
+    if (!string.IsNullOrWhiteSpace(filteredRequest.Priority))
+    {
+        query = query.Where(r => r.Priority.Contains(filteredRequest.Priority));
+    }
 
-            if(!string.IsNullOrWhiteSpace(filteredRequest.Priority))
-            {
-                query = query.Where(p => p.request.Priority.Contains(filteredRequest.Priority));
-            }
+    if (!string.IsNullOrWhiteSpace(filteredRequest.Status))
+    {
+        query = query.Where(r => r.Status.Contains(filteredRequest.Status));
+    }
 
-            if(!string.IsNullOrWhiteSpace(filteredRequest.Status)) 
-            {
-                query = query.Where(p => p.request.Status.Contains(filteredRequest.Status));
-            }
-
-            var result = await query.Select(r => r.request).ToListAsync();
-            return result;
+    var result = await query.ToListAsync();
+    return result;
+}
 
 
-        }
 
     public async Task<OperationRequestDto> UpdateAsync(OperationRequestDto updatedRequestDto)
 {
@@ -119,7 +111,7 @@ namespace BackOffice.Application.OperationRequest
     }
 
     var loggedInUserEmail = GetLoggedInUserEmail();
-    var loggedInUserId = loggedInUserEmail.Split('@')[0]; // Extract ID from email
+    var loggedInUserId = loggedInUserEmail.Split('@')[0];
 
     if (!loggedInUserId.Equals(existingRequest.StaffId, StringComparison.OrdinalIgnoreCase))
     {
@@ -142,19 +134,26 @@ namespace BackOffice.Application.OperationRequest
 
     if (updatedRequestDto.Status == "ACCEPTED" && existingRequest.Status != "ACCEPTED")
     {
-        // Trigger creation of an Appointment object
-        var newAppointment = new Appointement
-        {
-            RequestId = existingRequest.RequestId,
-            StaffId = updatedRequestDto.StaffId,
-            AppointementDate = DateTime.Now.AddDays(7) // Example appointment date logic
-        };
-        
-        await _context.Appointments.AddAsync(newAppointment);
-
-        // Update the status of the existing request
         existingRequest.Status = "ACCEPTED";
         isUpdated = true;
+
+        // Trigger creation of an Appointment using the AppointementService
+        var appointmentDto = new AppointementDto(
+            Guid.NewGuid(),
+            (DateTime)updatedRequestDto.AppointementDate,
+            updatedRequestDto.RequestId.ToString(),
+            updatedRequestDto.RecordNumber,
+            updatedRequestDto.StaffId
+        );
+
+        var appointmentService = new AppointementService(
+            _appointementRepository,
+            _unitOfWork,
+            _context,
+            _httpContextAccessor
+        );
+        
+        await appointmentService.CreateAppointementAsync(appointmentDto);
     }
 
     if (isUpdated)
@@ -166,6 +165,7 @@ namespace BackOffice.Application.OperationRequest
     var updatedRequest = OperationRequestMapper.ToDomain(updatedRequestDto);
     return updatedRequestDto;
 }
+
     private string GetLoggedInUserEmail()
         {
             var claimsIdentity = _httpContextAccessor.HttpContext.User.Identity as ClaimsIdentity;

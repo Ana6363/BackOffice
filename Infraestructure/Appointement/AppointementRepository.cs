@@ -16,7 +16,7 @@ namespace BackOffice.Infraestructure.Appointement
         }
 
         async Task<AppointementDataModel> IAppointementRepository.AddAsync(Domain.Appointement.Appointement appointement)
-        {
+        { 
             if (appointement == null)
             {
                 throw new ArgumentNullException(nameof(appointement), "Appointement cannot be null.");
@@ -50,7 +50,7 @@ namespace BackOffice.Infraestructure.Appointement
 
         public async Task UpdateAsync(Domain.Appointement.Appointement appointement)
         {
-            var appointementDataModel = await GetByIdAsync(appointement.AppointementId);
+            var appointementDataModel = await GetByIdAsync(appointement.Id);
             if (appointementDataModel == null)
             {
                 throw new Exception("Appointement not found."); // Handle not found case
