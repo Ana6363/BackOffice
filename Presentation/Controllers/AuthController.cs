@@ -8,7 +8,7 @@ using BackOffice.Application.OAuth;
 namespace BackOffice.Controllers
 {
     [ApiController]
-    [Route("auth")]
+    [Route("api/v1/auth")]
     public class AuthController : ControllerBase
     {
         private readonly UserActivationService _userActivationService;

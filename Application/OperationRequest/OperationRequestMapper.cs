@@ -26,7 +26,7 @@ namespace BackOffice.Application.OperationRequest
             );
         }
 
-        public static BackOffice.Domain.OperationRequest.OperationRequest ToDomain(OperationRequestDto requestDto)
+        public static Domain.OperationRequest.OperationRequest ToDomain(OperationRequestDto requestDto)
         {
             if (requestDto == null)
                 throw new ArgumentNullException(nameof(requestDto), "RequestDto cannot be null.");
@@ -69,7 +69,7 @@ namespace BackOffice.Application.OperationRequest
             };
         }
 
-        public static BackOffice.Domain.OperationRequest.OperationRequest toDomain(OperationRequestDataModel request){
+        public static Domain.OperationRequest.OperationRequest toDomain(OperationRequestDataModel request){
             if (request == null)
                 throw new ArgumentNullException(nameof(request), "Request cannot be null.");
 

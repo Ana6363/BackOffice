@@ -10,7 +10,7 @@ namespace BackOffice.Infraestructure.Appointement
         [Key]
         public required Guid AppointementId { get; set; } // Primary key
         public required DateTime Schedule { get; set; }
-        public required string Request { get; set; }
+        public string? Request { get; set; }
         public required string Patient { get; set; }
         public required string Staff { get; set; }
 
