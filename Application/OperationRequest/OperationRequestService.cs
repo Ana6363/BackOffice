@@ -41,6 +41,7 @@ namespace BackOffice.Application.OperationRequest
             var requestDto = new OperationRequestDto(
                 Guid.NewGuid(),
                 operationRequest.DeadLine,
+                null,
                 operationRequest.Priority,
                 operationRequest.RecordNumber,
                 operationRequest.StaffId,
@@ -109,9 +110,8 @@ namespace BackOffice.Application.OperationRequest
         throw new Exception("Operation request not found.");
     }
 
-    var doctor =  await _context.Staff
+    var doctor = await _context.Staff
         .FirstOrDefaultAsync(s => s.StaffId == updatedRequestDto.StaffId);
-    
 
     if (doctor == null)
     {
@@ -122,9 +122,9 @@ namespace BackOffice.Application.OperationRequest
     var loggedInUserId = loggedInUserEmail.Split('@')[0]; // Extract ID from email
 
     if (!loggedInUserId.Equals(existingRequest.StaffId, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new Exception("Only the requesting doctor can update this operation request.");
-        }
+    {
+        throw new Exception("Only the requesting doctor can update this operation request.");
+    }
 
     bool isUpdated = false;
 
@@ -140,15 +140,31 @@ namespace BackOffice.Application.OperationRequest
         isUpdated = true;
     }
 
+    if (updatedRequestDto.Status == "ACCEPTED" && existingRequest.Status != "ACCEPTED")
+    {
+        // Trigger creation of an Appointment object
+        var newAppointment = new Appointement
+        {
+            RequestId = existingRequest.RequestId,
+            StaffId = updatedRequestDto.StaffId,
+            AppointementDate = DateTime.Now.AddDays(7) // Example appointment date logic
+        };
+        
+        await _context.Appointments.AddAsync(newAppointment);
+
+        // Update the status of the existing request
+        existingRequest.Status = "ACCEPTED";
+        isUpdated = true;
+    }
+
     if (isUpdated)
     {
         await LogUpdateOperation(loggedInUserEmail, updatedRequestDto);
         await _context.SaveChangesAsync();
     }
 
-    var updatedRequest= OperationRequestMapper.ToDomain(updatedRequestDto);
+    var updatedRequest = OperationRequestMapper.ToDomain(updatedRequestDto);
     return updatedRequestDto;
-    
 }
     private string GetLoggedInUserEmail()
         {
