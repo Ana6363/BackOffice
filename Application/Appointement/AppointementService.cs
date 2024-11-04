@@ -34,31 +34,35 @@ namespace BackOffice.Application.Appointement
                 throw new Exception("Appointement is null");
             }
 
-            var appointementDto = new AppointementDto(
-                Guid.NewGuid(),
-                appointement.Schedule,
-                appointement.Request,
-                appointement.Patient,
-                appointement.Staff
-            );
+           var appointementDto = appointement;
 
             var staff = _context.Staff
                 .FirstOrDefault(s => s.StaffId == appointementDto.Staff);
             var slots = staff.AvailableSlots;
 
-            foreach (var slot in slots)
+
+            Console.WriteLine(appointementDto.Schedule);
+
+        /*    foreach (var slot in slots)
             {
+                Console.WriteLine(slot.StartTime);
                 if (appointement.Schedule != slot.StartTime)
                 {
                     Console.WriteLine("Slot Unavailable");
                     throw new Exception("Slot Unavailable");
                 }
             }
-
+        */
             Console.WriteLine($"Date in DTO: {appointementDto.Schedule}");
 
             var appointement1 = AppointementMapper.ToDomain(appointementDto);
             Console.WriteLine($"Date in Domain: {appointement.Schedule.ToString()}");
+
+           Console.WriteLine(appointement1.Id.Value);
+           Console.WriteLine(appointement1.Patient.Value);
+           Console.WriteLine(appointement1.Request.Value);
+           Console.WriteLine(appointement1.Schedule.Value);
+           Console.WriteLine(appointement1.Staff.Value);
 
             if (appointement1 == null)
             {

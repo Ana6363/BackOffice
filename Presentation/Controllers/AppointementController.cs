@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BackOffice.Controllers
 {
     [ApiController]
-    [Route("appointement")]
+    [Route("api/v1/appointement")]
     public class AppointementController : ControllerBase
     {
         private readonly AppointementService _appointementService;

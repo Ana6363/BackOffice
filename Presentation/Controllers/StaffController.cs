@@ -10,7 +10,7 @@ using BackOffice.Application.Staffs;
 namespace BackOffice.Controllers
 {
     [ApiController]
-    [Route("staff")]
+    [Route("api/v1/staff")]
     public class StaffController : ControllerBase
     {
         private readonly IStaffRepository _staffRepository;

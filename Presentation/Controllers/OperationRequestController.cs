@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace BackOffice.Controllers
 {
     [ApiController]
-    [Route("operationRequest")]
+    [Route("api/v1/operationRequest")]
     public class OperationRequestController : ControllerBase 
     {
         private readonly OperationRequestService _operationRequestService;
