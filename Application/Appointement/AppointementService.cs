@@ -7,6 +7,8 @@ using BackOffice.Domain.Shared;
 using BackOffice.Domain.Users;
 using BackOffice.Infraestructure.Appointement;
 using BackOffice.Infrastructure;
+using Healthcare.Domain.Services;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace BackOffice.Application.Appointement
@@ -17,13 +19,15 @@ namespace BackOffice.Application.Appointement
         private readonly BackOfficeDbContext _context;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly SurgeryRoomService _surgeryRoomService;
 
-        public AppointementService(IAppointementRepository appointementRepository, IUnitOfWork unitOfWork, BackOfficeDbContext context, IHttpContextAccessor httpContextAccessor)
+        public AppointementService(IAppointementRepository appointementRepository, IUnitOfWork unitOfWork, BackOfficeDbContext context, IHttpContextAccessor httpContextAccessor, SurgeryRoomService surgeryRoomService)
         {
             _appointementRepository = appointementRepository;
             _unitOfWork = unitOfWork;
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _surgeryRoomService = surgeryRoomService;
         }
 
         public async Task<AppointementDataModel> CreateAppointementAsync(AppointementDto appointement)
@@ -53,26 +57,68 @@ namespace BackOffice.Application.Appointement
                 }
             }
         */
-            Console.WriteLine($"Date in DTO: {appointementDto.Schedule}");
 
             var appointement1 = AppointementMapper.ToDomain(appointementDto);
-            Console.WriteLine($"Date in Domain: {appointement.Schedule.ToString()}");
-
-           Console.WriteLine(appointement1.Id.Value);
-           Console.WriteLine(appointement1.Patient.Value);
-           Console.WriteLine(appointement1.Request.Value);
-           Console.WriteLine(appointement1.Schedule.Value);
-           Console.WriteLine(appointement1.Staff.Value);
 
             if (appointement1 == null)
             {
-                Console.WriteLine("Error mapping");
                 throw new Exception("Appointement is null");
             }
 
             try
             {
-                return await _appointementRepository.AddAsync(appointement1);
+                var savedAppointment = await _appointementRepository.AddAsync(appointement1);
+
+            var operationRequest = await _context.OperationRequests
+                .FirstOrDefaultAsync(or => or.RequestId == new Guid(appointement1.Request.Value));
+
+            if (operationRequest == null)
+            {
+                throw new Exception("Operation Request not found");
+            }
+
+            string operationTypeName = operationRequest.OperationType;
+
+            var operationType = await _context.OperationType
+                .FirstOrDefaultAsync(ot => ot.OperationTypeName == operationTypeName);
+
+            if (operationType == null)
+            {
+                throw new Exception("Operation Type not found");
+            }
+
+            float operationDuration = operationType.OperationTime;
+
+            int hours = (int)operationDuration;
+            int minutes = (int)((operationDuration - hours) * 60);
+            TimeSpan duration = new TimeSpan(hours, minutes, 0);
+
+            DateTime preparationStart = appointement1.Schedule.Value;
+
+            DateTime preparationEnd = preparationStart.AddMinutes(30);
+
+            DateTime surgeryStart = preparationEnd;
+            DateTime surgeryEnd = surgeryStart.Add(duration);
+
+            DateTime cleaningStart = surgeryEnd;
+            DateTime cleaningEnd = cleaningStart.AddMinutes(45);
+
+            bool isRoomAssigned = await _surgeryRoomService.AssignRoomToAppointmentAsync(
+            appointement1.Id.Value,
+            preparationStart,
+            preparationEnd,
+            surgeryStart,
+            surgeryEnd,
+            cleaningStart,
+            cleaningEnd,
+            duration
+        );
+        if (!isRoomAssigned)
+        {
+            throw new Exception("No available room found for the specified time slots.");
+        }
+
+        return savedAppointment;
             }
             catch (Exception e)
             {

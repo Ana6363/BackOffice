@@ -11,7 +11,7 @@ namespace BackOffice.Infrastructure.Services  // You can move this to the Infras
     {
         private readonly string _clientId = "1066153135876-ddrj4ms6r801m49cjun24ut057p95m18.apps.googleusercontent.com";
         private readonly string _clientSecret = "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";
-        private readonly string _redirectUri = "http://localhost:5184/auth/callback";
+        private readonly string _redirectUri = "http://localhost:5184/api/v1/auth/callback";
 
         public async Task<TokenResponse> ExchangeCodeForTokensAsync(string code)
         {

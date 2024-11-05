@@ -20,7 +20,7 @@ namespace BackOffice.Controllers
 
 
         [HttpPost("create")]
-        [Authorize(Roles ="Doctor")]
+       // [Authorize(Roles ="Doctor")]
         public async Task<IActionResult> CreateAppointementAsync([FromBody] AppointementDto appointement)
         {
             if (appointement == null)
@@ -41,7 +41,7 @@ namespace BackOffice.Controllers
 
 
         [HttpPut("update")]
-        [Authorize(Roles = "Doctor")]
+        //[Authorize(Roles = "Doctor")]
         public async Task<IActionResult> UpdateAppointementAsync([FromBody] AppointementDto appointement)
         {
             if (appointement == null)

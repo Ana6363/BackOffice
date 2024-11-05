@@ -25,6 +25,7 @@ using BackOffice.Infraestructure.Appointement;
 using BackOffice.Domain.OperationType;
 using BackOffice.Infraestructure.OperationTypes;
 using BackOffice.Application.OperationTypes;
+using Healthcare.Domain.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +81,9 @@ builder.Services.AddScoped<OperationRequestService>();
 builder.Services.AddScoped<IAppointementRepository, AppointementRepository>();
 builder.Services.AddScoped<IOperationTypeRepository, OperationTypeRepository>();
 builder.Services.AddScoped<OperationTypeService>();
+builder.Services.AddScoped<SurgeryRoomService>();
+builder.Services.AddHostedService<SurgeryRoomService>();
+
 
 
     // Configure Authentication

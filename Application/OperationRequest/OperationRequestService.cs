@@ -9,6 +9,7 @@ using BackOffice.Domain.Users;
 using BackOffice.Infraestructure.OperationRequest;
 using BackOffice.Infrastructure;
 using BackOffice.Infrastructure.Staff;
+using Healthcare.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackOffice.Application.OperationRequest
@@ -22,10 +23,11 @@ namespace BackOffice.Application.OperationRequest
         private readonly IStaffRepository _staffRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly SurgeryRoomService _surgeryRoomService;
 
         public OperationRequestService(IOperationRequestRepository operationRequestRepository,
             IAppointementRepository appointementRepository, IUnitOfWork unitOfWork, BackOfficeDbContext context, 
-            IUserRepository userRepository, IStaffRepository staffRepository, IHttpContextAccessor httpContextAccessor)
+            IUserRepository userRepository, IStaffRepository staffRepository, IHttpContextAccessor httpContextAccessor, SurgeryRoomService surgeryRoomService)
         {
             _operationRequestRepository = operationRequestRepository;
             _appointementRepository = appointementRepository;
@@ -34,6 +36,7 @@ namespace BackOffice.Application.OperationRequest
             _userRepository = userRepository;
             _staffRepository = staffRepository;
             _httpContextAccessor = httpContextAccessor;
+            _surgeryRoomService = surgeryRoomService;
         }
 
         public async Task<OperationRequestDataModel> CreateOperationRequestAsync(OperationRequestDto operationRequest)
@@ -93,78 +96,85 @@ namespace BackOffice.Application.OperationRequest
 
 
     public async Task<OperationRequestDto> UpdateAsync(OperationRequestDto updatedRequestDto)
-{
-    var existingRequest = await _context.OperationRequests
-        .FirstOrDefaultAsync(r => r.RequestId == updatedRequestDto.RequestId);
+        {
+            var existingRequest = await _context.OperationRequests
+                .FirstOrDefaultAsync(r => r.RequestId == updatedRequestDto.RequestId);
 
-    if (existingRequest == null)
-    {
-        throw new Exception("Operation request not found.");
-    }
+            if (existingRequest == null)
+            {
+                throw new Exception("Operation request not found.");
+            }
 
-    var doctor = await _context.Staff
-        .FirstOrDefaultAsync(s => s.StaffId == updatedRequestDto.StaffId);
+            var doctor = await _context.Staff
+                .FirstOrDefaultAsync(s => s.StaffId == updatedRequestDto.StaffId);
 
-    if (doctor == null)
-    {
-        throw new Exception("Doctor not found.");
-    }
+            if (doctor == null)
+            {
+                throw new Exception("Doctor not found.");
+            }
 
-    var loggedInUserEmail = GetLoggedInUserEmail();
-    var loggedInUserId = loggedInUserEmail.Split('@')[0];
+            var loggedInUserEmail = GetLoggedInUserEmail();
+            var loggedInUserId = loggedInUserEmail.Split('@')[0];
 
-    if (!loggedInUserId.Equals(existingRequest.StaffId, StringComparison.OrdinalIgnoreCase))
-    {
-        throw new Exception("Only the requesting doctor can update this operation request.");
-    }
+            if (!loggedInUserId.Equals(existingRequest.StaffId, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new Exception("Only the requesting doctor can update this operation request.");
+            }
 
-    bool isUpdated = false;
+            bool isUpdated = false;
 
-    if (updatedRequestDto.DeadLine != existingRequest.DeadLine)
-    {
-        existingRequest.DeadLine = updatedRequestDto.DeadLine;
-        isUpdated = true;
-    }
+            if (updatedRequestDto.DeadLine != existingRequest.DeadLine)
+            {
+                existingRequest.DeadLine = updatedRequestDto.DeadLine;
+                isUpdated = true;
+            }
 
-    if (updatedRequestDto.Priority != existingRequest.Priority)
-    {
-        existingRequest.Priority = updatedRequestDto.Priority;
-        isUpdated = true;
-    }
+            if (updatedRequestDto.Priority != existingRequest.Priority)
+            {
+                existingRequest.Priority = updatedRequestDto.Priority;
+                isUpdated = true;
+            }
 
-    if (updatedRequestDto.Status == "ACCEPTED" && existingRequest.Status != "ACCEPTED")
-    {
-        existingRequest.Status = "ACCEPTED";
-        isUpdated = true;
+            if (updatedRequestDto.Status == "ACCEPTED" && existingRequest.Status != "ACCEPTED")
+            {
+                existingRequest.Status = "ACCEPTED";
+                isUpdated = true;
 
-        // Trigger creation of an Appointment using the AppointementService
-        var appointmentDto = new AppointementDto(
-            Guid.NewGuid(),
-            (DateTime)updatedRequestDto.AppointementDate,
-            updatedRequestDto.RequestId.ToString(),
-            updatedRequestDto.RecordNumber,
-            updatedRequestDto.StaffId
-        );
+                var appointmentDto = new AppointementDto(
+                    Guid.NewGuid(),
+                    (DateTime)updatedRequestDto.AppointementDate,
+                    updatedRequestDto.RequestId.ToString(),
+                    updatedRequestDto.RecordNumber,
+                    updatedRequestDto.StaffId
+                );
 
-        var appointmentService = new AppointementService(
-            _appointementRepository,
-            _unitOfWork,
-            _context,
-            _httpContextAccessor
-        );
-        
-        await appointmentService.CreateAppointementAsync(appointmentDto);
-    }
+                var appointmentService = new AppointementService(
+                    _appointementRepository,
+                    _unitOfWork,
+                    _context,
+                    _httpContextAccessor,
+                    _surgeryRoomService
+                );
+                try{
+                await appointmentService.CreateAppointementAsync(appointmentDto);
+            }
+            catch (Exception ex)
+                {
+                    Console.WriteLine($"Error creating appointment: {ex.Message}");
+                    throw new Exception("No available room found for the specified time slots.");
+                }
+            
+            }
+            if (isUpdated)
+            {
+                await LogUpdateOperation(loggedInUserEmail, updatedRequestDto);
+                await _context.SaveChangesAsync();
+            }
 
-    if (isUpdated)
-    {
-        await LogUpdateOperation(loggedInUserEmail, updatedRequestDto);
-        await _context.SaveChangesAsync();
-    }
 
-    var updatedRequest = OperationRequestMapper.ToDomain(updatedRequestDto);
-    return updatedRequestDto;
-}
+            var updatedRequest = OperationRequestMapper.ToDomain(updatedRequestDto);
+            return updatedRequestDto;
+        }
 
     private string GetLoggedInUserEmail()
         {
