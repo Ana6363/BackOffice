@@ -41,11 +41,14 @@ namespace BackOffice.Controllers
             try
             {
                 var result = await _userActivationService.HandleOAuthCallbackAsync(code);
-                
+
                 if (result.IsUserActive)
                 {
-                    var token = _jwtTokenService.GenerateToken(result.Email,result.Role);
-                    return Ok(new { token });
+                    var token = _jwtTokenService.GenerateToken(result.Email, result.Role);
+                    Console.WriteLine(token);
+                    var redirect = $"http://localhost:3000/auth/callback?token={token}";
+                    Console.WriteLine(redirect); // Log the redirect URL
+                    return Redirect(redirect);
                 }
                 else
                 {
