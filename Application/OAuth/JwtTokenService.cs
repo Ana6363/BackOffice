@@ -36,7 +36,7 @@ namespace BackOffice.Application.OAuth
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(20), // Set the expiration time
+                expires: DateTime.Now.AddMinutes(40), // Set the expiration time
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

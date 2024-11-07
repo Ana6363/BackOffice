@@ -95,6 +95,14 @@ namespace BackOffice.Application.StaffService
             {
                 query = query.Where(s => EF.Functions.Collate(s.user.PhoneNumber.ToString(), "utf8mb4_unicode_ci") == EF.Functions.Collate(filterDto.PhoneNumber.Value.ToString(), "utf8mb4_unicode_ci"));
             }
+            if (!string.IsNullOrEmpty(filterDto.Specialization))
+            {
+                query = query.Where(s => EF.Functions.Collate(s.staff.Specialization, "utf8mb4_unicode_ci") == EF.Functions.Collate(filterDto.Specialization, "utf8mb4_unicode_ci"));
+            }
+            if (filterDto.Status.HasValue)
+            {
+                query = query.Where(s => EF.Functions.Collate(s.staff.Status.ToString(), "utf8mb4_unicode_ci") == EF.Functions.Collate(filterDto.Status.Value.ToString(), "utf8mb4_unicode_ci"));
+            }
             if (!string.IsNullOrWhiteSpace(filterDto.FirstName))
             {
                 query = query.Where(s => EF.Functions.Collate(s.user.FirstName, "utf8mb4_unicode_ci").Contains(EF.Functions.Collate(filterDto.FirstName, "utf8mb4_unicode_ci")));

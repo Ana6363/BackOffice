@@ -45,17 +45,19 @@ namespace BackOffice.Controllers
             }
 
         [HttpGet("filter")]
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
             public async Task<IActionResult> GetAllStaffAsync(
                 [FromQuery] string? staffId = null,
                 [FromQuery] int? phoneNumber = null,
+                [FromQuery] string? specialization = null,
+                [FromQuery] bool? status = null,
                 [FromQuery] string? firstName = null,
                 [FromQuery] string? lastName = null,
                 [FromQuery] string? fullName = null)
             {
                 try
                 {
-                    var filterDto = new StaffFilterDto(staffId,phoneNumber, firstName, lastName, fullName);
+                    var filterDto = new StaffFilterDto(staffId,phoneNumber,specialization,status,firstName, lastName, fullName);
 
                     var staffMembers = await _staffService.GetFilteredStaffAsync(filterDto);
                     return Ok(new { success = true, staffMembers });
