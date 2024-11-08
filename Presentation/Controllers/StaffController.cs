@@ -45,7 +45,7 @@ namespace BackOffice.Controllers
             }
 
         [HttpGet("filter")]
-       // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
             public async Task<IActionResult> GetAllStaffAsync(
                 [FromQuery] string? staffId = null,
                 [FromQuery] int? phoneNumber = null,
@@ -89,7 +89,7 @@ namespace BackOffice.Controllers
             }
     
         [HttpPut("deactivate")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeactivateStaffAsync([FromBody] StaffDeactivateDto staffDeactivateDto)
         {
             if (staffDeactivateDto == null)

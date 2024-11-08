@@ -292,28 +292,28 @@ namespace BackOffice.Application.StaffService
         }
 
        public async Task<StaffDto> DeactivateStaff(StaffDeactivateDto staffDeactivateDto)
-        {
-            var staff = await _staffRepository.GetByStaffIdAsync(staffDeactivateDto.StaffId);
-            if (staff == null)
-            {
-                throw new Exception("Staff member not found.");
-            }
+{
+    var staff = await _staffRepository.GetByStaffIdAsync(staffDeactivateDto.StaffId);
+    if (staff == null)
+    {
+        throw new Exception("Staff member not found.");
+    }
 
-            var user = await _userRepository.GetByEmailAsync(staff.Email);
-            if (user == null)
-            {
-                throw new Exception("User not found.");
-            }
-      
-            var staffDto = StaffMapper.ToDto(staff);
-            staffDto.Status = false;
+    var user = await _userRepository.GetByEmailAsync(staff.Email);
+    if (user == null)
+    {
+        throw new Exception("User not found.");
+    }
 
-            await _staffRepository.UpdateAsync(staff);
-            await _dbContext.SaveChangesAsync();
-            await LogDeactivateOperation(user.Id.AsString(), staff);
+    staff.Status = false;
+    Console.WriteLine(staff.Status);
 
-            return staffDto;
-        }
+    await _staffRepository.UpdateAsync(staff);
+    await _dbContext.SaveChangesAsync();
+    await LogDeactivateOperation(user.Id.AsString(), staff);
+
+    return StaffMapper.ToDto(staff); // Ensure correct return type
+}
 
 
 
