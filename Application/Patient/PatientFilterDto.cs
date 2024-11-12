@@ -8,9 +8,10 @@ public class PatientFilterDto
     public int? PhoneNumber { get; set; }
     public bool? IsToBeDeleted { get; set; }
 
-    public PatientFilterDto(string? userId = null, string? firstName = null, string? lastName = null, string? fullName = null, int? phoneNumber = null, bool? isToBeDeleted = null)
+    public PatientFilterDto(string? userId = null, int? phoneNumber = null, string? firstName = null, string? lastName = null, string? fullName = null, bool? isToBeDeleted = null)
     {
         UserId = userId;
+        PhoneNumber = phoneNumber;
         FirstName = firstName;
         LastName = lastName;
         FullName = fullName;

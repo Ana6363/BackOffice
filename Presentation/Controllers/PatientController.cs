@@ -42,17 +42,19 @@ namespace BackOffice.Controllers
         }
 
         [HttpGet("filter")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllPatientsAsync(
             [FromQuery] string? userId = null,
+            [FromQuery] int? phoneNumber = null,
             [FromQuery] string? firstName = null,
             [FromQuery] string? lastName = null,
-            [FromQuery] string? fullName = null)
+            [FromQuery] string? fullName = null,
+            [FromQuery] bool? isToBeDeleted = null)
         {
             try
             {
                 // Create a filter DTO from the query parameters
-                var filterDto = new PatientFilterDto(userId, firstName, lastName, fullName);
+                var filterDto = new PatientFilterDto(userId,phoneNumber, firstName, lastName, fullName,isToBeDeleted);
 
                 var patients = await _patientService.GetFilteredPatientsAsync(filterDto); // Filter based on dto
                 return Ok(new { success = true, patients });

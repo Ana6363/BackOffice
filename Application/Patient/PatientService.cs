@@ -351,36 +351,50 @@ namespace BackOffice.Application.Patients
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<PatientDataModel>> GetFilteredPatientsAsync(PatientFilterDto filterDto)
+            public async Task<IEnumerable<PatientUserInfoDto>> GetFilteredPatientsAsync(PatientFilterDto filterDto)
+    {
+        var query = from patient in _dbContext.Patients
+                    join user in _dbContext.Users on patient.UserId equals user.Id
+                    select new { patient, user };
+
+        if (!string.IsNullOrWhiteSpace(filterDto.UserId))
         {
-            var query = from patient in _dbContext.Patients
-                        join user in _dbContext.Users on patient.UserId equals user.Id
-                        select new { patient, user };
-
-            if (!string.IsNullOrWhiteSpace(filterDto.UserId))
-            {
-                query = query.Where(p => p.user.Id == filterDto.UserId);
-            }
-            if (filterDto.PhoneNumber != null)
-            {
-                query = query.Where(u => u.user.PhoneNumber == filterDto.PhoneNumber);
-            }
-            if (!string.IsNullOrWhiteSpace(filterDto.FirstName))
-            {
-                query = query.Where(p => p.user.FirstName.Contains(filterDto.FirstName));
-            }
-            if (!string.IsNullOrWhiteSpace(filterDto.LastName))
-            {
-                query = query.Where(p => p.user.LastName.Contains(filterDto.LastName));
-            }
-            if (!string.IsNullOrWhiteSpace(filterDto.FullName))
-            {
-                query = query.Where(p => p.user.FullName.Contains(filterDto.FullName));
-            }
-
-            var result = await query.Select(p => p.patient).ToListAsync();
-            return result;
+            query = query.Where(p => p.user.Id == filterDto.UserId);
         }
+        if (filterDto.PhoneNumber != null)
+        {
+            query = query.Where(u => u.user.PhoneNumber == filterDto.PhoneNumber);
+        }
+        if (!string.IsNullOrWhiteSpace(filterDto.FirstName))
+        {
+            query = query.Where(p => p.user.FirstName.Contains(filterDto.FirstName));
+        }
+        if (!string.IsNullOrWhiteSpace(filterDto.LastName))
+        {
+            query = query.Where(p => p.user.LastName.Contains(filterDto.LastName));
+        }
+        if (!string.IsNullOrWhiteSpace(filterDto.FullName))
+        {
+            query = query.Where(p => p.user.FullName.Contains(filterDto.FullName));
+        }
+        if (filterDto.IsToBeDeleted.HasValue)
+        {
+            query = query.Where(s => s.user.IsToBeDeleted == filterDto.IsToBeDeleted.Value);
+        }
+
+        var result = await query
+            .Select(p => new PatientUserInfoDto
+            {
+                Patient = p.patient,
+                PhoneNumber = p.user.PhoneNumber,
+                UserId = p.user.Id,
+                IsToBeDeleted = p.user.IsToBeDeleted
+            })
+            .ToListAsync();
+
+        return result;
+    }
+
 
         private async Task LogUpdateOperation(string userEmail, PatientDto patientDto)
         {
