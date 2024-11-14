@@ -12,12 +12,8 @@ public class PatientFilterDto
     {
         UserId = userId;
         PhoneNumber = phoneNumber;
-        FirstName = firstName;
-        LastName = lastName;
-        FullName = fullName;
         PhoneNumber = PhoneNumber;
         IsToBeDeleted = isToBeDeleted;
-
     }
 
     public PatientFilterDto() { }

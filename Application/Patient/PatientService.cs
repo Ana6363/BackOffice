@@ -351,7 +351,7 @@ namespace BackOffice.Application.Patients
             await _dbContext.SaveChangesAsync();
         }
 
-            public async Task<IEnumerable<PatientUserInfoDto>> GetFilteredPatientsAsync(PatientFilterDto filterDto)
+        public async Task<IEnumerable<PatientUserInfoDto>> GetFilteredPatientsAsync(PatientFilterDto filterDto)
     {
         var query = from patient in _dbContext.Patients
                     join user in _dbContext.Users on patient.UserId equals user.Id
@@ -410,22 +410,33 @@ namespace BackOffice.Application.Patients
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<List<PatientDto>> GetAllAsync()
+        public async Task<IEnumerable<PatientUserInfoDto>> GetLoggedPatientAsync()
         {
-            var list = await _patientRepository.GetAllAsync();
-            var returnList = new List<PatientDto>();
-            foreach (var patientDataModel in list)
-            {
-                var patient = PatientMapper.ToDomain(patientDataModel);
-                var patientDto = PatientMapper.ToDto(patient);
-                returnList.Add(patientDto);
-                
-            }
+            var loggedInUserEmail = GetLoggedInUserEmail();
 
-            return returnList;
+            var query = from patient in _dbContext.Patients
+                        join user in _dbContext.Users on patient.UserId equals user.Id
+                        where user.Id == loggedInUserEmail
+                        select new { patient, user };
+
+            var result = await query
+                .Select(p => new PatientUserInfoDto
+                {
+                    Patient = p.patient,
+                    PhoneNumber = p.user.PhoneNumber,
+                    UserId = p.user.Id,
+                    IsToBeDeleted = p.user.IsToBeDeleted,
+                    FirstName = p.user.FirstName,
+                    LastName = p.user.LastName,
+                    FullName = p.user.FullName
+                })
+                .ToListAsync();
+
+            return result;
         }
 
-    }
+
+}
 
     
 }

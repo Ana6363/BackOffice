@@ -127,13 +127,13 @@ namespace BackOffice.Controllers
             }
         }
 
-        [HttpGet("allPatients")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllAsync()
+        [HttpGet("loggedPatient")]
+        [Authorize(Roles = "Patient")]
+        public async Task<IActionResult> GetLoggedPatientAsync()
         {
             try
             {
-                var patients = await _patientService.GetAllAsync();
+                var patients = await _patientService.GetLoggedPatientAsync();
                 return Ok(new { success = true, patients });
             }
             catch (Exception ex)
