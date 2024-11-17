@@ -7,7 +7,7 @@ namespace BackOffice.Domain.OperationType
 
     public interface IOperationTypeRepository
     {
-        Task<OperationTypeDataModel> AddAsync (OperationType operationType);
+        Task<OperationTypeDataModel> AddAsync (OperationTypeDataModel operationType);
         Task<OperationTypeDataModel> GetByIdAsync (string id); // changed from operationtypeid to string
         Task<List<OperationTypeDataModel>> GetAllAsync();
         Task UpdateAsync (OperationType operationType);

@@ -14,7 +14,7 @@ namespace BackOffice.Domain.Staff
             Pediatrics,
             Radiology,
             GeneralSurgery,
-            Anesthesiology,
+            Anaesthetist,
             Oncology,
             Ophthalmology,
             Psychiatry,
@@ -26,7 +26,13 @@ namespace BackOffice.Domain.Staff
             Nephrology,
             ObstetricsGynecology,
             EmergencyMedicine,
-            FamilyMedicine
+            FamilyMedicine,
+            InstrumentingNurse,
+            CirculatingNurse,
+            NurseAnaesthetist,
+            MedicalActionAssistant,
+
+
         }
 
         private Specializations(SpecializationType value)

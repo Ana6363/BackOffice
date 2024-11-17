@@ -30,8 +30,10 @@ namespace BackOffice.Application.OperationTypes
             string nextId = Guid.NewGuid().ToString();
 
             var domainId = new OperationTypeId(nextId);
-            var operationType = OperationTypeMapper.ToDomain(operationTypeDTO, domainId);
-            Console.WriteLine(operationType.Id.AsString());
+            var operationType = OperationTypeMapper.ToDataModel(operationTypeDTO);
+            Console.WriteLine(operationType.OperationTypeId);
+            Console.WriteLine(operationType.Specializations);
+
 
             try
             {

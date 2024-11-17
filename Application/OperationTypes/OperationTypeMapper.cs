@@ -12,11 +12,13 @@ namespace BackOffice.Application.OperationTypes
         return new OperationTypeDTO()
         {
             OperationTypeId = operationType.Id.AsString(),
-            OperationTime = operationType.OperationTime.AsFloat(),
+            PreparationTime = operationType.PreparationTime.time,
+            SurgeryTime = operationType.PreparationTime.time,
+            CleaningTime = operationType.PreparationTime.time,
             OperationTypeName = operationType.OperationTypeName.Name,
             Specializations = operationType.Specializations?.Select(s => new SpecializationDTO 
             {
-                Name = s.Value.ToString()
+                Name = s.Value.ToString(),
             }).ToList() ?? new List<SpecializationDTO>()
         };
     }
@@ -26,7 +28,9 @@ namespace BackOffice.Application.OperationTypes
         return new OperationType(
             id,
             new OperationTypeName(operationTypeDTO.OperationTypeName),
-            new OperationTime(operationTypeDTO.OperationTime),
+            new OperationTime(operationTypeDTO.PreparationTime),
+            new OperationTime(operationTypeDTO.SurgeryTime),
+            new OperationTime(operationTypeDTO.CleaningTime),
             operationTypeDTO.Specializations?.Select(s => Specializations.FromString(s.Name)).ToList() ?? new List<Specializations>()
         );
     }
@@ -36,7 +40,9 @@ namespace BackOffice.Application.OperationTypes
         return new OperationTypeDataModel
         {
             OperationTypeId = operationType.Id.AsString(),
-            OperationTime = operationType.OperationTime.AsFloat(),
+            PreparationTime = operationType.PreparationTime.time,
+            SurgeryTime = operationType.SurgeryTime.time,
+            CleaningTime = operationType.CleaningTime.time,
             OperationTypeName = operationType.OperationTypeName.Name,
         };
     }
@@ -46,10 +52,32 @@ namespace BackOffice.Application.OperationTypes
     return new OperationType(
         new OperationTypeId(dataModel.OperationTypeId),
         new OperationTypeName(dataModel.OperationTypeName),
-        new OperationTime(dataModel.OperationTime),
+            new OperationTime(dataModel.PreparationTime),
+            new OperationTime(dataModel.SurgeryTime),
+            new OperationTime(dataModel.CleaningTime),
         dataModel.Specializations.Select(s => Specializations.FromString(s.Name)).ToList()
     );
 }
+public static OperationTypeDataModel ToDataModel(OperationTypeDTO dto)
+{
+    return new OperationTypeDataModel
+    {
+        OperationTypeId = dto.OperationTypeId,
+        PreparationTime = dto.PreparationTime,
+        SurgeryTime = dto.SurgeryTime,
+        CleaningTime = dto.CleaningTime,
+        OperationTypeName = dto.OperationTypeName,
+        Specializations = dto.Specializations?.Select(s => new SpecializationDataModel
+        {
+            SpecializationId = Guid.NewGuid().ToString(), // Generate a unique ID for each specialization
+            Name = s.Name,
+            NeededPersonnel = s.NeededPersonnel ?? 0, // Provide default if NeededPersonnel is null
+            OperationTypeId = dto.OperationTypeId // Set the foreign key
+        }).ToList() ?? new List<SpecializationDataModel>()
+    };
+}
+
+
 
 
 }

@@ -3,24 +3,24 @@ using BackOffice.Domain.Shared;
 namespace BackOffice.Domain.OperationType;
 public class OperationTime
 {
-    public float time { get; }
+    public int time { get; }
 
     public OperationTime(){}
 
-    public OperationTime(float time)
+    public OperationTime(int time)
     {
         if(time < 0){
             throw new BusinessRuleValidationException("Duration of operations cannot be negative.");
         }    
-        if (time > 8)
+        if (time > 500)
         {
-            throw new BusinessRuleValidationException("Duration of operations cannot exceed 8 hours");
+            throw new BusinessRuleValidationException("Duration of operations cannot exceed 500 minutes");
         }    
         this.time = time;
 
     }
 
-    public float AsFloat()
+    public float AsInt()
     {
         return time;
     }

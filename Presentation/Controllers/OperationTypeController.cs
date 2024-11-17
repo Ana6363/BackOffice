@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BackOffice.Controllers
 {
     [ApiController]
-    [Route("api/operationType")]
+    [Route("api/v1/operationType")]
 
     public class OperationTypeController : ControllerBase
     {
@@ -23,8 +23,8 @@ namespace BackOffice.Controllers
             _configuration = configuration;
         }
 
-        [HttpPost("Create")]
-        [Authorize(Roles = "Admin")]
+        [HttpPost("create")]
+       // [Authorize(Roles = "Admin")]
 
             public async Task<IActionResult> Create([FromBody] OperationTypeDTO operationTypeDTO)
             {
@@ -46,7 +46,7 @@ namespace BackOffice.Controllers
                 
             }
 
-        [HttpPut("Update")]
+        [HttpPut("update")]
         [Authorize(Roles = "Admin")]
 
             public async Task<IActionResult> Update([FromBody] OperationTypeDTO operationTypeDTO)
@@ -94,7 +94,7 @@ namespace BackOffice.Controllers
             }
 
 
-        [HttpGet("GetAllOperationTypes")]
+        [HttpGet("getAllOperationTypes")]
         [Authorize(Roles = "Admin")]
             public async Task<IActionResult> GetAll()
             {
@@ -110,7 +110,7 @@ namespace BackOffice.Controllers
 
             } 
 
-        [HttpGet("GetByID/{id}")]
+        [HttpGet("getByID/{id}")]
         [Authorize(Roles = "Admin")]       
         public async Task<IActionResult> GetById(string id)
         {

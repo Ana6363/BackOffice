@@ -30,7 +30,7 @@ namespace BackOffice.Application.Appointement
             _surgeryRoomService = surgeryRoomService;
         }
 
-        public async Task<AppointementDataModel> CreateAppointementAsync(AppointementDto appointement)
+    /*    public async Task<AppointementDataModel> CreateAppointementAsync(AppointementDto appointement)
         {
             if (appointement == null)
             {
@@ -47,7 +47,7 @@ namespace BackOffice.Application.Appointement
 
             Console.WriteLine(appointementDto.Schedule);
 
-        /*    foreach (var slot in slots)
+            foreach (var slot in slots)
             {
                 Console.WriteLine(slot.StartTime);
                 if (appointement.Schedule != slot.StartTime)
@@ -56,7 +56,7 @@ namespace BackOffice.Application.Appointement
                     throw new Exception("Slot Unavailable");
                 }
             }
-        */
+      
 
             var appointement1 = AppointementMapper.ToDomain(appointementDto);
 
@@ -87,7 +87,7 @@ namespace BackOffice.Application.Appointement
                 throw new Exception("Operation Type not found");
             }
 
-            float operationDuration = operationType.OperationTime;
+            float operationDuration = operationType.PreparationTime;
 
             int hours = (int)operationDuration;
             int minutes = (int)((operationDuration - hours) * 60);
@@ -126,7 +126,7 @@ namespace BackOffice.Application.Appointement
                 throw;
             }
         }
-
+*/
         public async Task<IEnumerable<AppointementDataModel>> GetAppointementsAsync ()
         {
             var appointements = await _appointementRepository.GetAllAsync();
@@ -145,6 +145,7 @@ namespace BackOffice.Application.Appointement
             return appointement;
         }
 
+        
         public async Task<AppointementDto> UpdateAppointementAsync(AppointementDto updatedAppointement)
         {
             var existingAppointement = _context.Appointements

@@ -6,7 +6,9 @@ namespace BackOffice.Application.OperationTypes
     {
         public string? OperationTypeId { get; set; } 
         public string OperationTypeName { get; set; } 
-        public float OperationTime { get; set; } 
+        public int PreparationTime { get; set; } 
+        public int SurgeryTime { get; set; } 
+        public int CleaningTime { get; set; } 
         public List<SpecializationDTO> Specializations { get; set; }
     }
 

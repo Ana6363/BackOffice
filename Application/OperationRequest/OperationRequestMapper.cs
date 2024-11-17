@@ -18,7 +18,6 @@ namespace BackOffice.Application.OperationRequest
             return new OperationRequestDto(
                 Guid.Parse(request.Id.AsString()), 
                 request.DeadLine.Value,
-                null,
                 request.Priority.Value.ToString(),
                 request.Patient.AsString(),
                 request.StaffId.AsString(),

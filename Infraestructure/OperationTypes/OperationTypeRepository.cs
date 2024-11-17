@@ -17,19 +17,22 @@ namespace BackOffice.Infraestructure.OperationTypes
             _context = context;
         }
 
-        public async Task<OperationTypeDataModel> AddAsync(OperationType operationType)
+        public async Task<OperationTypeDataModel> AddAsync(OperationTypeDataModel operationType)
         {
             ArgumentNullException.ThrowIfNull(operationType);
             var operationTypeDataModel = new OperationTypeDataModel
             {
-                OperationTypeId = operationType.Id.AsString(),
-                OperationTime = operationType.OperationTime.AsFloat(),
-                OperationTypeName = operationType.OperationTypeName.Name,
+                OperationTypeId = Guid.NewGuid().ToString(), 
+                PreparationTime = operationType.PreparationTime,
+                SurgeryTime = operationType.SurgeryTime,
+                CleaningTime = operationType.CleaningTime,
+                OperationTypeName = operationType.OperationTypeName,
                 Specializations = operationType.Specializations.Select(s => new SpecializationDataModel
                 {
                     SpecializationId = Guid.NewGuid().ToString(), 
-                    Name = s.ToString(), 
-                    OperationTypeId = operationType.Id.AsString() 
+                    Name = s.Name,
+                    NeededPersonnel = s.NeededPersonnel, 
+                    OperationTypeId = operationType.OperationTypeId
                 }).ToList()
             };
 
@@ -67,7 +70,9 @@ namespace BackOffice.Infraestructure.OperationTypes
 
             operationTypeDataModel.OperationTypeId = operationType.Id.AsString();
             operationTypeDataModel.OperationTypeName = operationType.OperationTypeName.Name;
-            operationTypeDataModel.OperationTime = operationType.OperationTime.AsFloat();
+            operationTypeDataModel.PreparationTime = operationType.PreparationTime.time;
+            operationTypeDataModel.SurgeryTime = operationType.SurgeryTime.time;
+            operationTypeDataModel.CleaningTime = operationType.CleaningTime.time;
 
             var existingSpecializations = await _context.Specializations
                 .Where(s => s.OperationTypeId == operationTypeDataModel.OperationTypeId)

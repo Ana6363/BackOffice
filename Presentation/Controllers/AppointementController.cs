@@ -19,7 +19,7 @@ namespace BackOffice.Controllers
         }
 
 
-        [HttpPost("create")]
+     /*   [HttpPost("create")]
        // [Authorize(Roles ="Doctor")]
         public async Task<IActionResult> CreateAppointementAsync([FromBody] AppointementDto appointement)
         {
@@ -37,7 +37,7 @@ namespace BackOffice.Controllers
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
-        }
+        } */
 
 
         [HttpPut("update")]

@@ -45,7 +45,6 @@ namespace BackOffice.Application.OperationRequest
             var requestDto = new OperationRequestDto(
                 Guid.NewGuid(),
                 operationRequest.DeadLine,
-                null,
                 operationRequest.Priority,
                 operationRequest.RecordNumber,
                 operationRequest.StaffId,
@@ -135,36 +134,6 @@ namespace BackOffice.Application.OperationRequest
                 isUpdated = true;
             }
 
-            if (updatedRequestDto.Status == "ACCEPTED" && existingRequest.Status != "ACCEPTED")
-            {
-                existingRequest.Status = "ACCEPTED";
-                isUpdated = true;
-
-                var appointmentDto = new AppointementDto(
-                    Guid.NewGuid(),
-                    (DateTime)updatedRequestDto.AppointementDate,
-                    updatedRequestDto.RequestId.ToString(),
-                    updatedRequestDto.RecordNumber,
-                    updatedRequestDto.StaffId
-                );
-
-                var appointmentService = new AppointementService(
-                    _appointementRepository,
-                    _unitOfWork,
-                    _context,
-                    _httpContextAccessor,
-                    _surgeryRoomService
-                );
-                try{
-                await appointmentService.CreateAppointementAsync(appointmentDto);
-            }
-            catch (Exception ex)
-                {
-                    Console.WriteLine($"Error creating appointment: {ex.Message}");
-                    throw new Exception("No available room found for the specified time slots.");
-                }
-            
-            }
             if (isUpdated)
             {
                 await LogUpdateOperation(loggedInUserEmail, updatedRequestDto);

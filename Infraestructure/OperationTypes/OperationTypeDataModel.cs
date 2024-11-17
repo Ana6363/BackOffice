@@ -11,7 +11,9 @@ namespace BackOffice.Infrastructure.OperationTypes
 
         public required string OperationTypeName { get; set;}
 
-        public required float OperationTime { get; set; }
+        public required int PreparationTime { get; set; }
+        public required int SurgeryTime { get; set; }
+        public required int CleaningTime { get; set; }
 
         public List<SpecializationDataModel> Specializations {get; set;} = [];
     }
