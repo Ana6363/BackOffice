@@ -42,43 +42,62 @@ namespace BackOffice.Application.StaffService
     }
 
     public async Task<StaffDataModel> CreateStaffAsync(StaffDto staffDto, IConfiguration configuration)
+{
+    var staffId = staffDto.StaffId.Split('@')[0]; // Extract part before '@'
+
+    var staffEmail = staffDto.StaffId; // Use the provided email directly
+
+    // Check if the user with the staff email already exists in the database
+    var existingUser = await _userRepository.GetByEmailAsync(staffEmail);
+    if (existingUser == null)
+    {
+        throw new Exception("No user in the database matches this staff ID email.");
+    }
+
+    if (existingUser.Role == "Patient")
+    {
+        throw new Exception("User is not part of the Staff.");
+    }
+
+    // Check if a staff member with this license number already exists
+    var existingStaff = await _staffRepository.GetByLicenseNumberAsync(staffDto.LicenseNumber);
+    if (existingStaff != null)
+    {
+        throw new Exception("A staff member with this license number already exists.");
+    }
+
+    // Map to the domain model
+    var staffIdDomain = new StaffId(staffId);
+    var staffDomain = StaffMapper.ToDomain(staffDto, staffIdDomain, configuration);
+
+    // Create and save the staff data model without deleting the user
+    var staffDataModel = StaffMapper.ToDataModel(staffDomain);
+    staffDataModel.Email = staffEmail;  // Associate with the user's email
+
+    _dbContext.Staff.Add(staffDataModel);
+    await _dbContext.SaveChangesAsync();
+
+    // Associate generated staffId with available slots
+    if (staffDto.AvailableSlots != null && staffDto.AvailableSlots.Any())
+    {
+        foreach (var slot in staffDto.AvailableSlots)
         {
-  
-            var staffId = staffDto.StaffId;
-            var staffEmail = $"{staffId}@myhospital.com";
-
-            // Check if the user with the staff email already exists in the database
-            var existingUser = await _userRepository.GetByEmailAsync(staffEmail);
-            if (existingUser == null)
+            var slotDataModel = new AvailableSlotDataModel
             {
-                throw new Exception("No user in the database matches this staff ID email.");
-            }
+                StaffId = staffId, // Associate the slot with the generated staffId
+                StartTime = slot.StartTime,
+                EndTime = slot.EndTime
+            };
 
-            if (existingUser.Role == "Patient")
-            {
-                throw new Exception("User is not part of the Staff.");
-            }
-
-            // Check if a staff member with this license number already exists
-            var existingStaff = await _staffRepository.GetByLicenseNumberAsync(staffDto.LicenseNumber);
-            if (existingStaff != null)
-            {
-                throw new Exception("A staff member with this license number already exists.");
-            }
-
-            // Map to the domain model
-            var staffIdDomain = new StaffId(staffId);
-            var staffDomain = StaffMapper.ToDomain(staffDto, staffIdDomain, configuration);
-
-            // Create and save the staff data model without deleting the user
-            var staffDataModel = StaffMapper.ToDataModel(staffDomain);
-            staffDataModel.Email = staffEmail;  // Associate with the user's email
-
-            _dbContext.Staff.Add(staffDataModel);
-            await _dbContext.SaveChangesAsync();
-
-            return staffDataModel;
+            _dbContext.AvailableSlots.Add(slotDataModel);
         }
+
+        await _dbContext.SaveChangesAsync();
+    }
+
+    return staffDataModel;
+}
+
 
 
         public async Task<IEnumerable<object>> GetFilteredStaffAsync(StaffFilterDto filterDto)
