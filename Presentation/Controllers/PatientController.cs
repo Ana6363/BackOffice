@@ -49,12 +49,14 @@ namespace BackOffice.Controllers
             [FromQuery] string? firstName = null,
             [FromQuery] string? lastName = null,
             [FromQuery] string? fullName = null,
-            [FromQuery] bool? isToBeDeleted = null)
+            [FromQuery] bool? isToBeDeleted = null,
+            [FromQuery] string? recordNumber= null
+            )
         {
             try
             {
                 // Create a filter DTO from the query parameters
-                var filterDto = new PatientFilterDto(userId,phoneNumber, firstName, lastName, fullName,isToBeDeleted);
+                var filterDto = new PatientFilterDto(userId,phoneNumber, firstName, lastName, fullName,isToBeDeleted,recordNumber);
 
                 var patients = await _patientService.GetFilteredPatientsAsync(filterDto); // Filter based on dto
                 return Ok(new { success = true, patients });
