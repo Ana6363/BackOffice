@@ -1,4 +1,6 @@
-In this module we have the back-end development of the project.
+# backOfficeModule
+
+In this module we have the back-end development of the project, using C# and .NET.
 
 
 
