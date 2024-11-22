@@ -88,6 +88,11 @@ namespace BackOffice.Application.OperationRequest
         query = query.Where(r => r.Status.Contains(filteredRequest.Status));
     }
 
+    if (!string.IsNullOrWhiteSpace(filteredRequest.StaffId))
+    {
+        query = query.Where(r => r.StaffId.Contains(filteredRequest.StaffId));
+    }
+
     var result = await query.ToListAsync();
     return result;
 }

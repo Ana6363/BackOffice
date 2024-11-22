@@ -85,11 +85,12 @@ namespace BackOffice.Controllers
             [FromQuery] string? fullname = null,
             [FromQuery] string? priority = null,
             [FromQuery] string? status = null,
+            [FromQuery] string? staffId = null,
             [FromQuery] string? operationTypeName = null)
         {
             try
             {
-                var filterDto = new FilteredRequestDto(fullname,priority,status,operationTypeName);
+                var filterDto = new FilteredRequestDto(fullname,priority,status,staffId,operationTypeName);
 
                 var operationRequests = await _operationRequestService.GetFilteredRequestAsync(filterDto);
                 return Ok(new { success = true, operationRequests });
