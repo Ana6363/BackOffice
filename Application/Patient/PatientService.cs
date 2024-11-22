@@ -382,6 +382,11 @@ namespace BackOffice.Application.Patients
             query = query.Where(s => s.user.IsToBeDeleted == filterDto.IsToBeDeleted.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(filterDto.RecordNumber))
+        {
+            query = query.Where(s => s.patient.RecordNumber == filterDto.RecordNumber);
+        }
+
         var result = await query
             .Select(p => new PatientUserInfoDto
             {
