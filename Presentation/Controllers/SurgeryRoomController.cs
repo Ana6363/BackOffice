@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using BackOffice.Infrastructure;
 using Healthcare.Domain.Enums;
+using Healthcare.Domain.Services;
 
 namespace Healthcare.Api.Controllers
 {
@@ -13,40 +14,18 @@ namespace Healthcare.Api.Controllers
     public class SurgeryRoomController : ControllerBase
     {
         private readonly BackOfficeDbContext _dbContext;
+        private readonly SurgeryRoomServiceProvider _surgeryRoomServiceProvider;
 
-        public SurgeryRoomController(BackOfficeDbContext dbContext)
+        public SurgeryRoomController(BackOfficeDbContext dbContext,SurgeryRoomServiceProvider surgeryRoomServiceProvider)
         {
             _dbContext = dbContext;
+            _surgeryRoomServiceProvider = surgeryRoomServiceProvider;
         }
 
-        // GET: api/SurgeryRoom
         [HttpGet]
         public async Task<IActionResult> GetAllSurgeryRooms()
         {
-            var rooms = await _dbContext.SurgeryRoom
-                .Include(r => r.MaintenanceSlots)
-                .Include(r => r.Equipments)
-                .Include(r => r.Phases)
-                .Select(room => new
-                {
-                    RoomNumber = room.RoomNumber,
-                    Type = room.Type,
-                    Capacity = room.Capacity,
-                    CurrentStatus = room.CurrentStatus,
-                    IsUnderMaintenance = room.MaintenanceSlots.Any(slot =>
-                        slot.Start <= DateTime.Now && slot.End >= DateTime.Now),
-                    AssignedEquipment = room.Equipments.Select(eq => eq.EquipmentName).ToList(),
-                    Phases = room.Phases.Select(p => new
-                    {
-                        PhaseType = p.PhaseType,
-                        Duration = p.Duration,
-                        StartTime = p.StartTime,
-                        EndTime = p.EndTime,
-                        AppointmentId = p.AppointementId
-                    }).ToList()
-                })
-                .ToListAsync();
-
+            var rooms = await _surgeryRoomServiceProvider.GetAllSurgeryRoomsAsync();
             return Ok(rooms);
         }
 

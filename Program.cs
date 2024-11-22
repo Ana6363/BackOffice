@@ -83,6 +83,7 @@ builder.Services.AddScoped<IOperationTypeRepository, OperationTypeRepository>();
 builder.Services.AddScoped<OperationTypeService>();
 builder.Services.AddScoped<SurgeryRoomService>();
 builder.Services.AddHostedService<SurgeryRoomService>();
+builder.Services.AddScoped<SurgeryRoomServiceProvider>();
 
 
 
