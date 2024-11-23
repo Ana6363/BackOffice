@@ -10,7 +10,7 @@ using Healthcare.Domain.Services;
 namespace Healthcare.Api.Controllers
 {
     [ApiController]
-    [Route("api/surgeryRoom")]
+    [Route("api/v1/surgeryRoom")]
     public class SurgeryRoomController : ControllerBase
     {
         private readonly BackOfficeDbContext _dbContext;
