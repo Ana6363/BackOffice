@@ -47,7 +47,7 @@ namespace BackOffice.Controllers
             }
 
         [HttpPut("update")]
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
 
             public async Task<IActionResult> Update([FromBody] OperationTypeDTO operationTypeDTO)
             {

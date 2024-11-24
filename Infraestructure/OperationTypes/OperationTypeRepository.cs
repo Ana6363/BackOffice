@@ -59,55 +59,24 @@ namespace BackOffice.Infraestructure.OperationTypes
             .Include(o => o.Specializations)
             .ToListAsync();
         }
-        public async Task UpdateAsync (OperationType operationType)
+        public async Task UpdateAsync(OperationTypeDataModel operationTypeDataModel)
         {
-            var operationTypeDataModel = await GetByIdAsync(operationType.Id.AsString());
-            if (operationTypeDataModel == null)
+            // Check if the entry exists in the database
+            var existingEntry = await _context.OperationType
+                .FirstOrDefaultAsync(o => o.OperationTypeId == operationTypeDataModel.OperationTypeId);
+
+            if (existingEntry == null)
             {
-                throw new KeyNotFoundException($"OperationType with ID '{operationType.Id.AsString()}' not found.");
+                throw new InvalidOperationException("The operation type with the specified ID does not exist.");
             }
 
+            // Replace the existing entry with the new data model
+            _context.OperationType.Remove(existingEntry);
+            await _context.OperationType.AddAsync(operationTypeDataModel);
 
-            operationTypeDataModel.OperationTypeId = operationType.Id.AsString();
-            operationTypeDataModel.OperationTypeName = operationType.OperationTypeName.Name;
-            operationTypeDataModel.PreparationTime = operationType.PreparationTime.time;
-            operationTypeDataModel.SurgeryTime = operationType.SurgeryTime.time;
-            operationTypeDataModel.CleaningTime = operationType.CleaningTime.time;
-
-            var existingSpecializations = await _context.Specializations
-                .Where(s => s.OperationTypeId == operationTypeDataModel.OperationTypeId)
-                .ToListAsync();
-            // remove specializations from db that are not in received list fomr operationtype
-            foreach (var existing in existingSpecializations)
-            {
-                if (!operationType.Specializations.Select(s => s.ToString()).Contains(existing.Name))
-                {
-                    _context.Specializations.Remove(existing); 
-                }
-            }
-            foreach (var newSpecialization in operationType.Specializations)
-            {
-                if (!existingSpecializations.Any(s => s.Name == newSpecialization.ToString()))
-                {
-                    var newSpecializationDataModel = new SpecializationDataModel
-                    {
-                        SpecializationId = Guid.NewGuid().ToString(), 
-                        Name = newSpecialization.ToString(),
-                        OperationTypeId = operationTypeDataModel.OperationTypeId 
-                    };
-
-                    await _context.Specializations.AddAsync( newSpecializationDataModel); 
-                }
-            }
-            //updates specializations list in operationTypeDataModel
-            operationTypeDataModel.Specializations = await _context.Specializations
-                .Where(s => s.OperationTypeId == operationTypeDataModel.OperationTypeId)
-                .ToListAsync();
-
-            _context.OperationType.Update(operationTypeDataModel);
+            // Save changes to the database
             await _context.SaveChangesAsync();
         }
-
 
 
         public async Task DeleteAsync (string name)

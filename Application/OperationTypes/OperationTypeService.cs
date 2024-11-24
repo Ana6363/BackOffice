@@ -52,9 +52,10 @@ namespace BackOffice.Application.OperationTypes
             {
                 throw new ArgumentException("Operation Type does not exist"); // ($"Operation Type with ID '{operationTypeDTO.OperationTypeId}' does not exists.")
             }
-            var operationTypeDomain = OperationTypeMapper.FromDataModelToDomain(existingOperationType);
+
+            var dataModel = OperationTypeMapper.ToDataModel(operationTypeDTO);
             
-            await _operationTypeRepository.UpdateAsync(operationTypeDomain);
+            await _operationTypeRepository.UpdateAsync(dataModel);
 
             return operationTypeDTO;
             
