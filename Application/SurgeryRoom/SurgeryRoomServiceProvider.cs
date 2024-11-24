@@ -19,21 +19,17 @@ namespace Healthcare.Domain.Services
             _dbContext = dbContext;
         }
 
-        public async Task<object> GetAllSurgeryRoomsAsync()
+        public async Task<List<int>> GetAllSurgeryRoomsAsync()
         {
-            // Fetch surgery rooms directly from the database
-            var rooms = await _dbContext.SurgeryRoom
-                .Select(room => new
-                {
-                    RoomNumber = room.RoomNumber,
-                    Type = room.Type,
-                    Capacity = room.Capacity,
-                    CurrentStatus = room.CurrentStatus
-                })
+            // Fetch surgery rooms and map their statuses to a list of integers
+            var currentStatus = await _dbContext.SurgeryRoom
+                .OrderBy(room => room.RoomNumber) // Ensure the list is in order of RoomNumber
+                .Select(room => room.CurrentStatus == "Occupied" ? 1 : 0) // Map status to 1 or 0
                 .ToListAsync();
 
-            return rooms;
+            return currentStatus;
         }
+
 
     }
 }
