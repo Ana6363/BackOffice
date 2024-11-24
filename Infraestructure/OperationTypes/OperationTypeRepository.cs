@@ -59,10 +59,11 @@ namespace BackOffice.Infraestructure.OperationTypes
             .Include(o => o.Specializations)
             .ToListAsync();
         }
-        public async Task UpdateAsync(OperationTypeDataModel operationTypeDataModel)
+       
+         public async Task UpdateAsync(OperationTypeDataModel operationTypeDataModel)
         {
-            // Check if the entry exists in the database
             var existingEntry = await _context.OperationType
+                .Include(o => o.Specializations) 
                 .FirstOrDefaultAsync(o => o.OperationTypeId == operationTypeDataModel.OperationTypeId);
 
             if (existingEntry == null)
@@ -70,11 +71,27 @@ namespace BackOffice.Infraestructure.OperationTypes
                 throw new InvalidOperationException("The operation type with the specified ID does not exist.");
             }
 
-            // Replace the existing entry with the new data model
-            _context.OperationType.Remove(existingEntry);
-            await _context.OperationType.AddAsync(operationTypeDataModel);
+            existingEntry.PreparationTime = operationTypeDataModel.PreparationTime;
+            existingEntry.SurgeryTime = operationTypeDataModel.SurgeryTime;
+            existingEntry.CleaningTime = operationTypeDataModel.CleaningTime;
+            existingEntry.OperationTypeName = operationTypeDataModel.OperationTypeName;
 
-            // Save changes to the database
+            // Update Specializations
+            if (operationTypeDataModel.Specializations != null && operationTypeDataModel.Specializations.Any())
+            {
+                _context.Specializations.RemoveRange(existingEntry.Specializations);
+
+                var newSpecializations = operationTypeDataModel.Specializations.Select(s => new SpecializationDataModel
+                {
+                    SpecializationId = Guid.NewGuid().ToString(), //generate new ID if there is no ID
+                    Name = s.Name,
+                    NeededPersonnel = s.NeededPersonnel,
+                    OperationTypeId = existingEntry.OperationTypeId
+                }).ToList();
+
+                existingEntry.Specializations = newSpecializations;
+            }
+
             await _context.SaveChangesAsync();
         }
 
