@@ -30,7 +30,7 @@ namespace BackOffice.Application.Appointement
             _surgeryRoomService = surgeryRoomService;
         }
 
-    /*    public async Task<AppointementDataModel> CreateAppointementAsync(AppointementDto appointement)
+       public async Task<AppointementDataModel> CreateAppointementAsync(AppointementDto appointement)
         {
             if (appointement == null)
             {
@@ -87,7 +87,7 @@ namespace BackOffice.Application.Appointement
                 throw new Exception("Operation Type not found");
             }
 
-            float operationDuration = operationType.PreparationTime;
+            float operationDuration = operationType.OperationTime;
 
             int hours = (int)operationDuration;
             int minutes = (int)((operationDuration - hours) * 60);
@@ -126,7 +126,7 @@ namespace BackOffice.Application.Appointement
                 throw;
             }
         }
-*/
+
         public async Task<IEnumerable<AppointementDataModel>> GetAppointementsAsync ()
         {
             var appointements = await _appointementRepository.GetAllAsync();
