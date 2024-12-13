@@ -20,14 +20,16 @@ namespace BackOffice.Application.Appointement
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly SurgeryRoomService _surgeryRoomService;
+        private readonly OperationRequestService _operationRequestService;
 
-        public AppointementService(IAppointementRepository appointementRepository, IUnitOfWork unitOfWork, BackOfficeDbContext context, IHttpContextAccessor httpContextAccessor, SurgeryRoomService surgeryRoomService)
+        public AppointementService(IAppointementRepository appointementRepository, IUnitOfWork unitOfWork, BackOfficeDbContext context, IHttpContextAccessor httpContextAccessor, SurgeryRoomService surgeryRoomService, OperationRequestService operationRequestService)
         {
             _appointementRepository = appointementRepository;
             _unitOfWork = unitOfWork;
             _context = context;
             _httpContextAccessor = httpContextAccessor;
             _surgeryRoomService = surgeryRoomService;
+            _operationRequestService = operationRequestService;
         }
 
        public async Task<AppointementDataModel> CreateAppointementAsync(AppointementDto appointement)
@@ -46,17 +48,6 @@ namespace BackOffice.Application.Appointement
 
 
             Console.WriteLine(appointementDto.Schedule);
-
-            foreach (var slot in slots)
-            {
-                Console.WriteLine(slot.StartTime);
-                if (appointement.Schedule != slot.StartTime)
-                {
-                    Console.WriteLine("Slot Unavailable");
-                    throw new Exception("Slot Unavailable");
-                }
-            }
-      
 
             var appointement1 = AppointementMapper.ToDomain(appointementDto);
 
@@ -87,36 +78,31 @@ namespace BackOffice.Application.Appointement
                 throw new Exception("Operation Type not found");
             }
 
-            float operationDuration = operationType.OperationTime;
+            int preparationTime = operationType.PreparationTime;
+            int surgeryTime = operationType.SurgeryTime;
+            int cleaningTime = operationType.CleaningTime;
 
-            int hours = (int)operationDuration;
-            int minutes = (int)((operationDuration - hours) * 60);
-            TimeSpan duration = new TimeSpan(hours, minutes, 0);
+            DateTime preparationDate = appointementDto.Schedule;
+            DateTime surgeryDate = preparationDate.AddMinutes(preparationTime);
+            DateTime cleaningDate = surgeryDate.AddMinutes(surgeryTime);
+            
 
-            DateTime preparationStart = appointement1.Schedule.Value;
+          OperationRequestDto opRequestDto = new OperationRequestDto (
+           appointementDto.Request,
+           operationRequest.DeadLine,
+           operationRequest.StaffId,
+           operationRequest.OperationType,
+           operationRequest.Priority,
+           operationRequest.RecordNumber,
+           "ACCEPTED"
+          );
 
-            DateTime preparationEnd = preparationStart.AddMinutes(30);
-
-            DateTime surgeryStart = preparationEnd;
-            DateTime surgeryEnd = surgeryStart.Add(duration);
-
-            DateTime cleaningStart = surgeryEnd;
-            DateTime cleaningEnd = cleaningStart.AddMinutes(45);
-
-            bool isRoomAssigned = await _surgeryRoomService.AssignRoomToAppointmentAsync(
-            appointement1.Id.Value,
-            preparationStart,
-            preparationEnd,
-            surgeryStart,
-            surgeryEnd,
-            cleaningStart,
-            cleaningEnd,
-            duration
-        );
-        if (!isRoomAssigned)
-        {
-            throw new Exception("No available room found for the specified time slots.");
-        }
+         await _operationRequestService.UpdateAsync(opRequestDto);
+         
+         //TODO Inserts por ordem 
+         // Appointement
+         // AllocatedPersonnel
+         // SurgeryPhaseDataModel
 
         return savedAppointment;
             }
