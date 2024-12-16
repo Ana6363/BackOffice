@@ -15,11 +15,13 @@ namespace Healthcare.Api.Controllers
     {
         private readonly BackOfficeDbContext _dbContext;
         private readonly SurgeryRoomServiceProvider _surgeryRoomServiceProvider;
+        private readonly SurgeryRoomService _surgeryRoomService;
 
-        public SurgeryRoomController(BackOfficeDbContext dbContext,SurgeryRoomServiceProvider surgeryRoomServiceProvider)
+        public SurgeryRoomController(BackOfficeDbContext dbContext,SurgeryRoomServiceProvider surgeryRoomServiceProvider, SurgeryRoomService surgeryRoomService)
         {
             _dbContext = dbContext;
             _surgeryRoomServiceProvider = surgeryRoomServiceProvider;
+            _surgeryRoomService = surgeryRoomService;
         }
 
         [HttpGet]
@@ -107,6 +109,35 @@ namespace Healthcare.Api.Controllers
             await _dbContext.SaveChangesAsync();
 
             return NoContent();
+        }
+        
+        [HttpGet("getDailyTimeSlots")]
+        public async Task<IActionResult> GetDailyTimeSlots([FromQuery] DateTime date, [FromQuery] int operationDurationInMinutes)
+        {
+            if (operationDurationInMinutes <= 0)
+            {
+                return BadRequest("Operation duration must be greater than zero.");
+            }
+
+            try
+            {
+                var availableTimeSlots = await _surgeryRoomService.GetAvailableTimeSlotsAsync(date, operationDurationInMinutes);
+
+                if (!availableTimeSlots.Any())
+                {
+                    return NotFound("No available time slots found for the specified date and duration.");
+                }
+
+                return Ok(availableTimeSlots.Select(slot => new
+                {
+                    Start = slot.Start.ToString("yyyy-MM-dd HH:mm"),
+                    End = slot.End.ToString("yyyy-MM-dd HH:mm")
+                }));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while fetching time slots: {ex.Message}");
+            }
         }
 
         // POST: api/SurgeryRoom/refresh

@@ -11,6 +11,7 @@ using BackOffice.Domain.OperationRequest;
 using BackOffice.Infraestructure.OperationRequest;
 using BackOffice.Infraestructure.Appointement;
 using BackOffice.Infrastructure.OperationTypes;
+using BackOffice.Infraestructure.NeededPersonnel;
 
 namespace BackOffice.Infrastructure
 {
@@ -29,6 +30,7 @@ namespace BackOffice.Infrastructure
         public DbSet<SurgeryPhaseDataModel> SurgeryPhaseDataModel { get; set; }
         public DbSet<MaintenanceSlot> MaintenanceSlot { get; set; }
         public DbSet<AssignedEquipment> AssignedEquipment { get; set; }
+        public DbSet<NeededPersonnelDataModel> AllocatedStaff { get; set; }
 
 
         public BackOfficeDbContext(DbContextOptions<BackOfficeDbContext> options) : base(options) 
@@ -61,12 +63,6 @@ namespace BackOffice.Infrastructure
             modelBuilder.Entity<SurgeryRoomDataModel>()
                 .HasKey(sr => sr.RoomNumber);
 
-            modelBuilder.Entity<SurgeryPhaseDataModel>()
-                .HasOne(sp => sp.SurgeryRoom)
-                .WithMany(sr => sr.Phases)
-                .HasForeignKey(sp => sp.RoomNumber)
-                .OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<MaintenanceSlot>()
                 .HasOne(ms => ms.SurgeryRoom)
                 .WithMany(sr => sr.MaintenanceSlots)
@@ -77,7 +73,12 @@ namespace BackOffice.Infrastructure
                 .HasOne(ae => ae.SurgeryRoom)
                 .WithMany(sr => sr.Equipments)
                 .HasForeignKey(ae => ae.RoomNumber)
-                .OnDelete(DeleteBehavior.Cascade);        
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            modelBuilder.Entity<AppointementDataModel>()
+                .HasKey(np => np.AppointementId);  
+            modelBuilder.Entity<NeededPersonnelDataModel>()
+                .HasKey(np => new { np.StaffId, np.AppointementId });          
 
             modelBuilder.Entity<AvailableSlotDataModel>()
                 .HasOne(s => s.Staff)
@@ -94,7 +95,19 @@ namespace BackOffice.Infrastructure
                 .OnDelete(DeleteBehavior.Cascade);   
                  
             modelBuilder.ApplyConfiguration(new UsersEntityTypeConfiguration());
-        }
+            modelBuilder.Entity<SurgeryPhaseDataModel>()
+                .HasOne(sp => sp.Appointement) // Navigation property to Appointement
+                .WithMany(a => a.SurgeryPhases) // One-to-Many relationship
+                .HasForeignKey(sp => sp.AppointementId) // Foreign key
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete
+
+            // Configure SurgeryPhaseDataModel -> SurgeryRoomDataModel relationship
+            modelBuilder.Entity<SurgeryPhaseDataModel>()
+                .HasOne(sp => sp.SurgeryRoom) // Navigation property to SurgeryRoom
+                .WithMany(sr => sr.Phases) // One-to-Many relationship
+                .HasForeignKey(sp => sp.RoomNumber) // Foreign key
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete
+                }
 
         public class UserIdConverter : ValueConverter<UserId, string>
         {

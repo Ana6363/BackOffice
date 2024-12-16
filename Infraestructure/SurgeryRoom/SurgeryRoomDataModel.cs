@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using BackOffice.Infraestructure.Appointement;
 
 public class SurgeryRoomDataModel
 {
@@ -18,17 +19,18 @@ public class SurgeryRoomDataModel
 
 public class SurgeryPhaseDataModel
 {
-     [Key]
+    [Key]
     public int Id { get; set; }
     public string RoomNumber { get; set; }
     public string PhaseType { get; set; }
     public int Duration { get; set; }
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
-    public string AppointementId { get; set; }
+    public Guid AppointementId { get; set; }
 
 
     // Navigation property
+    public AppointementDataModel Appointement { get; set; }
     public SurgeryRoomDataModel SurgeryRoom { get; set; }
 }
 
