@@ -1,4 +1,5 @@
 ﻿using BackOffice.Domain.Staff;
+using BackOffice.Domain.SurgeryPhase;
 
 namespace BackOffice.Application.Appointement
 {
@@ -9,19 +10,10 @@ namespace BackOffice.Application.Appointement
         public Guid? Request { get; set; }
         public string Patient { get; set; }
         public string Staff { get; set; }
+        public List<NeededPersonnelDto> NeededPersonnel { get; set; } = new List<NeededPersonnelDto>();
+        public List<SurgeryPhaseDto>? SurgeryPhases { get; set; } = new List<SurgeryPhaseDto>();
 
-        public List<NeededPersonnelDto> NeededPersonnel { get; set; } = new List<NeededPersonnelDto();
-
-        public AppointementDto(Guid? appointementId, DateTime schedule, Guid request, string patient, string staff, List<NeededPersonnelDto> neededPersonnel)
-        {
-            AppointementId = appointementId;
-            Schedule = schedule;
-            Request = request;
-            Patient = patient;
-            Staff = staff;
-            NeededPersonnel = neededPersonnel;
-        }
-
-
+        // Parameterless constructor required for deserialization
+        public AppointementDto() { }
     }
 }

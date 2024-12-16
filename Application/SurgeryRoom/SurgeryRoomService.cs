@@ -66,6 +66,92 @@ namespace Healthcare.Domain.Services
             }
         }
 
+
+        public async Task<List<(DateTime Start, DateTime End)>> GetAvailableTimeSlotsAsync(DateTime date, int operationDurationInMinutes)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<BackOfficeDbContext>();
+
+                // Define the working hours
+                DateTime startOfDay = date.Date.AddHours(8).AddMinutes(30); // 08:30
+                DateTime endOfDay = date.Date.AddHours(21); // 21:00
+
+                var rooms = await dbContext.SurgeryRoom
+                    .Include(r => r.Phases)
+                    .Include(r => r.MaintenanceSlots)
+                    .ToListAsync();
+
+                var allAvailableSlots = new List<(DateTime Start, DateTime End)>();
+
+                foreach (var room in rooms)
+                {
+                    var occupiedSlots = room.Phases
+                        .Where(phase => phase.StartTime.Date == date.Date)
+                        .Select(phase => (Start: phase.StartTime, End: phase.EndTime))
+                        .Concat(room.MaintenanceSlots
+                            .Where(slot => slot.Start.Date == date.Date)
+                            .Select(slot => (Start: slot.Start, End: slot.End)))
+                        .OrderBy(slot => slot.Start)
+                        .ToList();
+
+                    DateTime currentStart = startOfDay;
+
+                    foreach (var slot in occupiedSlots)
+                    {
+                        while (currentStart.AddMinutes(operationDurationInMinutes) <= slot.Start)
+                        {
+                            var newSlot = (currentStart, currentStart.AddMinutes(operationDurationInMinutes));
+                            allAvailableSlots.Add(newSlot);
+
+                            currentStart = currentStart.AddMinutes(operationDurationInMinutes);
+                        }
+
+                        if (currentStart < slot.End)
+                        {
+                            currentStart = slot.End;
+                        }
+                    }
+                    while (currentStart.AddMinutes(operationDurationInMinutes) <= endOfDay)
+                    {
+                        var newSlot = (currentStart, currentStart.AddMinutes(operationDurationInMinutes));
+                        allAvailableSlots.Add(newSlot);
+                        currentStart = currentStart.AddMinutes(operationDurationInMinutes);
+                    }
+                }
+
+                var distinctTimeSlots = allAvailableSlots
+                    .Distinct(new TimeSlotComparer())
+                    .OrderBy(slot => slot.Start)
+                    .ToList();
+
+                return distinctTimeSlots;
+            }
+        }
+
+
+
+        public async Task<string> GetAvailableRoomAsync(DateTime startTime, DateTime endTime)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<BackOfficeDbContext>();
+
+                var availableRoom = await dbContext.SurgeryRoom
+                    .Include(r => r.Phases)
+                    .Include(r => r.MaintenanceSlots)
+                    .FirstOrDefaultAsync(room =>
+                        !room.Phases.Any(phase => phase.StartTime < endTime && phase.EndTime > startTime) &&
+                        !room.MaintenanceSlots.Any(slot => slot.Start < endTime && slot.End > startTime));
+
+                if (availableRoom == null)
+                    throw new Exception("No available surgery rooms for the specified time.");
+
+                return availableRoom.RoomNumber;
+            }
+        }
+
+
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _timer?.Change(Timeout.Infinite, 0);
@@ -77,4 +163,18 @@ namespace Healthcare.Domain.Services
             _timer?.Dispose();
         }
     }
+
+    public class TimeSlotComparer : IEqualityComparer<(DateTime Start, DateTime End)>
+        {
+            public bool Equals((DateTime Start, DateTime End) x, (DateTime Start, DateTime End) y)
+            {
+                return x.Start == y.Start && x.End == y.End;
+            }
+
+            public int GetHashCode((DateTime Start, DateTime End) obj)
+            {
+                return HashCode.Combine(obj.Start, obj.End);
+            }
+        }
+
 }
