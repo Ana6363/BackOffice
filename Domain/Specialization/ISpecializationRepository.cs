@@ -7,7 +7,7 @@ namespace BackOffice.Domain.Specialization
     {
         
         
-            Task<SpecializationsDataModel> AddAsync(Specialization specialization);
+            Task<SpecializationsDataModel> AddAsync(Domain.Specialization.Specializations specialization);
             Task<SpecializationsDataModel> GetByIdAsync(Specializations id);
             Task<List<SpecializationsDataModel>> GetAllAsync();
             Task UpdateAsync(Specialization specialization);
