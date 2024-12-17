@@ -1,4 +1,5 @@
-﻿using BackOffice.Domain.Specialization;
+﻿using BackOffice.Application.Specialization;
+using BackOffice.Domain.Specialization;
 using BackOffice.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +15,7 @@ namespace BackOffice.Infraestructure.Specialization
             _context = context;
         }
 
-        public async Task<SpecializationsDataModel> AddAsync(Specializations specialization)
+        public async Task<SpecializationsDataModel> AddAsync(Domain.Specialization.Specialization specialization)
         {
             if (specialization == null)
             {
@@ -22,8 +23,8 @@ namespace BackOffice.Infraestructure.Specialization
             }
             var specializationDataModel = new SpecializationsDataModel
             {
-                Id = specialization.AsString(),
-                Description = "Default Description" // Set a default description or get it from specialization
+                Id = specialization.ToString(),
+                Description = specialization.description.ToString()
             };
             await _context.specializationsDataModels.AddAsync(specializationDataModel);
             await _context.SaveChangesAsync();
@@ -42,14 +43,15 @@ namespace BackOffice.Infraestructure.Specialization
             return await _context.specializationsDataModels.ToListAsync();
         }
 
-        public async Task UpdateAsync(Specializations specialization)
+        public async Task UpdateAsync(Domain.Specialization.Specialization specialization)
         {
-            var specializationDataModel = await GetByIdAsync(specialization);
+            var specializationDataModel = await GetByIdAsync(specialization.Id);
             if (specializationDataModel == null)
             {
                 throw new Exception("Specialization not found."); // Handle not found case
             }
-            specializationDataModel.Id = specialization.AsString();
+            specializationDataModel.Id = specialization.ToString();
+            specializationDataModel.Description = specialization.description.ToString();
             await _context.SaveChangesAsync();
         }
 

@@ -11,8 +11,7 @@ namespace BackOffice.Domain.Specialization
             Task<SpecializationsDataModel> GetByIdAsync(Specializations id);
             Task<List<SpecializationsDataModel>> GetAllAsync();
             Task UpdateAsync(Specialization specialization);
-            Task DeleteAsync(SpecializationDto id);
-            Task<IEnumerable<SpecializationDto>> GetFilteredAsync();
+            Task DeleteAsync(Specializations id);
         
 
     }
