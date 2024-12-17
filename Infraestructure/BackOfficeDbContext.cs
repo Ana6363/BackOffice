@@ -12,6 +12,7 @@ using BackOffice.Infraestructure.OperationRequest;
 using BackOffice.Infraestructure.Appointement;
 using BackOffice.Infrastructure.OperationTypes;
 using BackOffice.Infraestructure.NeededPersonnel;
+using BackOffice.Infraestructure.Specialization;
 
 namespace BackOffice.Infrastructure
 {
@@ -31,6 +32,7 @@ namespace BackOffice.Infrastructure
         public DbSet<MaintenanceSlot> MaintenanceSlot { get; set; }
         public DbSet<AssignedEquipment> AssignedEquipment { get; set; }
         public DbSet<NeededPersonnelDataModel> AllocatedStaff { get; set; }
+        public DbSet<SpecializationsDataModel> specializationsDataModels { get; set; }
 
 
         public BackOfficeDbContext(DbContextOptions<BackOfficeDbContext> options) : base(options) 

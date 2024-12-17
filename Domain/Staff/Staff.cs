@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BackOffice.Domain.Shared;
+using BackOffice.Domain.Specialization;
 
 namespace BackOffice.Domain.Staff
 {

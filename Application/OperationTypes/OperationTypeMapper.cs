@@ -1,7 +1,7 @@
 using BackOffice.Domain.OperationType;
 using BackOffice.Application.OperationTypes;
-using BackOffice.Domain.Staff;
 using BackOffice.Infrastructure.OperationTypes;
+using BackOffice.Domain.Specialization;
 
 namespace BackOffice.Application.OperationTypes
 {

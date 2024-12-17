@@ -1,6 +1,6 @@
 using BackOffice.Domain.OperationType;
 using BackOffice.Domain.Shared;
-using BackOffice.Domain.Staff;
+using BackOffice.Domain.Specialization;
 using Xunit;
 
 namespace BackOffice.BackOfficeModuleTest.Unit.OperationTypeServiceTest

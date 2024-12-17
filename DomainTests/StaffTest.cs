@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BackOffice.Domain.Shared;
+using BackOffice.Domain.Specialization;
 using BackOffice.Domain.Staff;
 using Moq;
 using Xunit;
