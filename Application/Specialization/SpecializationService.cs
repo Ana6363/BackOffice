@@ -103,7 +103,8 @@ namespace BackOffice.Application.Specialization
             }
             try
             {
-                await _specializationRepository.DeleteAsync(id);
+                var specializationDomain = SpecializationMapper.ToDomain(id);
+                await _specializationRepository.DeleteAsync(specializationDomain.Id);
                 await _unitOfWork.CommitAsync();
             }
             catch (Exception ex)
