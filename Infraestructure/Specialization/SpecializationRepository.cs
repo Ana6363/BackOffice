@@ -15,7 +15,7 @@ namespace BackOffice.Infraestructure.Specialization
             _context = context;
         }
 
-        public async Task<SpecializationsDataModel> AddAsync(Specializations specialization)
+        public async Task<SpecializationsDataModel> AddAsync(Domain.Specialization.Specialization specialization)
         {
             if (specialization == null)
             {
@@ -55,11 +55,9 @@ namespace BackOffice.Infraestructure.Specialization
             await _context.SaveChangesAsync();
         }
 
-        // Corrigido - parâmetro "SpecializationDto" corresponde à interface
-        public async Task DeleteAsync(Application.Specialization.SpecializationDto id)
+        public async Task DeleteAsync(Specializations id)
         {
-            var specializationDataModel = await _context.specializationsDataModels
-                .FirstOrDefaultAsync(s => s.Id == id.Name);
+            var specializationDataModel = await GetByIdAsync(id);
             if (specializationDataModel == null)
             {
                 throw new Exception("Specialization not found.");
@@ -67,11 +65,6 @@ namespace BackOffice.Infraestructure.Specialization
             _context.specializationsDataModels.Remove(specializationDataModel);
             await _context.SaveChangesAsync();
         }
-        public async Task<IEnumerable<SpecializationDto>> GetFilteredAsync()
-        {
-            return await _context.specializationsDataModels
-                .Select(s => new SpecializationDto(s.Id, s.Description))
-                .ToListAsync();
-        }
+        
     }
 }
