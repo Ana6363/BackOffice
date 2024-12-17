@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BackOffice.Infrastructure.OperationTypes
 {
-    public class SpecializationDataModel
+    public class OpTypeRequirementsDataModel
     {
         [Key]
         public required string SpecializationId { get; set; }
