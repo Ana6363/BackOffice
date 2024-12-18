@@ -26,13 +26,13 @@ namespace BackOffice.Infrastructure
         public DbSet<OperationRequestDataModel> OperationRequests { get; set; }
         public DbSet<AppointementDataModel> Appointements { get; set; }
         public DbSet<OperationTypeDataModel> OperationType { get; set; }
-        public DbSet<SpecializationDataModel> Specializations { get; set; }
+        public DbSet<OpTypeRequirementsDataModel> OperationRequirements { get; set; }
         public DbSet<SurgeryRoomDataModel> SurgeryRoom { get; set; }
         public DbSet<SurgeryPhaseDataModel> SurgeryPhaseDataModel { get; set; }
         public DbSet<MaintenanceSlot> MaintenanceSlot { get; set; }
         public DbSet<AssignedEquipment> AssignedEquipment { get; set; }
         public DbSet<NeededPersonnelDataModel> AllocatedStaff { get; set; }
-        public DbSet<SpecializationsDataModel> specializationsDataModels { get; set; }
+        public DbSet<SpecializationsDataModel> Specializations { get; set; }
 
 
         public BackOfficeDbContext(DbContextOptions<BackOfficeDbContext> options) : base(options) 

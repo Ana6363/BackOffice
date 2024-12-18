@@ -27,6 +27,9 @@ using BackOffice.Infraestructure.OperationTypes;
 using BackOffice.Application.OperationTypes;
 using Healthcare.Domain.Services;
 using BackOffice.Application.Appointement;
+using BackOffice.Domain.Specialization;
+using BackOffice.Infraestructure.Specialization;
+using BackOffice.Application.Specialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -86,6 +89,8 @@ builder.Services.AddScoped<SurgeryRoomService>();
 builder.Services.AddHostedService<SurgeryRoomService>();
 builder.Services.AddScoped<SurgeryRoomServiceProvider>();
 builder.Services.AddScoped<AppointementService>();
+builder.Services.AddScoped<ISpecializationRepository,SpecializationRepository>();
+builder.Services.AddScoped<SpecializationService>();
 
 
 

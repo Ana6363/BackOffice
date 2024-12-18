@@ -27,7 +27,7 @@ namespace BackOffice.Infraestructure.OperationTypes
                 SurgeryTime = operationType.SurgeryTime,
                 CleaningTime = operationType.CleaningTime,
                 OperationTypeName = operationType.OperationTypeName,
-                Specializations = operationType.Specializations.Select(s => new SpecializationDataModel
+                Specializations = operationType.Specializations.Select(s => new OpTypeRequirementsDataModel
                 {
                     SpecializationId = Guid.NewGuid().ToString(), 
                     Name = s.Name,
@@ -79,9 +79,9 @@ namespace BackOffice.Infraestructure.OperationTypes
             // Update Specializations
             if (operationTypeDataModel.Specializations != null && operationTypeDataModel.Specializations.Any())
             {
-                _context.Specializations.RemoveRange(existingEntry.Specializations);
+                _context.OperationRequirements.RemoveRange(existingEntry.Specializations);
 
-                var newSpecializations = operationTypeDataModel.Specializations.Select(s => new SpecializationDataModel
+                var newSpecializations = operationTypeDataModel.Specializations.Select(s => new OpTypeRequirementsDataModel
                 {
                     SpecializationId = Guid.NewGuid().ToString(), //generate new ID if there is no ID
                     Name = s.Name,

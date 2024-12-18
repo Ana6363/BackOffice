@@ -21,12 +21,16 @@ namespace BackOffice.Infraestructure.Specialization
             {
                 throw new ArgumentNullException(nameof(specialization), "Specialization cannot be null.");
             }
+            Console.WriteLine(specialization.Id.AsString());
+            Console.WriteLine(specialization.Description.ToString());
             var specializationDataModel = new SpecializationsDataModel
             {
-                Id = specialization.ToString(),
-                Description = specialization.description.ToString()
+                Id = specialization.Id.AsString(),
+                Description = specialization.Description.ToString()
             };
-            await _context.specializationsDataModels.AddAsync(specializationDataModel);
+            Console.WriteLine(specializationDataModel.Id);
+            Console.WriteLine(specializationDataModel.Description);
+            await _context.Specializations.AddAsync(specializationDataModel);
             await _context.SaveChangesAsync();
             return specializationDataModel;
         }
@@ -34,13 +38,13 @@ namespace BackOffice.Infraestructure.Specialization
         public async Task<SpecializationsDataModel?> GetByIdAsync(Specializations id)
         {
             var specializationString = id.AsString();
-            return await _context.specializationsDataModels
+            return await _context.Specializations
                 .FirstOrDefaultAsync(s => s.Id == specializationString);
         }
 
         public async Task<List<SpecializationsDataModel>> GetAllAsync()
         {
-            return await _context.specializationsDataModels.ToListAsync();
+            return await _context.Specializations.ToListAsync();
         }
 
         public async Task UpdateAsync(Domain.Specialization.Specialization specialization)
@@ -50,21 +54,28 @@ namespace BackOffice.Infraestructure.Specialization
             {
                 throw new Exception("Specialization not found.");
             }
-            specializationDataModel.Id = specialization.ToString();
-            specializationDataModel.Description = specialization.description.ToString();
+            specializationDataModel.Description = specialization.Description.ToString();
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(Specializations id)
+        public async Task DeleteAsync(SpecializationDto specializationDto)
         {
-            var specializationDataModel = await GetByIdAsync(id);
+            if (specializationDto == null || string.IsNullOrWhiteSpace(specializationDto.Name))
+            {
+                throw new ArgumentException("SpecializationDto or Name cannot be null or empty.");
+            }
+            var specializationDataModel = await _context.Specializations
+                .FirstOrDefaultAsync(s => s.Id == specializationDto.Name);
+
             if (specializationDataModel == null)
             {
-                throw new Exception("Specialization not found.");
+                throw new InvalidOperationException("Specialization not found.");
             }
-            _context.specializationsDataModels.Remove(specializationDataModel);
+
+            _context.Specializations.Remove(specializationDataModel);
             await _context.SaveChangesAsync();
         }
+
         
     }
 }

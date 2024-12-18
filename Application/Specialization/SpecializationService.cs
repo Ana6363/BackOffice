@@ -76,7 +76,7 @@ namespace BackOffice.Application.Specialization
 
         public async Task<IEnumerable<SpecializationsDataModel>> GetFilteredAsync(SpecializationFilterDto specializationFilter)
         {
-            var query = from specialization in _dbContext.specializationsDataModels
+            var query = from specialization in _dbContext.Specializations
                         select specialization;
 
             if (!string.IsNullOrWhiteSpace(specializationFilter.Name))
@@ -94,17 +94,17 @@ namespace BackOffice.Application.Specialization
             return result;
         }
 
-        public async Task DeleteAsync(SpecializationDto id)
+        public async Task DeleteAsync(SpecializationDto specializationDto)
         {
-            var specialization = await _dbContext.specializationsDataModels.FirstOrDefaultAsync(x => x.Id.Equals(id.Name.ToString()));
+            var specialization = await _dbContext.Specializations.FirstOrDefaultAsync(x => x.Id.Equals(specializationDto.Name.ToString()));
             if (specialization == null)
             {
-                throw new ArgumentException("Specialization does not exist", nameof(id));
+                throw new ArgumentException("Specialization does not exist", nameof(specializationDto));
             }
             try
             {
-                var specializationDomain = SpecializationMapper.ToDomain(id);
-                await _specializationRepository.DeleteAsync(specializationDomain.Id);
+                Console.WriteLine(specializationDto.Name);
+                await _specializationRepository.DeleteAsync(specializationDto);
                 await _unitOfWork.CommitAsync();
             }
             catch (Exception ex)
@@ -112,7 +112,6 @@ namespace BackOffice.Application.Specialization
                 throw new Exception("An error occurred while deleting the specialization", ex);
             }
         }
-
 
     }
 }

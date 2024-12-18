@@ -1,14 +1,17 @@
-﻿namespace BackOffice.Domain.Specialization
+﻿public class Description
 {
-    public class Description
+    public string Value { get; }
+
+    public Description(string value)
     {
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException("Description cannot be empty.", nameof(value));
 
-        public string Value { get; private set; }
+        Value = value;
+    }
 
-        public Description(string description)
-        {
-            Value = description;
-        }
-
+    public override string ToString()
+    {
+        return Value;
     }
 }

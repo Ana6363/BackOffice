@@ -14,14 +14,14 @@ namespace BackOffice.Application.Specialization
 
             return new SpecializationDto(
                 specialization.Id.AsString(),
-                specialization.description.Value
+                specialization.Description.Value
             );
         }
 
         public static Domain.Specialization.Specialization ToDomain(SpecializationDto specializationDto)
         {
-            if (specializationDto == null)
-                throw new ArgumentNullException(nameof(specializationDto), "SpecializationDto cannot be null.");
+            if (specializationDto == null){
+                throw new ArgumentNullException(nameof(specializationDto), "SpecializationDto cannot be null.");}
             return new Domain.Specialization.Specialization(
                 new Specializations(specializationDto.Name),
                 new Description(specializationDto.Description) 
@@ -35,7 +35,7 @@ namespace BackOffice.Application.Specialization
             return new SpecializationsDataModel
             {
                 Id = specialization.Id.AsString(),
-                Description = specialization.description.Value
+                Description = specialization.Description.Value
             };
         }
 

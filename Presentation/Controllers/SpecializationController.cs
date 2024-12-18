@@ -20,7 +20,7 @@ namespace BackOffice.Presentation.Controllers
         }
 
         [HttpPost("create")]
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateSpecializationAsync([FromBody] SpecializationDto specializationDto)
         {
             if (specializationDto == null)
@@ -39,7 +39,7 @@ namespace BackOffice.Presentation.Controllers
         }
 
         [HttpGet("filter")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllSpecializationsAsync(
             [FromQuery] string? id = null,
             [FromQuery] string? description = null)
@@ -57,7 +57,7 @@ namespace BackOffice.Presentation.Controllers
         }
 
         [HttpPut("update")]
-        [Authorize(Roles = "Admin")]
+       // [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateSpecializationAsync([FromBody] SpecializationDto specializationDto)
         {
             if (specializationDto == null)
@@ -76,8 +76,8 @@ namespace BackOffice.Presentation.Controllers
         }
 
         [HttpDelete("delete")]
-        [Authorize(Roles ="Admin")]
-        public async Task<IActionResult> DeleteSpecializationAsync([FromRoute] SpecializationDto dto)
+       // [Authorize(Roles ="Admin")]
+        public async Task<IActionResult> DeleteSpecializationAsync([FromBody] SpecializationDto dto)
         {
             if (dto == null)
             {

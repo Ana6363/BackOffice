@@ -19,7 +19,7 @@ namespace BackOffice.Domain.Specialization
 
         protected override object CreateFromString(string text)
         {
-            return new Specializations(text);
+            return text;
         }
 
 
@@ -32,10 +32,14 @@ namespace BackOffice.Domain.Specialization
             return false;
         }
 
+        public static Specializations FromString(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                throw new ArgumentException("Specialization cannot be null or empty.", nameof(text));
+            }
 
-
-
-
-
+            return new Specializations(text);
+        }
     }
 }

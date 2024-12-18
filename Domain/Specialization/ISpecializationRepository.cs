@@ -7,11 +7,11 @@ namespace BackOffice.Domain.Specialization
     {
         
         
-            Task<SpecializationsDataModel> AddAsync(Domain.Specialization.Specialization specialization);
+            Task<SpecializationsDataModel> AddAsync(Specialization specialization);
             Task<SpecializationsDataModel> GetByIdAsync(Specializations id);
             Task<List<SpecializationsDataModel>> GetAllAsync();
             Task UpdateAsync(Specialization specialization);
-            Task DeleteAsync(Specializations id);
+            Task DeleteAsync(SpecializationDto specialization);
         
 
     }
