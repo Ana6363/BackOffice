@@ -10,6 +10,7 @@ namespace BackOffice.Application.Appointement
         public Guid? Request { get; set; }
         public string Patient { get; set; }
         public string Staff { get; set; }
+        public string? RoomNumber { get; set; }
         public List<NeededPersonnelDto> NeededPersonnel { get; set; } = new List<NeededPersonnelDto>();
         public List<SurgeryPhaseDto>? SurgeryPhases { get; set; } = new List<SurgeryPhaseDto>();
 

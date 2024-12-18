@@ -68,11 +68,10 @@ namespace BackOffice.Application.Appointement
                 DateTime surgeryDate = preparationDate.AddMinutes(preparationTime);
                 DateTime cleaningDate = surgeryDate.AddMinutes(surgeryTime);
                 DateTime endTime = cleaningDate.AddMinutes(cleaningTime);
-                string roomNumber = await _surgeryRoomService.GetAvailableRoomAsync(preparationDate, endTime);
 
                 var preparationPhase = new SurgeryPhaseDto
                 {
-                    RoomNumber = roomNumber,
+                    RoomNumber = appointementDto.RoomNumber,
                     PhaseType = "Preparation",
                     Duration = preparationTime,
                     StartTime = preparationDate,
@@ -82,7 +81,7 @@ namespace BackOffice.Application.Appointement
 
                 var surgeryPhase = new SurgeryPhaseDto
                 {
-                    RoomNumber = roomNumber,
+                    RoomNumber = appointementDto.RoomNumber,
                     PhaseType = "Surgery",
                     Duration = surgeryTime,
                     StartTime = surgeryDate,
@@ -92,7 +91,7 @@ namespace BackOffice.Application.Appointement
 
                 var cleaningPhase = new SurgeryPhaseDto
                 {
-                    RoomNumber = roomNumber,
+                    RoomNumber = appointementDto.RoomNumber,
                     PhaseType = "Cleaning",
                     Duration = cleaningTime,
                     StartTime = cleaningDate,

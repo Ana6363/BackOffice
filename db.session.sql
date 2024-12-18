@@ -1,1 +1,1 @@
-SELECT * FROM Specializations;
+SELECT * FROM OperationType;

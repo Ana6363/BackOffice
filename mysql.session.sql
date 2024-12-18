@@ -1,1 +1,1 @@
-DESCRIBE Patients;
+DESCRIBE OperationType;

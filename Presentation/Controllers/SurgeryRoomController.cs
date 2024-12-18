@@ -112,16 +112,11 @@ namespace Healthcare.Api.Controllers
         }
         
         [HttpGet("getDailyTimeSlots")]
-        public async Task<IActionResult> GetDailyTimeSlots([FromQuery] DateTime date, [FromQuery] int operationDurationInMinutes)
+        public async Task<IActionResult> GetDailyTimeSlots([FromQuery] DateTime date,[FromQuery] string roomNumber, [FromQuery] string operationRequest)
         {
-            if (operationDurationInMinutes <= 0)
-            {
-                return BadRequest("Operation duration must be greater than zero.");
-            }
-
             try
             {
-                var availableTimeSlots = await _surgeryRoomService.GetAvailableTimeSlotsAsync(date, operationDurationInMinutes);
+                var availableTimeSlots = await _surgeryRoomService.GetAvailableTimeSlotsAsync(date, roomNumber,operationRequest);
 
                 if (!availableTimeSlots.Any())
                 {

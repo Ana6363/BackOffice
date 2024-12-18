@@ -67,7 +67,7 @@ namespace Healthcare.Domain.Services
         }
 
 
-        public async Task<List<(DateTime Start, DateTime End)>> GetAvailableTimeSlotsAsync(DateTime date, int operationDurationInMinutes)
+        public async Task<List<(DateTime Start, DateTime End)>> GetAvailableTimeSlotsAsync(DateTime date, string roomNumber, string operationRequest)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -77,47 +77,64 @@ namespace Healthcare.Domain.Services
                 DateTime startOfDay = date.Date.AddHours(8).AddMinutes(30); // 08:30
                 DateTime endOfDay = date.Date.AddHours(21); // 21:00
 
-                var rooms = await dbContext.SurgeryRoom
+                var room = await dbContext.SurgeryRoom
                     .Include(r => r.Phases)
                     .Include(r => r.MaintenanceSlots)
-                    .ToListAsync();
+                    .FirstOrDefaultAsync(r => r.RoomNumber == roomNumber);
+
+                if (room == null)
+                {
+                    throw new ArgumentException($"Surgery room with ID '{roomNumber}' not found.");
+                }
 
                 var allAvailableSlots = new List<(DateTime Start, DateTime End)>();
 
-                foreach (var room in rooms)
+                var occupiedSlots = room.Phases
+                    .Where(phase => phase.StartTime.Date == date.Date)
+                    .Select(phase => (Start: phase.StartTime, End: phase.EndTime))
+                    .Concat(room.MaintenanceSlots
+                        .Where(slot => slot.Start.Date == date.Date)
+                        .Select(slot => (Start: slot.Start, End: slot.End)))
+                    .OrderBy(slot => slot.Start)
+                    .ToList();
+
+                DateTime currentStart = startOfDay;
+                
+                var operationRequestEntity = await dbContext.OperationRequests
+                .FirstOrDefaultAsync(or => or.RequestId == new Guid(operationRequest));
+
+                var operationTypeEntity = await dbContext.OperationType
+                .FirstOrDefaultAsync(ot => ot.OperationTypeName == operationRequestEntity.OperationType);
+
+                if (operationTypeEntity == null)
                 {
-                    var occupiedSlots = room.Phases
-                        .Where(phase => phase.StartTime.Date == date.Date)
-                        .Select(phase => (Start: phase.StartTime, End: phase.EndTime))
-                        .Concat(room.MaintenanceSlots
-                            .Where(slot => slot.Start.Date == date.Date)
-                            .Select(slot => (Start: slot.Start, End: slot.End)))
-                        .OrderBy(slot => slot.Start)
-                        .ToList();
+                    throw new ArgumentException($"OperationType with ID '{operationRequestEntity.OperationType}' not found.");
+                }
 
-                    DateTime currentStart = startOfDay;
-
-                    foreach (var slot in occupiedSlots)
-                    {
-                        while (currentStart.AddMinutes(operationDurationInMinutes) <= slot.Start)
-                        {
-                            var newSlot = (currentStart, currentStart.AddMinutes(operationDurationInMinutes));
-                            allAvailableSlots.Add(newSlot);
-
-                            currentStart = currentStart.AddMinutes(operationDurationInMinutes);
-                        }
-
-                        if (currentStart < slot.End)
-                        {
-                            currentStart = slot.End;
-                        }
-                    }
-                    while (currentStart.AddMinutes(operationDurationInMinutes) <= endOfDay)
+                int operationDurationInMinutes = operationTypeEntity.PreparationTime +
+                    operationTypeEntity.SurgeryTime +
+                    operationTypeEntity.CleaningTime;
+        
+                foreach (var slot in occupiedSlots)
+                {
+                    while (currentStart.AddMinutes(operationDurationInMinutes) <= slot.Start)
                     {
                         var newSlot = (currentStart, currentStart.AddMinutes(operationDurationInMinutes));
                         allAvailableSlots.Add(newSlot);
+
                         currentStart = currentStart.AddMinutes(operationDurationInMinutes);
                     }
+
+                    if (currentStart < slot.End)
+                    {
+                        currentStart = slot.End;
+                    }
+                }
+                while (currentStart.AddMinutes(operationDurationInMinutes) <= endOfDay)
+                {
+                    var newSlot = (currentStart, currentStart.AddMinutes(operationDurationInMinutes));
+                    allAvailableSlots.Add(newSlot);
+                    currentStart = currentStart.AddMinutes(operationDurationInMinutes);
                 }
 
                 var distinctTimeSlots = allAvailableSlots
@@ -128,6 +145,7 @@ namespace Healthcare.Domain.Services
                 return distinctTimeSlots;
             }
         }
+
 
 
 
