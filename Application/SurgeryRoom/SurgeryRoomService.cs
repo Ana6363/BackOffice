@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BackOffice.Application.SurgeryRoom;
 using BackOffice.Infrastructure;
 using Healthcare.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,7 @@ namespace Healthcare.Domain.Services
             _timer = new Timer(CheckRoomStatus, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
             return Task.CompletedTask;
         }
-
+        
         private void CheckRoomStatus(object state)
         {
             using (var scope = _serviceProvider.CreateScope())

@@ -42,6 +42,25 @@ namespace BackOffice.Application.RoomType
             {
                 throw new ArgumentException("Room type failed to be created.");
             }
-        } 
-    }
+        }
+        public async Task<List<RoomTypeDto>> GetAllRoomTypesAsync()
+            {
+                try
+                {
+                    return await _dbContext.RoomTypes
+                        .Select(rt => new RoomTypeDto(
+                            rt.Id,
+                            rt.Designation,
+                            rt.Description,
+                            rt.SurgerySuitability.ToString()
+                        ))
+                        .ToListAsync();
+                }
+                catch (Exception ex)
+                {
+                    throw new ApplicationException("Failed to retrieve room types.", ex);
+                }
+            }
+        
+        }
 }

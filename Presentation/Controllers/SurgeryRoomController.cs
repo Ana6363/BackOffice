@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using BackOffice.Infrastructure;
 using Healthcare.Domain.Enums;
 using Healthcare.Domain.Services;
+using BackOffice.Application.SurgeryRoom;
 
 namespace Healthcare.Api.Controllers
 {
@@ -31,52 +32,49 @@ namespace Healthcare.Api.Controllers
             return Ok(rooms);
         }
 
-        // GET: api/SurgeryRoom/{roomNumber}
-        [HttpGet("{roomNumber}")]
-        public async Task<IActionResult> GetSurgeryRoomByRoomNumber(string roomNumber)
+        [HttpGet("getAll")]
+        public async Task<IActionResult> GetSurgeryRooms()
         {
-            var room = await _dbContext.SurgeryRoom
-                .Include(r => r.MaintenanceSlots)
-                .Include(r => r.Equipments)
-                .Include(r => r.Phases)
-                .Where(r => r.RoomNumber == roomNumber)
+            var rooms = await _dbContext.SurgeryRoom
                 .Select(room => new
                 {
                     RoomNumber = room.RoomNumber,
                     Type = room.Type,
                     Capacity = room.Capacity,
-                    CurrentStatus = room.CurrentStatus,
-                    IsUnderMaintenance = room.MaintenanceSlots.Any(slot =>
-                        slot.Start <= DateTime.Now && slot.End >= DateTime.Now),
-                    AssignedEquipment = room.Equipments.Select(eq => eq.EquipmentName).ToList(),
-                    Phases = room.Phases.Select(p => new
-                    {
-                        PhaseType = p.PhaseType,
-                        Duration = p.Duration,
-                        StartTime = p.StartTime,
-                        EndTime = p.EndTime,
-                        AppointmentId = p.AppointementId
-                    }).ToList()
+                    CurrentStatus = room.CurrentStatus
                 })
-                .FirstOrDefaultAsync();
+                .ToListAsync();
 
-            if (room == null)
-                return NotFound($"Surgery room with RoomNumber {roomNumber} not found.");
+            if (rooms == null || !rooms.Any())
+                return NotFound("No surgery rooms found.");
 
-            return Ok(room);
+            return Ok(rooms);
         }
+
 
         // POST: api/SurgeryRoom
         [HttpPost("create")]
-        public async Task<IActionResult> CreateSurgeryRoom([FromBody] SurgeryRoomDataModel newRoom)
+        public async Task<IActionResult> CreateSurgeryRoom([FromBody] SurgeryRoomDto newRoom)
         {
-            if (await _dbContext.SurgeryRoom.AnyAsync(r => r.RoomNumber == newRoom.RoomNumber))
-                return Conflict($"A surgery room with RoomNumber {newRoom.RoomNumber} already exists.");
+            if (newRoom == null)
+            {
+                return BadRequest(new { success = false, message = "Room details are required." });
+            }
 
-            _dbContext.SurgeryRoom.Add(newRoom);
-            await _dbContext.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetSurgeryRoomByRoomNumber), new { roomNumber = newRoom.RoomNumber }, newRoom);
+            try
+            {
+                // Call the AddAsync method to add the room
+                var createdRoom = await _surgeryRoomServiceProvider.AddAsync(newRoom);
+                return Ok(new { success = true, message = "Surgery room created successfully.", data = createdRoom });
+            }
+            catch (ArgumentException ex)
+            {
+                return Conflict(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "An error occurred while creating the surgery room.", details = ex.Message });
+            }
         }
 
         // PUT: api/SurgeryRoom/{roomNumber}

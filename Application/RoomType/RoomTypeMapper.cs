@@ -19,7 +19,7 @@ namespace BackOffice.Application.RoomType
             if (roomTypeDto == null)
                 throw new ArgumentNullException(nameof(roomTypeDto), "RoomTypeDto cannot be null.");
             return new BackOffice.Domain.RoomTypes.RoomType(
-                InternalCode.Create(roomTypeDto.InternalCode),
+                roomTypeDto.InternalCode,
                 new RoomDesignation(roomTypeDto.Designation),
                 new RoomDescription(roomTypeDto.Description),
                 new SurgerySuitability(Enum.Parse<SurgerySuitability.Suitability>(roomTypeDto.SurgerySuitability))
@@ -44,7 +44,7 @@ namespace BackOffice.Application.RoomType
             if (dataModel == null)
                 throw new ArgumentNullException(nameof(dataModel), "RoomTypeDataModel cannot be null.");
             return new BackOffice.Domain.RoomTypes.RoomType(
-                InternalCode.Create(dataModel.Id), // Use the Create method instead of the constructor
+                dataModel.Id,
                 new RoomDesignation(dataModel.Designation),
                 new RoomDescription(dataModel.Description),
                 new SurgerySuitability(Enum.Parse<SurgerySuitability.Suitability>(dataModel.SurgerySuitability))

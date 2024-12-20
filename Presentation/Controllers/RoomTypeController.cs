@@ -34,5 +34,19 @@ namespace BackOffice.Presentation.Controllers
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
+        [HttpGet("getAll")]
+        public async Task<IActionResult> GetAllRoomTypesAsync()
+        {
+            try
+            {
+                var roomTypes = await _roomTypeService.GetAllRoomTypesAsync();
+                return Ok(new { success = true, data = roomTypes });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
     }
 }
