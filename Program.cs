@@ -30,6 +30,9 @@ using BackOffice.Application.Appointement;
 using BackOffice.Domain.Specialization;
 using BackOffice.Infraestructure.Specialization;
 using BackOffice.Application.Specialization;
+using BackOffice.Application.RoomType;
+using BackOffice.Domain.RoomTypes;
+using BackOffice.Infraestructure.RoomTypes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,7 +94,8 @@ builder.Services.AddScoped<SurgeryRoomServiceProvider>();
 builder.Services.AddScoped<AppointementService>();
 builder.Services.AddScoped<ISpecializationRepository,SpecializationRepository>();
 builder.Services.AddScoped<SpecializationService>();
-
+builder.Services.AddScoped<RoomTypeService>();
+builder.Services.AddScoped<IRoomTypeRepository,RoomTypeRepository>();
 
 
     // Configure Authentication
