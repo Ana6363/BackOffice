@@ -39,26 +39,26 @@ namespace BackOffice.Controllers
             }
         } 
 
-
-      /*  [HttpPut("update")]
-        [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> UpdateAppointementAsync([FromBody] AppointementDto appointement)
+        [HttpPut("update")]
+        // [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> UpdateAppointementAsync([FromBody] AppointementDto updatedAppointement)
         {
-            if (appointement == null)
+            if (updatedAppointement == null)
             {
                 return BadRequest(new { success = false, message = "Appointement details are required." });
             }
 
             try
             {
-                var appointementDataModel = await _appointementService.UpdateAppointementAsync(appointement);
-                return Ok(new { success = true, appointement = appointementDataModel });
+                var updatedData = await _appointementService.UpdateAppointementAsync(updatedAppointement);
+                return Ok(new { success = true, appointement = updatedData });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
-        } */
+        }
+
 
 
         [HttpDelete("delete")]
