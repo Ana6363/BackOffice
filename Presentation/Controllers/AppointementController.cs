@@ -83,7 +83,7 @@ namespace BackOffice.Controllers
 
 
         [HttpGet("getAll")]
-        [Authorize(Roles = "Doctor")]
+       // [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> GetAllAppointementsAsync()
         {
             try

@@ -78,10 +78,16 @@ namespace BackOffice.Infraestructure.Appointement
                 .FirstOrDefaultAsync(p => p.AppointementId.ToString() == appointementIdString);
         }
 
-        public async Task<List<AppointementDataModel>> GetAllAsync()
+        public async Task<List<AppointementDataModel>> GetAllAsync(string staffId)
         {
-            return await _context.Appointements.ToListAsync();
+            return await _context.Appointements
+                .Where(a => a.Staff == staffId)
+                .Include(a => a.AllocatedStaff)
+                .Include(a => a.SurgeryPhases)
+                .ToListAsync();
         }
+
+
 
         public async Task UpdateAsync(Domain.Appointement.Appointement appointement)
         {

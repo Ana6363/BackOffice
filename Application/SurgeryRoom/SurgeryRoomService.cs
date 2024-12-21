@@ -68,7 +68,7 @@ namespace Healthcare.Domain.Services
         }
 
 
-        public async Task<List<(DateTime Start, DateTime End)>> GetAvailableTimeSlotsAsync(DateTime date, int operationDurationInMinutes)
+    public async Task<(List<(DateTime Start, DateTime End)> AvailableSlots, List<(string Specialization, int NeededPersonnel)> Requirements, Dictionary<string, List<string>> StaffBySpecialization)> GetAvailableTimeSlotsAsync(DateTime date, string requestId, string roomNumber)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -78,58 +78,107 @@ namespace Healthcare.Domain.Services
                 DateTime startOfDay = date.Date.AddHours(8).AddMinutes(30); // 08:30
                 DateTime endOfDay = date.Date.AddHours(21); // 21:00
 
-                var rooms = await dbContext.SurgeryRoom
+                var room = await dbContext.SurgeryRoom
                     .Include(r => r.Phases)
                     .Include(r => r.MaintenanceSlots)
-                    .ToListAsync();
+                    .FirstOrDefaultAsync(r => r.RoomNumber == roomNumber);
 
-                var allAvailableSlots = new List<(DateTime Start, DateTime End)>();
-
-                foreach (var room in rooms)
+                if (room == null)
                 {
-                    var occupiedSlots = room.Phases
-                        .Where(phase => phase.StartTime.Date == date.Date)
-                        .Select(phase => (Start: phase.StartTime, End: phase.EndTime))
-                        .Concat(room.MaintenanceSlots
-                            .Where(slot => slot.Start.Date == date.Date)
-                            .Select(slot => (Start: slot.Start, End: slot.End)))
-                        .OrderBy(slot => slot.Start)
-                        .ToList();
-
-                    DateTime currentStart = startOfDay;
-
-                    foreach (var slot in occupiedSlots)
-                    {
-                        while (currentStart.AddMinutes(operationDurationInMinutes) <= slot.Start)
-                        {
-                            var newSlot = (currentStart, currentStart.AddMinutes(operationDurationInMinutes));
-                            allAvailableSlots.Add(newSlot);
-
-                            currentStart = currentStart.AddMinutes(operationDurationInMinutes);
-                        }
-
-                        if (currentStart < slot.End)
-                        {
-                            currentStart = slot.End;
-                        }
-                    }
-                    while (currentStart.AddMinutes(operationDurationInMinutes) <= endOfDay)
-                    {
-                        var newSlot = (currentStart, currentStart.AddMinutes(operationDurationInMinutes));
-                        allAvailableSlots.Add(newSlot);
-                        currentStart = currentStart.AddMinutes(operationDurationInMinutes);
-                    }
+                    throw new ArgumentException($"Room with number {roomNumber} does not exist.");
                 }
 
-                var distinctTimeSlots = allAvailableSlots
-                    .Distinct(new TimeSlotComparer())
+                // Fetch the OperationRequest and related OperationType
+                var operationRequest = await dbContext.OperationRequests
+                    .FirstOrDefaultAsync(or => or.RequestId == new Guid(requestId));
+
+                if (operationRequest == null || operationRequest.OperationType == null)
+                {
+                    throw new ArgumentException($"OperationRequest with ID {requestId} does not exist or has no associated OperationType.");
+                }
+
+                var operationType = await dbContext.OperationType
+                    .FirstOrDefaultAsync(ot => ot.OperationTypeName == operationRequest.OperationType);
+
+                if (operationType == null)
+                {
+                    throw new ArgumentException($"OperationType {operationRequest.OperationType} does not exist.");
+                }
+
+                // Calculate total operation duration
+                int totalOperationDurationInMinutes = operationType.PreparationTime +
+                                                        operationType.SurgeryTime +
+                                                        operationType.CleaningTime;
+
+                // Retrieve the requirements for the OperationType
+                var operationRequirements = await dbContext.OperationRequirements
+                    .Where(or => or.OperationTypeId == operationType.OperationTypeId)
+                    .Select(or => new { or.Name, or.NeededPersonnel })
+                    .ToListAsync();
+
+                var requirements = operationRequirements
+                    .Select(or => (Specialization: or.Name, NeededPersonnel: or.NeededPersonnel))
+                    .ToList();
+
+                // Get staff by specialization
+                var specializations = requirements.Select(r => r.Specialization).ToList();
+                var staffBySpecialization = await GetStaffBySpecializationAsync(specializations);
+
+                // Calculate available time slots
+                var allAvailableSlots = new List<(DateTime Start, DateTime End)>();
+
+                var occupiedSlots = room.Phases
+                    .Where(phase => phase.StartTime.Date == date.Date)
+                    .Select(phase => (Start: phase.StartTime, End: phase.EndTime))
+                    .Concat(room.MaintenanceSlots
+                        .Where(slot => slot.Start.Date == date.Date)
+                        .Select(slot => (Start: slot.Start, End: slot.End)))
                     .OrderBy(slot => slot.Start)
                     .ToList();
 
-                return distinctTimeSlots;
+                DateTime currentStart = startOfDay;
+
+                foreach (var slot in occupiedSlots)
+                {
+                    while (currentStart.AddMinutes(totalOperationDurationInMinutes) <= slot.Start)
+                    {
+                        var newSlot = (currentStart, currentStart.AddMinutes(totalOperationDurationInMinutes));
+                        allAvailableSlots.Add(newSlot);
+
+                        currentStart = currentStart.AddMinutes(totalOperationDurationInMinutes);
+                    }
+
+                    if (currentStart < slot.End)
+                    {
+                        currentStart = slot.End;
+                    }
+                }
+
+                while (currentStart.AddMinutes(totalOperationDurationInMinutes) <= endOfDay)
+                {
+                    var newSlot = (currentStart, currentStart.AddMinutes(totalOperationDurationInMinutes));
+                    allAvailableSlots.Add(newSlot);
+                    currentStart = currentStart.AddMinutes(totalOperationDurationInMinutes);
+                }
+
+                return (allAvailableSlots.OrderBy(slot => slot.Start).ToList(), requirements, staffBySpecialization);
             }
         }
 
+        public async Task<Dictionary<string, List<string>>> GetStaffBySpecializationAsync(List<string> specializations)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<BackOfficeDbContext>();
+
+                var staffBySpecialization = await dbContext.Staff
+                    .Where(s => specializations.Contains(s.Specialization) && s.Status == true) // Assuming status 1 means active
+                    .GroupBy(s => s.Specialization)
+                    .ToDictionaryAsync(g => g.Key, g => g.Select(s => s.StaffId).ToList());
+
+                return staffBySpecialization;
+            }
+        }
 
 
         public async Task<string> GetAvailableRoomAsync(DateTime startTime, DateTime endTime)

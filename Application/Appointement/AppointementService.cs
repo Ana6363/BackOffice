@@ -4,9 +4,11 @@ using BackOffice.Domain.Appointement;
 using BackOffice.Domain.Logs;
 using BackOffice.Domain.OperationRequest;
 using BackOffice.Domain.Shared;
+using BackOffice.Domain.Staff;
 using BackOffice.Domain.SurgeryPhase;
 using BackOffice.Domain.Users;
 using BackOffice.Infraestructure.Appointement;
+using BackOffice.Infraestructure.NeededPersonnel;
 using BackOffice.Infrastructure;
 using Healthcare.Domain.Services;
 using Microsoft.EntityFrameworkCore;
@@ -105,7 +107,7 @@ namespace BackOffice.Application.Appointement
                 AppointementDataModel appointementDataModel = AppointementMapper.ToDataModel(appointementDto);
                 var opRequestDto = new OperationRequestDto(
                     appointementDto.Request,
-                    operationRequest.DeadLine,
+                    appointementDto.Schedule,
                     "MEDIUM",
                     operationRequest.RecordNumber,
                     operationRequest.StaffId,
@@ -151,7 +153,9 @@ namespace BackOffice.Application.Appointement
 
         public async Task<IEnumerable<AppointementDataModel>> GetAppointementsAsync ()
         {
-            var appointements = await _appointementRepository.GetAllAsync();
+            var getLoggedUser = GetLoggedInUserEmail();
+            var loggedUserId = getLoggedUser.Split("@")[0];
+            var appointements = await _appointementRepository.GetAllAsync(loggedUserId);
             return appointements;
         }
 
@@ -168,14 +172,14 @@ namespace BackOffice.Application.Appointement
         }
 
         
-    /*    public async Task<AppointementDto> UpdateAppointementAsync(AppointementDto updatedAppointement)
+       public async Task<AppointementDto> UpdateAppointementAsync(AppointementDto updatedAppointement)
         {
             var existingAppointement = _context.Appointements
                 .FirstOrDefault(a => a.AppointementId == updatedAppointement.AppointementId);
             if (existingAppointement == null)
             {
                 Console.WriteLine("Error updating");
-                throw new Exception("Appointement not found");
+                throw new Exception("Appointment not found");
             }
 
             var staff = _context.Staff
@@ -188,28 +192,123 @@ namespace BackOffice.Application.Appointement
 
             var getLoggedUser = GetLoggedInUserEmail();
             var loggedUserId = getLoggedUser.Split("@")[0];
-            if(!loggedUserId.Equals(existingAppointement.Staff, StringComparison.OrdinalIgnoreCase))
+            if (!loggedUserId.Equals(existingAppointement.Staff, StringComparison.OrdinalIgnoreCase))
             {
                 throw new Exception("Only the requesting doctor can update this operation request.");
             }
 
-            bool isUpdated = false;
-            if (updatedAppointement.Schedule != existingAppointement.Schedule)
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                existingAppointement.Schedule = updatedAppointement.Schedule;
-                isUpdated = true;
+                try
+                {
+                    // Delete existing AllocatedStaff entries
+                    var allocatedStaffEntries = _context.AllocatedStaff
+                        .Where(asf => asf.AppointementId == updatedAppointement.AppointementId);
+                    _context.AllocatedStaff.RemoveRange(allocatedStaffEntries);
+
+                    // Delete existing SurgeryPhaseDataModel entries
+                    var surgeryPhaseEntries = _context.SurgeryPhaseDataModel
+                        .Where(sp => sp.AppointementId == updatedAppointement.AppointementId);
+                    _context.SurgeryPhaseDataModel.RemoveRange(surgeryPhaseEntries);
+
+                    await _context.SaveChangesAsync();
+
+                    // Generate new SurgeryPhases
+                    var operationRequest = await _context.OperationRequests
+                        .FirstOrDefaultAsync(or => or.RequestId == updatedAppointement.Request);
+                    if (operationRequest == null)
+                        throw new Exception("Operation Request not found");
+
+                    string operationTypeName = operationRequest.OperationType;
+
+                    var operationType = await _context.OperationType
+                        .FirstOrDefaultAsync(ot => ot.OperationTypeName == operationTypeName);
+                    if (operationType == null)
+                        throw new Exception("Operation Type not found");
+
+                    int preparationTime = operationType.PreparationTime;
+                    int surgeryTime = operationType.SurgeryTime;
+                    int cleaningTime = operationType.CleaningTime;
+
+                    DateTime preparationDate = updatedAppointement.Schedule;
+                    DateTime surgeryDate = preparationDate.AddMinutes(preparationTime);
+                    DateTime cleaningDate = surgeryDate.AddMinutes(surgeryTime);
+                    DateTime endTime = cleaningDate.AddMinutes(cleaningTime);
+                    string roomNumber = await _surgeryRoomService.GetAvailableRoomAsync(preparationDate, endTime);
+
+                    var preparationPhase = new SurgeryPhaseDto
+                    {
+                        RoomNumber = roomNumber,
+                        PhaseType = "Preparation",
+                        Duration = preparationTime,
+                        StartTime = preparationDate,
+                        EndTime = surgeryDate,
+                        AppointementId = updatedAppointement.AppointementId.ToString()
+                    };
+
+                    var surgeryPhase = new SurgeryPhaseDto
+                    {
+                        RoomNumber = roomNumber,
+                        PhaseType = "Surgery",
+                        Duration = surgeryTime,
+                        StartTime = surgeryDate,
+                        EndTime = cleaningDate,
+                        AppointementId = updatedAppointement.AppointementId.ToString()
+                    };
+
+                    var cleaningPhase = new SurgeryPhaseDto
+                    {
+                        RoomNumber = roomNumber,
+                        PhaseType = "Cleaning",
+                        Duration = cleaningTime,
+                        StartTime = cleaningDate,
+                        EndTime = cleaningDate.AddMinutes(cleaningTime),
+                        AppointementId = updatedAppointement.AppointementId.ToString()
+                    };
+
+                    updatedAppointement.SurgeryPhases = new List<SurgeryPhaseDto> { preparationPhase, surgeryPhase, cleaningPhase };
+
+                    // Insert new SurgeryPhaseDataModel entries
+                    foreach (var phase in updatedAppointement.SurgeryPhases)
+                    {
+                        var surgeryPhaseDataModel = new SurgeryPhaseDataModel
+                        {
+                            RoomNumber = phase.RoomNumber,
+                            PhaseType = phase.PhaseType,
+                            Duration = phase.Duration ?? 0,
+                            StartTime = phase.StartTime ?? throw new Exception("StartTime cannot be null"),
+                            EndTime = phase.EndTime ?? throw new Exception("EndTime cannot be null"),
+                            AppointementId = new Guid(updatedAppointement.AppointementId.ToString())
+                        };
+                        _context.SurgeryPhaseDataModel.Add(surgeryPhaseDataModel);
+                    }
+
+                    // Insert new AllocatedStaff entries
+                    var newAllocatedStaff = updatedAppointement.NeededPersonnel.Select(asf => new NeededPersonnelDataModel
+                    {
+                        AppointementId = new Guid(updatedAppointement.AppointementId.ToString()),
+                        Specialization = asf.Specialization,
+                        StaffId = asf.StaffId
+                    });
+                    await _context.AllocatedStaff.AddRangeAsync(newAllocatedStaff);
+
+                    // Update schedule and room number in the Appointement table
+                    existingAppointement.Schedule = updatedAppointement.Schedule;
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return updatedAppointement;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    Console.WriteLine($"Error updating appointment: {ex.Message}");
+                    throw new Exception("Failed to update appointment. Please try again.");
+                }
             }
+        }
 
-            if(isUpdated)
-            {
-                await LogUpdateAppointement(loggedUserId, updatedAppointement);
-                await _context.SaveChangesAsync();
-            }
-
-            var updatedAppointement1 = AppointementMapper.ToDomain(updatedAppointement);
-            return updatedAppointement;
-
-        } */
 
         private string GetLoggedInUserEmail()
         {

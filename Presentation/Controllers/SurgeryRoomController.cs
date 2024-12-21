@@ -110,27 +110,35 @@ namespace Healthcare.Api.Controllers
         }
         
         [HttpGet("getDailyTimeSlots")]
-        public async Task<IActionResult> GetDailyTimeSlots([FromQuery] DateTime date, [FromQuery] int operationDurationInMinutes)
+        public async Task<IActionResult> GetDailyTimeSlots([FromQuery] DateTime date, [FromQuery] string requestId, [FromQuery] string roomNumber)
         {
-            if (operationDurationInMinutes <= 0)
-            {
-                return BadRequest("Operation duration must be greater than zero.");
-            }
-
             try
             {
-                var availableTimeSlots = await _surgeryRoomService.GetAvailableTimeSlotsAsync(date, operationDurationInMinutes);
+                var (availableTimeSlots, requirements, staffBySpecialization) = await _surgeryRoomService.GetAvailableTimeSlotsAsync(date, requestId, roomNumber);
 
                 if (!availableTimeSlots.Any())
                 {
                     return NotFound("No available time slots found for the specified date and duration.");
                 }
 
-                return Ok(availableTimeSlots.Select(slot => new
+                return Ok(new
                 {
-                    Start = slot.Start.ToString("yyyy-MM-dd HH:mm"),
-                    End = slot.End.ToString("yyyy-MM-dd HH:mm")
-                }));
+                    TimeSlots = availableTimeSlots.Select(slot => new
+                    {
+                        Start = slot.Start.ToString("yyyy-MM-dd HH:mm"),
+                        End = slot.End.ToString("yyyy-MM-dd HH:mm")
+                    }),
+                    Requirements = requirements.Select(req => new
+                    {
+                        Specialization = req.Specialization,
+                        NeededPersonnel = req.NeededPersonnel
+                    }),
+                    StaffBySpecialization = staffBySpecialization.Select(kvp => new
+                    {
+                        Specialization = kvp.Key,
+                        StaffIds = kvp.Value
+                    })
+                });
             }
             catch (Exception ex)
             {
