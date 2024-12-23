@@ -33,6 +33,7 @@ using BackOffice.Application.Specialization;
 using BackOffice.Application.RoomType;
 using BackOffice.Domain.RoomTypes;
 using BackOffice.Infraestructure.RoomTypes;
+using Azure.Messaging.ServiceBus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +60,19 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(); // Uncomment this line to enable Swagger
 builder.Logging.AddConsole();
+
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var connectionString = configuration["ServiceBus:ConnectionString"];
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("Service Bus connection string is not configured.");
+    }
+
+    return new ServiceBusClient(connectionString);
+});
 
 // Get the connection string from appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("BackOfficeDb");
@@ -96,6 +110,10 @@ builder.Services.AddScoped<ISpecializationRepository,SpecializationRepository>()
 builder.Services.AddScoped<SpecializationService>();
 builder.Services.AddScoped<RoomTypeService>();
 builder.Services.AddScoped<IRoomTypeRepository,RoomTypeRepository>();
+builder.Services.AddHttpClient<AllergyService>();
+builder.Services.AddSingleton<ServiceBusService>();
+builder.Services.AddHostedService<FeedbackListenerService>();
+
 
 
     // Configure Authentication
