@@ -111,9 +111,6 @@ builder.Services.AddScoped<SpecializationService>();
 builder.Services.AddScoped<RoomTypeService>();
 builder.Services.AddScoped<IRoomTypeRepository,RoomTypeRepository>();
 builder.Services.AddHttpClient<AllergyService>();
-builder.Services.AddSingleton<ServiceBusService>();
-builder.Services.AddHostedService<FeedbackListenerService>();
-
 
 
     // Configure Authentication
