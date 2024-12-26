@@ -1,66 +1,66 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/v1/allergies")]
 public class AllergyController : ControllerBase
 {
     private readonly AllergyService _allergyService;
-    private readonly ServiceBusService _serviceBusService;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<AllergyController> _logger;
 
-    public AllergyController(AllergyService allergyService, ServiceBusService serviceBusService,
-        IConfiguration configuration, ILogger<AllergyController> logger)
+    public AllergyController(AllergyService allergyService, ILogger<AllergyController> logger)
     {
         _allergyService = allergyService;
-        _serviceBusService = serviceBusService;
-        _configuration = configuration;
         _logger = logger;
     }
 
-  [HttpPost]
-public async Task<IActionResult> CreateAllergy([FromBody] AllergyDto allergy)
-{
-    if (allergy == null || string.IsNullOrEmpty(allergy.Name) || string.IsNullOrEmpty(allergy.Description))
+    [HttpPost]
+    public async Task<IActionResult> CreateAllergy([FromBody] AllergyDto allergy)
     {
-        _logger.LogWarning("Invalid allergy data received.");
-        return BadRequest("Invalid allergy data.");
-    }
-
-    try
-    {
-
-        _logger.LogInformation("Sending allergy to Service Bus: {Allergy}", allergy);
-
-        var messageBody = new
+        if (allergy == null || string.IsNullOrEmpty(allergy.Name) || string.IsNullOrEmpty(allergy.Description))
         {
-            type = "allergy",
-            data = allergy,
-        };
-
-        await _serviceBusService.SendMessageAsync(_configuration["ServiceBus:QueueName"], messageBody);
-        _logger.LogInformation("Message sent to Service Bus.");
-
-        // Initialize TaskCompletionSource
-        _serviceBusService.InitializeFeedbackTask();
-
-        // Wait for feedback
-        var feedback = await _serviceBusService.WaitForFeedbackAsync();
-
-        if (feedback == null)
-        {
-            return StatusCode(500, "No feedback received.");
+            _logger.LogWarning("Invalid allergy data received.");
+            return BadRequest("Invalid allergy data.");
         }
 
-        _logger.LogInformation("Feedback received: StatusCode={StatusCode}, Message={Message}", feedback.StatusCode, feedback.Message);
+        try
+        {
+            var result = await _allergyService.CreateAllergyAsync(allergy);
 
-        // Return the feedback status code and message as the response
-        return StatusCode(feedback.StatusCode, feedback.Message);
+            if (result)
+            {
+                return Created(string.Empty, new { message = "Allergy created successfully." });
+            }
+            else
+            {
+                return StatusCode(500, new { message = "Failed to create allergy." });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while creating the allergy.");
+            return StatusCode(500, new { message = "An error occurred while creating the allergy." });
+        }
     }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "An error occurred while sending allergy creation request to Service Bus.");
-        return StatusCode(500, "An error occurred while sending the request.");
-    }
-}
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllAllergies()
+        {
+            try
+            {
+                var allergies = await _allergyService.GetAllAllergiesAsync();
+
+                if (allergies == null || !allergies.Any())
+                {
+                    return NotFound(new { message = "No allergies found." });
+                }
+
+                return Ok(new { message = "All allergies fetched successfully.", data = allergies });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching allergies.");
+                return StatusCode(500, new { error = "An error occurred while fetching allergies." });
+            }
+        }
 }
