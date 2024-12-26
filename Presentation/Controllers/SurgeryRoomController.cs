@@ -7,6 +7,7 @@ using BackOffice.Infrastructure;
 using Healthcare.Domain.Enums;
 using Healthcare.Domain.Services;
 using BackOffice.Application.SurgeryRoom;
+using Healthcare.Domain.ValueObjects;
 
 namespace Healthcare.Api.Controllers
 {
@@ -51,6 +52,16 @@ namespace Healthcare.Api.Controllers
             return Ok(rooms);
         }
 
+        [HttpGet("getByRoomId")]
+        public async Task<IActionResult> GetSurgeryRoom(string roomNumber)
+        {
+            var room = await _dbContext.SurgeryRoom.FirstOrDefaultAsync(r => r.RoomNumber.Equals(roomNumber));
+
+            if (room == null)
+                return NotFound($"Surgery room with RoomNumber {roomNumber} not found.");
+
+            return Ok(room);
+        }
 
         // POST: api/SurgeryRoom
         [HttpPost("create")]
