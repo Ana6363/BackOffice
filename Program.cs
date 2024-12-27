@@ -111,10 +111,11 @@ builder.Services.AddScoped<SpecializationService>();
 builder.Services.AddScoped<RoomTypeService>();
 builder.Services.AddScoped<IRoomTypeRepository,RoomTypeRepository>();
 builder.Services.AddHttpClient<AllergyService>();
+builder.Services.AddHttpClient<MedicalConditionsService>();
 
 
-    // Configure Authentication
-    builder.Services.AddAuthentication(options =>
+// Configure Authentication
+builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
