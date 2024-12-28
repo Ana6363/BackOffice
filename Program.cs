@@ -112,6 +112,8 @@ builder.Services.AddScoped<RoomTypeService>();
 builder.Services.AddScoped<IRoomTypeRepository,RoomTypeRepository>();
 builder.Services.AddHttpClient<AllergyService>();
 builder.Services.AddHttpClient<MedicalConditionsService>();
+builder.Services.AddHttpClient<PatientMedicalRecordService>();
+
 
 
 // Configure Authentication
