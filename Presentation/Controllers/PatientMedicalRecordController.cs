@@ -16,7 +16,7 @@ public class PatientMedicalRecordController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdatePatientMedicalRecord([FromBody] PatientMedicalRecordDto patientMedicalRecord)
     {
-        if (patientMedicalRecord == null || patientMedicalRecord.RecordNumber == 0 || string.IsNullOrEmpty(patientMedicalRecord.Allergies) || string.IsNullOrEmpty(patientMedicalRecord.MedicalConditions) ||string.IsNullOrEmpty(patientMedicalRecord.FullName))
+        if (patientMedicalRecord == null || string.IsNullOrEmpty(patientMedicalRecord.RecordNumber) || string.IsNullOrEmpty(patientMedicalRecord.Allergies) || string.IsNullOrEmpty(patientMedicalRecord.MedicalConditions) ||string.IsNullOrEmpty(patientMedicalRecord.FullName))
         {
             _logger.LogWarning("Invalid patient medical record data received.");
             return BadRequest("Invalid patient medical record data.");
