@@ -96,4 +96,36 @@ public class AllergyService
             }
         }
 
+        public async Task<bool> UpdateAllergyAsync(AllergyDto allergy)
+    {
+        try
+        {
+            var url = $"{_nodeJsBackendUrl}/allergies"; // Construct the full URL
+            var payload = JsonSerializer.Serialize(allergy); // Serialize the AllergyDto to JSON
+            var jsonContent = new StringContent(payload, Encoding.UTF8, "application/json"); // Prepare HTTP content
+
+            _logger.LogInformation("Sending PUT request to Node.js backend. URL: {Url}, Payload: {Payload}", url, payload);
+
+            var response = await _httpClient.PutAsync(url, jsonContent); // Send the POST request
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Allergy updated successfully via Node.js backend.");
+                return true;
+            }
+            else
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("Failed to update allergy. Status: {StatusCode}, Response: {ResponseBody}",
+                    response.StatusCode, responseBody);
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while sending PUT request to Node.js backend.");
+            throw;
+        }
+    }
+
 }
