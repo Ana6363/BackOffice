@@ -92,4 +92,34 @@ public class AllergyController : ControllerBase
             return StatusCode(500, new { message = "An error occurred while updating the allergy." });
         }
     }
+
+    [HttpDelete]
+public async Task<IActionResult> DeleteAllergy([FromBody] DeleteAllergyDto deleteAllergyDto)
+{
+    if (deleteAllergyDto == null || string.IsNullOrEmpty(deleteAllergyDto.Name))
+    {
+        _logger.LogWarning("Invalid allergy data received for deletion.");
+        return BadRequest("Invalid allergy data.");
+    }
+
+    try
+    {
+        var result = await _allergyService.DeleteAllergyAsync(deleteAllergyDto);
+
+        if (result)
+        {
+            return Ok(new { message = "Allergy deleted successfully." });
+        }
+        else
+        {
+            return StatusCode(500, new { message = "Failed to delete allergy." });
+        }
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "An error occurred while deleting the allergy.");
+        return StatusCode(500, new { message = "An error occurred while deleting the allergy." });
+    }
+}
+
 }
