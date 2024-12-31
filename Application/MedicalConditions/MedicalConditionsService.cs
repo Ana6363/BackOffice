@@ -126,7 +126,7 @@ using Microsoft.Extensions.Logging;
     {
         try
         {
-            var url = $"{_nodeJsBackendUrl}/medical-conditions/{medicalCondition.Name}";
+            var url = $"{_nodeJsBackendUrl}/medical-conditions";
             var payload = JsonSerializer.Serialize(medicalCondition);
             var jsonContent = new StringContent(payload, Encoding.UTF8, "application/json");
             _logger.LogInformation("Sending PUT request to Node.js backend. URL: {Url}, Payload: {Payload}", url, payload);
@@ -152,37 +152,6 @@ using Microsoft.Extensions.Logging;
     }
 
 
-    public async Task<MedicalConditionsDto> FetchMedicalConditionByName(string name)
-    {
-        try
-        {
-            var url = $"{_nodeJsBackendUrl}/medical-conditions/{name}";
-            _logger.LogInformation("Sending GET request to Node.js backend. URL: {Url}", url);
-            var response = await _httpClient.GetAsync(url);
-            if (response.IsSuccessStatusCode)
-            {
-                var responseBody = await response.Content.ReadAsStringAsync();
-                _logger.LogInformation("Medical condition fetched successfully from Node.js backend. Response: {ResponseBody}", responseBody);
-                var medicalCondition = JsonSerializer.Deserialize<MedicalConditionsDto>(responseBody, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-                return medicalCondition;
-            }
-            else
-            {
-                var responseBody = await response.Content.ReadAsStringAsync();
-                _logger.LogWarning("Failed to fetch medical condition. Status: {StatusCode}, Response: {ResponseBody}",
-                    response.StatusCode, responseBody);
-                return null;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while sending GET request to Node.js backend.");
-            throw;
-        }
-    }
 
 }
 
