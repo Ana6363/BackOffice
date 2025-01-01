@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
     public class PatientMedicalRecordDto
     {
         [JsonPropertyName("recordNumber")]
-        public int RecordNumber { get; set; }
+        public string RecordNumber { get; set; }
 
         [JsonPropertyName("allergies")]
         public string Allergies { get; set; }
