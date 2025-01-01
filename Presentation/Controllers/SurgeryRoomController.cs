@@ -33,6 +33,28 @@ namespace Healthcare.Api.Controllers
             return Ok(rooms);
         }
 
+        [HttpGet("getRoomStatusesByDateTime")]
+        public IActionResult GetRoomStatusesByDateTime([FromQuery] DateTime dateTime)
+        {
+            try
+            {
+                // Call the function to get room statuses as an array of 1s and 0s
+                var roomStatuses = _surgeryRoomService.GetRoomStatusAtDateTime(dateTime);
+
+                // Return the statuses as an array
+                return Ok(new
+                {
+                    DateTime = dateTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                    RoomStatuses = roomStatuses
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "An error occurred while fetching room statuses.", details = ex.Message });
+            }
+        }
+
+
         [HttpGet("getAll")]
         public async Task<IActionResult> GetSurgeryRooms()
         {
@@ -51,6 +73,7 @@ namespace Healthcare.Api.Controllers
 
             return Ok(rooms);
         }
+
 
         [HttpGet("getByRoomId")]
         public async Task<IActionResult> GetSurgeryRoom(string roomNumber)

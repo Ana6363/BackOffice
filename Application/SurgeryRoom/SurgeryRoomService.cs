@@ -67,6 +67,42 @@ namespace Healthcare.Domain.Services
             }
         }
 
+        public int[] GetRoomStatusAtDateTime(DateTime dateTime)
+{
+    using (var scope = _serviceProvider.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<BackOfficeDbContext>();
+
+        var surgeryRooms = dbContext.SurgeryRoom
+            .Include(r => r.Phases)
+            .Include(r => r.MaintenanceSlots)
+            .Take(6) // Limit to the first 6 rooms
+            .ToList();
+
+        var roomStatuses = surgeryRooms.Select(room =>
+        {
+            bool isOccupied = room.Phases.Any(phase =>
+                phase.StartTime <= dateTime && phase.EndTime >= dateTime);
+
+            bool isUnderMaintenance = room.MaintenanceSlots.Any(slot =>
+                slot.Start <= dateTime && slot.End >= dateTime);
+
+            // Return 1 if the room is occupied or under maintenance, otherwise return 0
+            return isOccupied || isUnderMaintenance ? 1 : 0;
+        }).ToArray();
+
+        // Ensure the array is exactly size 6
+        if (roomStatuses.Length < 6)
+        {
+            var paddedStatuses = new int[6];
+            roomStatuses.CopyTo(paddedStatuses, 0);
+            return paddedStatuses;
+        }
+
+        return roomStatuses;
+    }
+}
+
 
     public async Task<(List<(DateTime Start, DateTime End)> AvailableSlots, List<(string Specialization, int NeededPersonnel)> Requirements, Dictionary<string, List<string>> StaffBySpecialization)> GetAvailableTimeSlotsAsync(DateTime date, string requestId, string roomNumber)
         {
