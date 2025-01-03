@@ -26,7 +26,7 @@ public class PatientMedicalRecordController : ControllerBase
             var result = await _patientMedicalRecordService.UpdatePatientMedicalRecordAsync(patientMedicalRecord);
             if (result)
             {
-                return Ok(new { message = "Patient medical record updated successfully." });
+                return Created(string.Empty, new { message = "Patient medical record updated successfully." });
             }
             else
             {
@@ -56,6 +56,35 @@ public class PatientMedicalRecordController : ControllerBase
         {
             _logger.LogError(ex, "An error occurred while fetching patient medical records.");
             return StatusCode(500, new { message = "An error occurred while fetching patient medical records." });
+        }
+    }
+
+    [HttpDelete]
+    public async Task<IActionResult> DeletePatientMedicalRecord(string recorNumber)
+    {
+        if (string.IsNullOrEmpty(recorNumber))
+        {
+            _logger.LogWarning("Invalid patient medical record data received.");
+            return BadRequest("Invalid patient medical record data.");
+        }
+        
+
+        try
+        {
+            var result = await _patientMedicalRecordService.DeletePatientMedicalRecordAsync(recorNumber);
+            if (result)
+            {
+                return Ok( new { message = "Patient medical record deleted successfully." });
+            }
+            else
+            {
+                return StatusCode(500, new { message = "Failed to delete patient medical record." });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while deleting the patient medical record.");
+            return StatusCode(500, new { message = "An error occurred while deleting the patient medical record." });
         }
     }
 }

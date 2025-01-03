@@ -27,26 +27,26 @@ public class PatientMedicalRecordService{
             var json = JsonSerializer.Serialize(patientMedicalRecordDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            _logger.LogInformation("Sending POST request to Node.js backend. URL: {Url}, Body: {Body}", url, json);
+            _logger.LogInformation("Sending PUT request to Node.js backend. URL: {Url}, Body: {Body}", url, json);
 
-            var response = await _httpClient.PostAsync(url, content);
+            var response = await _httpClient.PutAsync(url, content);
 
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInformation("Patient medical record created successfully in Node.js backend.");
+                _logger.LogInformation("Patient medical record updated successfully in Node.js backend.");
                 return true;
             }
             else
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
-                _logger.LogWarning("Failed to create patient medical record. Status: {StatusCode}, Response: {ResponseBody}",
+                _logger.LogWarning("Failed to update patient medical record. Status: {StatusCode}, Response: {ResponseBody}",
                     response.StatusCode, responseBody);
                 return false;
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while sending POST request to Node.js backend.");
+            _logger.LogError(ex, "An error occurred while sending PUT request to Node.js backend.");
             throw;
         }
     }
@@ -97,5 +97,35 @@ public class PatientMedicalRecordService{
             throw;
         }
         
-    }    
+    } 
+
+    public async Task<bool> DeletePatientMedicalRecordAsync(string recordNumber)
+    {
+        try
+        {
+            var url = $"{_nodeJsBackendUrl}/patient-medical-records/{recordNumber}";
+
+            _logger.LogInformation("Sending DELETE request to Node.js backend. URL: {Url}", url);
+
+            var response = await _httpClient.DeleteAsync(url);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Patient medical record deleted successfully in Node.js backend.");
+                return true;
+            }
+            else
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("Failed to delete patient medical record. Status: {StatusCode}, Response: {ResponseBody}",
+                    response.StatusCode, responseBody);
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while sending DELETE request to Node.js backend.");
+            throw;
+        }
+    }   
 }
