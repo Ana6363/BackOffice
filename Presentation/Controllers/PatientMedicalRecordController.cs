@@ -87,4 +87,22 @@ public class PatientMedicalRecordController : ControllerBase
             return StatusCode(500, new { message = "An error occurred while deleting the patient medical record." });
         }
     }
+
+    [HttpGet("{recordNumber}/download")]
+    public async Task<IActionResult> DownloadPatientMedicalRecord(string recordNumber)
+    {
+        try
+        {
+            // Chama o serviço para obter os bytes do arquivo JSON
+            var fileBytes = await _patientMedicalRecordService.GetPatientMedicalRecordForDownloadAsync(recordNumber);
+
+            // Retorna o arquivo JSON para o download
+            return File(fileBytes, "application/json", $"{recordNumber}_patient_medical_record.json");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while fetching the patient medical record.");
+            return StatusCode(500, new { message = "An error occurred while fetching the patient medical record." });
+        }
+    }
 }
