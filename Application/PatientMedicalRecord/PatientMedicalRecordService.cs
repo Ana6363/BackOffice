@@ -185,5 +185,39 @@ public async Task<PatientMedicalRecordDto> GetPatientMedicalRecordByRecordNumber
         throw;
     }
 }
+ public async Task<byte[]> GetPatientMedicalRecordForDownloadAsync(string recordNumber)
+{
+    try
+    {
+        var url = $"{_nodeJsBackendUrl}/patient-medical-records/{recordNumber}";
+        _logger.LogInformation("Sending GET request to Node.js backend. URL: {Url}", url);
+        var response = await _httpClient.GetAsync(url);
+        if (response.IsSuccessStatusCode)
+        {
+            var responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogInformation("Patient medical record fetched successfully from Node.js backend. Response: {ResponseBody}", responseBody);
+            var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseBody);
+            if (jsonResponse.TryGetProperty("data", out var patientMedicalRecordJson))
+            {
+                // Converter para JSON e retornar como bytes para o download
+                var jsonContent = patientMedicalRecordJson.GetRawText();
+                return Encoding.UTF8.GetBytes(jsonContent);  // Retorna os dados como um arquivo JSON (bytes)
+            }
+            throw new JsonException("Failed to parse patient medical record from JSON response.");
+        }
+        else
+        {
+            var responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Failed to get patient medical record. Status: {StatusCode}, Response: {ResponseBody}",
+                response.StatusCode, responseBody);
+            throw new HttpRequestException($"Failed to get patient medical record: {response.StatusCode} - {responseBody}");
+        }
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "An error occurred while sending GET request to Node.js backend.");
+        throw;
+    }
+}
     
 }
