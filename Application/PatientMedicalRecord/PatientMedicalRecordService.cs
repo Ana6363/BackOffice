@@ -15,87 +15,137 @@ public class PatientMedicalRecordService{
     {
         _httpClient = httpClient;
         _logger = logger;
-        _nodeJsBackendUrl = configuration["NodeJsBackendUrl"];
+        _nodeJsBackendUrl = configuration["NodeJsBackend:BaseUrl"];
     }
 
-    public async Task<bool> UpdatePatientMedicalRecordAsync(PatientMedicalRecordDto patientMedicalRecordDto)
+   public async Task<bool> UpdatePatientMedicalRecordAsync(PatientMedicalRecordDto patientMedicalRecordDto)
+{
+    try
     {
-        try
+        var url = $"{_nodeJsBackendUrl}/patient-medical-records";
+
+        // Wrap the DTO in a "records" array
+        var payload = new
         {
-            var url = $"{_nodeJsBackendUrl}/patient-medical-records";
+            records = new[] { patientMedicalRecordDto }
+        };
 
-            var json = JsonSerializer.Serialize(patientMedicalRecordDto);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var json = JsonSerializer.Serialize(payload);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            _logger.LogInformation("Sending POST request to Node.js backend. URL: {Url}, Body: {Body}", url, json);
+        _logger.LogInformation("Sending POST request to Node.js backend. URL: {Url}, Body: {Body}", url, json);
 
-            var response = await _httpClient.PostAsync(url, content);
+        var response = await _httpClient.PostAsync(url, content);
 
-            if (response.IsSuccessStatusCode)
-            {
-                _logger.LogInformation("Patient medical record created successfully in Node.js backend.");
-                return true;
-            }
-            else
-            {
-                var responseBody = await response.Content.ReadAsStringAsync();
-                _logger.LogWarning("Failed to create patient medical record. Status: {StatusCode}, Response: {ResponseBody}",
-                    response.StatusCode, responseBody);
-                return false;
-            }
+        if (response.IsSuccessStatusCode)
+        {
+            _logger.LogInformation("Patient medical record updated successfully in Node.js backend.");
+            return true;
         }
-        catch (Exception ex)
+        else
         {
-            _logger.LogError(ex, "An error occurred while sending POST request to Node.js backend.");
-            throw;
+            var responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Failed to update patient medical record. Status: {StatusCode}, Response: {ResponseBody}",
+                response.StatusCode, responseBody);
+            return false;
         }
     }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "An error occurred while sending POST request to Node.js backend.");
+        throw;
+    }
+}
+
+
 
     public async Task<IEnumerable<PatientMedicalRecordDto>> GetAllPatientMedicalRecordsAsync()
+{
+    try
     {
-        try
+        var url = $"{_nodeJsBackendUrl}/patient-medical-records";
+        _logger.LogInformation("Sending GET request to Node.js backend. URL: {Url}", url);
+
+        var response = await _httpClient.GetAsync(url);
+
+        if (response.IsSuccessStatusCode)
         {
-            var url = $"{_nodeJsBackendUrl}/patient-medical-records";
+            var responseBody = await response.Content.ReadAsStringAsync();
 
-            _logger.LogInformation("Sending GET request to Node.js backend. URL: {Url}", url);
+            // Log the raw JSON response for debugging
+            _logger.LogInformation("Raw Response Body: {ResponseBody}", responseBody);
 
-            var response = await _httpClient.GetAsync(url);
+            var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseBody);
+            _logger.LogInformation("Parsed JSON Response: {JsonResponse}", jsonResponse);
 
-            if (response.IsSuccessStatusCode)
+            if (jsonResponse.TryGetProperty("data", out var patientMedicalRecordsJson))
             {
-                var responseBody = await response.Content.ReadAsStringAsync();
-                _logger.LogInformation("Patient medical records fetched successfully from Node.js backend. Response: {ResponseBody}", responseBody);
+                _logger.LogInformation("Parsed Patient Medical Records Data: {PatientMedicalRecordsJson}", patientMedicalRecordsJson);
 
-                var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseBody);
-
-                if(jsonResponse.TryGetProperty("data", out var patientMedicalRecordsJson))
+                // Deserialize the patient medical records
+                var patientMedicalRecords = JsonSerializer.Deserialize<IEnumerable<PatientMedicalRecordDto>>(patientMedicalRecordsJson.GetRawText(), new JsonSerializerOptions
                 {
-                    var patientMedicalRecords = JsonSerializer.Deserialize<IEnumerable<PatientMedicalRecordDto>>(patientMedicalRecordsJson.GetRawText(), new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-                    
-                    return patientMedicalRecords;
-                }
-                 throw new JsonException("Failed to parse patient medical records from JSON response.");
+                    PropertyNameCaseInsensitive = true
+                });
 
-                
+                return patientMedicalRecords;
             }
-            else
-            {
-                var responseBody = await response.Content.ReadAsStringAsync();
-                _logger.LogWarning("Failed to get patient medical records. Status: {StatusCode}, Response: {ResponseBody}",
-                    response.StatusCode, responseBody);
-                
-                throw new HttpRequestException($"Failed to get patient medical records: {response.StatusCode} - {responseBody}");
 
-            }
+            throw new JsonException("Failed to parse patient medical records from JSON response.");
         }
-        catch (Exception ex)
+        else
         {
-            _logger.LogError(ex, "An error occurred while sending GET request to Node.js backend.");
-            throw;
+            var responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Failed to get patient medical records. Status: {StatusCode}, Response: {ResponseBody}",
+                response.StatusCode, responseBody);
+
+            throw new HttpRequestException($"Failed to get patient medical records: {response.StatusCode} - {responseBody}");
         }
-        
-    }    
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "An error occurred while fetching patient medical records.");
+        throw;
+    }
+}
+
+
+
+    public async Task<bool> SyncRecordsToNodeJsAsync(IEnumerable<object> records)
+{
+    try
+    {
+        var url = $"{_nodeJsBackendUrl}/patient-medical-records";
+        Console.WriteLine("NFJKNSDJKFNJDSKF");
+        Console.WriteLine(url);
+
+        // Serialize the records into JSON
+        var json = JsonSerializer.Serialize(new { records });
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        _logger.LogInformation("Sending POST request to Node.js backend to sync patient records. URL: {Url}, Body: {Body}", url, json);
+
+        // Send POST request
+        var response = await _httpClient.PostAsync(url, content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            _logger.LogInformation("Patient records synced successfully to the Node.js backend.");
+            return true;
+        }
+        else
+        {
+            var responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Failed to sync patient records. Status: {StatusCode}, Response: {ResponseBody}",
+                response.StatusCode, responseBody);
+            return false;
+        }
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "An error occurred while syncing patient records to the Node.js backend.");
+        throw;
+    }
+}
+    
 }

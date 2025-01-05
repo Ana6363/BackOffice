@@ -6,10 +6,10 @@ using System.Text.Json.Serialization;
         public string RecordNumber { get; set; }
 
         [JsonPropertyName("allergies")]
-        public string Allergies { get; set; }
+        public List<string> Allergies { get; set; }
 
         [JsonPropertyName("medicalConditions")]
-        public string MedicalConditions { get; set; }
+        public List<string> MedicalConditions { get; set; }
 
         [JsonPropertyName("fullName")]
         public string FullName { get; set; }
