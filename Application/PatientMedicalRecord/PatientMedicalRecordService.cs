@@ -24,10 +24,12 @@ public class PatientMedicalRecordService{
     {
         var url = $"{_nodeJsBackendUrl}/patient-medical-records";
 
-        // Wrap the DTO in a "records" array
+        // Send a flat payload instead of wrapping it in "records"
         var payload = new
         {
-            records = new[] { patientMedicalRecordDto }
+            recordNumber = patientMedicalRecordDto.RecordNumber,
+            allergies = patientMedicalRecordDto.Allergies,
+            medicalConditions = patientMedicalRecordDto.MedicalConditions
         };
 
         var json = JsonSerializer.Serialize(payload);
@@ -35,7 +37,7 @@ public class PatientMedicalRecordService{
 
         _logger.LogInformation("Sending PUT request to Node.js backend. URL: {Url}, Body: {Body}", url, json);
 
-        var response = await _httpClient.PutAsync(url, content); // Use PutAsync for a PUT request
+        var response = await _httpClient.PutAsync(url, content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -56,6 +58,7 @@ public class PatientMedicalRecordService{
         throw;
     }
 }
+
 
 
 
