@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -59,8 +60,41 @@ public class PatientMedicalRecordService{
     }
 }
 
+public async Task<PatientMedicalRecordDto> GetPatientMedicalRecordByRecordNumberAsync(string recordNumber)
+{
+    try
+    {
+        var url = $"{_nodeJsBackendUrl}/patient-medical-records/{recordNumber}";
 
+        var response = await _httpClient.GetAsync(url);
 
+        if (!response.IsSuccessStatusCode)
+        {
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning($"Patient medical record with recordNumber {recordNumber} not found.");
+                return null;
+            }
+
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            _logger.LogError($"Failed to fetch patient medical record. Status: {response.StatusCode}, Response: {errorMessage}");
+            throw new Exception($"Failed to fetch patient medical record. Status: {response.StatusCode}");
+        }
+
+        var jsonResponse = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<ResponseWrapper<PatientMedicalRecordDto>>(jsonResponse, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        return result?.Data;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, $"An error occurred while fetching patient medical record with recordNumber: {recordNumber}");
+        throw;
+    }
+}
 
 
     public async Task<IEnumerable<PatientMedicalRecordDto>> GetAllPatientMedicalRecordsAsync()

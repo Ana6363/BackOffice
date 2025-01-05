@@ -52,6 +52,35 @@ public async Task<IActionResult> UpdatePatientMedicalRecord([FromBody] PatientMe
 }
 
 
+[HttpGet]
+[Route("dowload/{recordNumber}")]
+public async Task<IActionResult> GetPatientMedicalRecordByRecordNumber(string recordNumber)
+{
+    try
+    {
+        if (string.IsNullOrEmpty(recordNumber))
+        {
+            return BadRequest(new { message = "Record number is required." });
+        }
+
+        // Call the Node.js backend to fetch the record by recordNumber
+        var patientMedicalRecord = await _patientMedicalRecordService.GetPatientMedicalRecordByRecordNumberAsync(recordNumber);
+
+        if (patientMedicalRecord == null)
+        {
+            return NotFound(new { message = "Patient medical record not found." });
+        }
+
+        return Ok(new { message = "Patient medical record fetched successfully.", data = patientMedicalRecord });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, $"An error occurred while fetching the patient medical record for recordNumber: {recordNumber}.");
+        return StatusCode(500, new { message = "An error occurred while fetching the patient medical record." });
+    }
+}
+
+
     [HttpGet]
     public async Task<IActionResult> GetAllPatientMedicalRecords()
     {
