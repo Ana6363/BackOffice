@@ -15,6 +15,6 @@ namespace BackOffice.Infrastructure.OperationTypes
         public required int SurgeryTime { get; set; }
         public required int CleaningTime { get; set; }
 
-        public List<SpecializationDataModel> Specializations {get; set;} = [];
+        public List<OpTypeRequirementsDataModel> Specializations {get; set;} = [];
     }
 }

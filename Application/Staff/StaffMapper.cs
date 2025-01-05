@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BackOffice.Domain.Specialization;
 using BackOffice.Domain.Staff;
 using BackOffice.Infrastructure.Staff;
 using Microsoft.Extensions.Configuration;

@@ -9,7 +9,7 @@ namespace BackOffice.Application.OperationTypes
         public int PreparationTime { get; set; } 
         public int SurgeryTime { get; set; } 
         public int CleaningTime { get; set; } 
-        public List<SpecializationDTO> Specializations { get; set; }
+        public List<OpTypeRequirementsDTO> Specializations { get; set; }
     }
 
 }

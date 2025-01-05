@@ -15,12 +15,13 @@ namespace BackOffice.Infraestructure.Appointement
             _context = context;
         }
 
-        async Task<AppointementDataModel> IAppointementRepository.AddAsync(Domain.Appointement.Appointement appointement)
-        { 
+      /*   public async Task<AppointementDataModel> AddAsync(Domain.Appointement.Appointement appointement)  {
             if (appointement == null)
             {
                 throw new ArgumentNullException(nameof(appointement), "Appointement cannot be null.");
             }
+
+            // Map the appointement to AppointementDataModel
             var appointementDataModel = new AppointementDataModel
             {
                 AppointementId = Guid.Parse(appointement.Id.AsString()),
@@ -30,11 +31,45 @@ namespace BackOffice.Infraestructure.Appointement
                 Staff = appointement.Staff.AsString()
             };
 
+            // Add the appointement to the database
             await _context.Appointements.AddAsync(appointementDataModel);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); // Save first to get the AppointementId
+
+            // Add related NeededPersonnel (AllocatedStaff)
+            if (appointement.AllocatedStaff != null && appointement.NeededPersonnel.Any())
+            {
+                var neededPersonnel = appointement.NeededPersonnel.Select(personnel => new NeededPersonnelDataModel
+                {
+                    StaffId = personnel.StaffId,
+                    Specialization = personnel.Specialization,
+                    Appointement = appointementDataModel // Link to saved appointement
+                }).ToList();
+
+                await _context.NeededPersonnel.AddRangeAsync(neededPersonnel);
+                await _context.SaveChangesAsync();
+            }
+
+            // Add related SurgeryPhases
+            if (appointement.SurgeryPhases != null && appointement.SurgeryPhases.Any())
+            {
+                var surgeryPhases = appointement.SurgeryPhases.Select(phase => new SurgeryPhasesDataModel
+                {
+                    RoomNumber = phase.RoomNumber,
+                    PhaseType = phase.PhaseType,
+                    Duration = phase.Duration,
+                    StartTime = phase.StartTime,
+                    EndTime = phase.EndTime,
+                    AppointementId = appointementDataModel.AppointementId.ToString() // Link to saved appointement
+                }).ToList();
+
+                await _context.SurgeryPhases.AddRangeAsync(surgeryPhases);
+                await _context.SaveChangesAsync();
+            }
 
             return appointementDataModel;
         }
+        */
+
         public async Task<AppointementDataModel?> GetByIdAsync(AppointementId id)
         {
             var appointementIdString = id.AsString();
@@ -43,10 +78,16 @@ namespace BackOffice.Infraestructure.Appointement
                 .FirstOrDefaultAsync(p => p.AppointementId.ToString() == appointementIdString);
         }
 
-        public async Task<List<AppointementDataModel>> GetAllAsync()
+        public async Task<List<AppointementDataModel>> GetAllAsync(string staffId)
         {
-            return await _context.Appointements.ToListAsync();
+            return await _context.Appointements
+                .Where(a => a.Staff == staffId)
+                .Include(a => a.AllocatedStaff)
+                .Include(a => a.SurgeryPhases)
+                .ToListAsync();
         }
+
+
 
         public async Task UpdateAsync(Domain.Appointement.Appointement appointement)
         {

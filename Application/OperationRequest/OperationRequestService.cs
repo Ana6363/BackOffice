@@ -109,7 +109,7 @@ namespace BackOffice.Application.OperationRequest
                 throw new Exception("Operation request not found.");
             }
 
-            var doctor = await _context.Staff
+          /*  var doctor = await _context.Staff
                 .FirstOrDefaultAsync(s => s.StaffId == updatedRequestDto.StaffId);
 
             if (doctor == null)
@@ -120,10 +120,10 @@ namespace BackOffice.Application.OperationRequest
             var loggedInUserEmail = GetLoggedInUserEmail();
             var loggedInUserId = loggedInUserEmail.Split('@')[0];
 
-            if (!loggedInUserId.Equals(existingRequest.StaffId, StringComparison.OrdinalIgnoreCase))
+           if (!loggedInUserId.Equals(existingRequest.StaffId, StringComparison.OrdinalIgnoreCase))
             {
                 throw new Exception("Only the requesting doctor can update this operation request.");
-            }
+            } */
 
             bool isUpdated = false;
 
@@ -138,10 +138,15 @@ namespace BackOffice.Application.OperationRequest
                 existingRequest.Priority = updatedRequestDto.Priority;
                 isUpdated = true;
             }
+            if (updatedRequestDto.Status != existingRequest.Status)
+            {
+                existingRequest.Status= updatedRequestDto.Status;
+                isUpdated = true;
+            }
 
             if (isUpdated)
             {
-                await LogUpdateOperation(loggedInUserEmail, updatedRequestDto);
+           //     await LogUpdateOperation(loggedInUserEmail, updatedRequestDto);
                 await _context.SaveChangesAsync();
             }
 

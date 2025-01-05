@@ -26,6 +26,14 @@ using BackOffice.Domain.OperationType;
 using BackOffice.Infraestructure.OperationTypes;
 using BackOffice.Application.OperationTypes;
 using Healthcare.Domain.Services;
+using BackOffice.Application.Appointement;
+using BackOffice.Domain.Specialization;
+using BackOffice.Infraestructure.Specialization;
+using BackOffice.Application.Specialization;
+using BackOffice.Application.RoomType;
+using BackOffice.Domain.RoomTypes;
+using BackOffice.Infraestructure.RoomTypes;
+using Azure.Messaging.ServiceBus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +60,19 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(); // Uncomment this line to enable Swagger
 builder.Logging.AddConsole();
+
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var connectionString = configuration["ServiceBus:ConnectionString"];
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("Service Bus connection string is not configured.");
+    }
+
+    return new ServiceBusClient(connectionString);
+});
 
 // Get the connection string from appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("BackOfficeDb");
@@ -84,11 +105,19 @@ builder.Services.AddScoped<OperationTypeService>();
 builder.Services.AddScoped<SurgeryRoomService>();
 builder.Services.AddHostedService<SurgeryRoomService>();
 builder.Services.AddScoped<SurgeryRoomServiceProvider>();
+builder.Services.AddScoped<AppointementService>();
+builder.Services.AddScoped<ISpecializationRepository,SpecializationRepository>();
+builder.Services.AddScoped<SpecializationService>();
+builder.Services.AddScoped<RoomTypeService>();
+builder.Services.AddScoped<IRoomTypeRepository,RoomTypeRepository>();
+builder.Services.AddHttpClient<AllergyService>();
+builder.Services.AddHttpClient<MedicalConditionsService>();
+builder.Services.AddHttpClient<PatientMedicalRecordService>();
 
 
 
-    // Configure Authentication
-    builder.Services.AddAuthentication(options =>
+// Configure Authentication
+builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -123,4 +152,4 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 app.MapControllers();
 
-app.Run();
+app.Run("http://0.0.0.0:5184");

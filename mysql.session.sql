@@ -1,1 +1,1 @@
-DESCRIBE Patients;
+SELECT * FROM SurgeryRoom;

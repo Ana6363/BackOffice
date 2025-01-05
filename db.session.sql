@@ -1,1 +1,1 @@
-DESCRIBE SurgeryRoom;
+SELECT * FROM Appointements;

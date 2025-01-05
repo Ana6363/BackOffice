@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BackOffice.Domain.Shared;
+using BackOffice.Domain.Specialization;
 using BackOffice.Domain.Staff;
 using Moq;
 using Xunit;
@@ -27,7 +28,7 @@ namespace BackOffice.DomainTests
                 // Arrange
                 var id = new StaffId("D202412345");
                 var licenseNumber = new LicenseNumber("12345");
-                var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
+                var specialization = new Specializations("Urology");
                 var email = new StaffEmail("D202412345", mo.Object);
                 var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
                 var status = new StaffStatus(true);
@@ -56,7 +57,7 @@ namespace BackOffice.DomainTests
             // Arrange
             var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
-            var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
+            var specialization = new Specializations("Urology");
             var email = new StaffEmail("test@myhospital.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
@@ -76,7 +77,7 @@ namespace BackOffice.DomainTests
             // Arrange
             var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
-            var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
+            var specialization = new Specializations("Urology");
             var email = new StaffEmail("test@myhospital.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
@@ -93,7 +94,7 @@ namespace BackOffice.DomainTests
             // Arrange
             var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
-            var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
+            var specialization = new Specializations("Urology");
             var email = new StaffEmail("test@myhospital.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);
@@ -113,7 +114,7 @@ namespace BackOffice.DomainTests
             // Arrange
             var id = new StaffId("D202412345");
             var licenseNumber = new LicenseNumber("12345");
-            var specialization = Specializations.FromEnum(Specializations.SpecializationType.Urology);
+            var specialization = new Specializations("Urology");
             var email = new StaffEmail("test@myhospital.com", mo.Object);
             var slots = new List<Slots> { new Slots(DateTime.Now, DateTime.Now.AddHours(1)) };
             var status = new StaffStatus(true);

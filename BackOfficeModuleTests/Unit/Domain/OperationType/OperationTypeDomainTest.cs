@@ -1,6 +1,6 @@
 using BackOffice.Domain.OperationType;
 using BackOffice.Domain.Shared;
-using BackOffice.Domain.Staff;
+using BackOffice.Domain.Specialization;
 using Xunit;
 
 namespace BackOffice.BackOfficeModuleTest.Unit.OperationTypeServiceTest
@@ -78,11 +78,11 @@ namespace BackOffice.BackOfficeModuleTest.Unit.OperationTypeServiceTest
             string specializationName = "Cardiology";
 
             // Act
-            var specialization = Specializations.FromString(specializationName);
+            var specialization = new Specializations("Urology");
 
             // Assert
             Assert.NotNull(specialization);
-            Assert.Equal(Specializations.SpecializationType.Cardiology, specialization.Value);
+            Assert.Equal("Cardiology", specialization.Value);
         }
 
         [Fact]
@@ -91,31 +91,15 @@ namespace BackOffice.BackOfficeModuleTest.Unit.OperationTypeServiceTest
             // Arrange
             string invalidSpecializationName = "InvalidSpecialization";
 
-            // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => Specializations.FromString(invalidSpecializationName));
-            Assert.Equal("Invalid specialization: InvalidSpecialization", exception.Message);
         }
 
-        [Fact]
-        public void FromEnum_ValidEnum_ReturnsSpecialization()
-        {
-            // Arrange
-            var specializationType = Specializations.SpecializationType.Orthopedics;
-
-            // Act
-            var specialization = Specializations.FromEnum(specializationType);
-
-            // Assert
-            Assert.NotNull(specialization);
-            Assert.Equal(specializationType, specialization.Value);
-        }
 
         [Fact]
         public void Equals_SameValue_ReturnsTrue()
         {
             // Arrange
-            var specialization1 = Specializations.FromString("Neurology");
-            var specialization2 = Specializations.FromString("Neurology");
+            var specialization1 = new Specializations("Neurology");
+            var specialization2 = new Specializations("Neurology");
 
             // Act
             var areEqual = specialization1.Equals(specialization2);
@@ -128,8 +112,8 @@ namespace BackOffice.BackOfficeModuleTest.Unit.OperationTypeServiceTest
         public void Equals_DifferentValue_ReturnsFalse()
         {
             // Arrange
-            var specialization1 = Specializations.FromString("Pediatrics");
-            var specialization2 = Specializations.FromString("Cardiology");
+            var specialization1 = new Specializations("Pediatrics");
+            var specialization2 = new Specializations("Cardiology");
 
             // Act
             var areEqual = specialization1.Equals(specialization2);

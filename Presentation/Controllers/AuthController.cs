@@ -28,7 +28,7 @@ namespace BackOffice.Controllers
         public IActionResult Login()
         {
             string clientId = _configuration["GoogleIAM:ClientId"];
-            string redirectUri = "http://localhost:5184/api/v1/auth/callback";
+            string redirectUri = "https://api-dotnet.hospitalz.site/api/v1/auth/callback";
             string authorizationUrl = $"https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={clientId}&redirect_uri={redirectUri}&scope=email&access_type=offline";
 
 
@@ -46,7 +46,7 @@ namespace BackOffice.Controllers
                 {
                     var token = _jwtTokenService.GenerateToken(result.Email, result.Role);
                     Console.WriteLine(token);
-                    var redirect = $"http://localhost:3000/auth/callback?token={token}";
+                    var redirect = $"http://hospitalz.site/auth/callback?token={token}";
                     Console.WriteLine(redirect); // Log the redirect URL
                     return Redirect(redirect);
                 }

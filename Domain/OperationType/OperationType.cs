@@ -1,5 +1,5 @@
 using BackOffice.Domain.Shared;
-using BackOffice.Domain.Staff;
+using BackOffice.Domain.Specialization;
 
 namespace BackOffice.Domain.OperationType
 {

@@ -19,8 +19,8 @@ namespace BackOffice.Controllers
         }
 
 
-     /*   [HttpPost("create")]
-       // [Authorize(Roles ="Doctor")]
+      [HttpPost("create")]
+     // [Authorize(Roles ="Doctor")]
         public async Task<IActionResult> CreateAppointementAsync([FromBody] AppointementDto appointement)
         {
             if (appointement == null)
@@ -37,28 +37,28 @@ namespace BackOffice.Controllers
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
-        } */
-
+        } 
 
         [HttpPut("update")]
-        //[Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> UpdateAppointementAsync([FromBody] AppointementDto appointement)
+        // [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> UpdateAppointementAsync([FromBody] AppointementDto updatedAppointement)
         {
-            if (appointement == null)
+            if (updatedAppointement == null)
             {
                 return BadRequest(new { success = false, message = "Appointement details are required." });
             }
 
             try
             {
-                var appointementDataModel = await _appointementService.UpdateAppointementAsync(appointement);
-                return Ok(new { success = true, appointement = appointementDataModel });
+                var updatedData = await _appointementService.UpdateAppointementAsync(updatedAppointement);
+                return Ok(new { success = true, appointement = updatedData });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
 
 
         [HttpDelete("delete")]
@@ -83,7 +83,7 @@ namespace BackOffice.Controllers
 
 
         [HttpGet("getAll")]
-        [Authorize(Roles = "Doctor")]
+       // [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> GetAllAppointementsAsync()
         {
             try

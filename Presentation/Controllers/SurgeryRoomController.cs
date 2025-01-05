@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using BackOffice.Infrastructure;
 using Healthcare.Domain.Enums;
 using Healthcare.Domain.Services;
+using BackOffice.Application.SurgeryRoom;
+using Healthcare.Domain.ValueObjects;
 
 namespace Healthcare.Api.Controllers
 {
@@ -15,11 +17,13 @@ namespace Healthcare.Api.Controllers
     {
         private readonly BackOfficeDbContext _dbContext;
         private readonly SurgeryRoomServiceProvider _surgeryRoomServiceProvider;
+        private readonly SurgeryRoomService _surgeryRoomService;
 
-        public SurgeryRoomController(BackOfficeDbContext dbContext,SurgeryRoomServiceProvider surgeryRoomServiceProvider)
+        public SurgeryRoomController(BackOfficeDbContext dbContext,SurgeryRoomServiceProvider surgeryRoomServiceProvider, SurgeryRoomService surgeryRoomService)
         {
             _dbContext = dbContext;
             _surgeryRoomServiceProvider = surgeryRoomServiceProvider;
+            _surgeryRoomService = surgeryRoomService;
         }
 
         [HttpGet]
@@ -29,34 +33,52 @@ namespace Healthcare.Api.Controllers
             return Ok(rooms);
         }
 
-        // GET: api/SurgeryRoom/{roomNumber}
-        [HttpGet("{roomNumber}")]
-        public async Task<IActionResult> GetSurgeryRoomByRoomNumber(string roomNumber)
+        [HttpGet("getRoomStatusesByDateTime")]
+        public IActionResult GetRoomStatusesByDateTime([FromQuery] DateTime dateTime)
         {
-            var room = await _dbContext.SurgeryRoom
-                .Include(r => r.MaintenanceSlots)
-                .Include(r => r.Equipments)
-                .Include(r => r.Phases)
-                .Where(r => r.RoomNumber == roomNumber)
+            try
+            {
+                // Call the function to get room statuses as an array of 1s and 0s
+                var roomStatuses = _surgeryRoomService.GetRoomStatusAtDateTime(dateTime);
+
+                // Return the statuses as an array
+                return Ok(new
+                {
+                    DateTime = dateTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                    RoomStatuses = roomStatuses
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "An error occurred while fetching room statuses.", details = ex.Message });
+            }
+        }
+
+
+        [HttpGet("getAll")]
+        public async Task<IActionResult> GetSurgeryRooms()
+        {
+            var rooms = await _dbContext.SurgeryRoom
                 .Select(room => new
                 {
                     RoomNumber = room.RoomNumber,
                     Type = room.Type,
                     Capacity = room.Capacity,
-                    CurrentStatus = room.CurrentStatus,
-                    IsUnderMaintenance = room.MaintenanceSlots.Any(slot =>
-                        slot.Start <= DateTime.Now && slot.End >= DateTime.Now),
-                    AssignedEquipment = room.Equipments.Select(eq => eq.EquipmentName).ToList(),
-                    Phases = room.Phases.Select(p => new
-                    {
-                        PhaseType = p.PhaseType,
-                        Duration = p.Duration,
-                        StartTime = p.StartTime,
-                        EndTime = p.EndTime,
-                        AppointmentId = p.AppointementId
-                    }).ToList()
+                    CurrentStatus = room.CurrentStatus
                 })
-                .FirstOrDefaultAsync();
+                .ToListAsync();
+
+            if (rooms == null || !rooms.Any())
+                return NotFound("No surgery rooms found.");
+
+            return Ok(rooms);
+        }
+
+
+        [HttpGet("getByRoomId")]
+        public async Task<IActionResult> GetSurgeryRoom(string roomNumber)
+        {
+            var room = await _dbContext.SurgeryRoom.FirstOrDefaultAsync(r => r.RoomNumber.Equals(roomNumber));
 
             if (room == null)
                 return NotFound($"Surgery room with RoomNumber {roomNumber} not found.");
@@ -66,15 +88,27 @@ namespace Healthcare.Api.Controllers
 
         // POST: api/SurgeryRoom
         [HttpPost("create")]
-        public async Task<IActionResult> CreateSurgeryRoom([FromBody] SurgeryRoomDataModel newRoom)
+        public async Task<IActionResult> CreateSurgeryRoom([FromBody] SurgeryRoomDto newRoom)
         {
-            if (await _dbContext.SurgeryRoom.AnyAsync(r => r.RoomNumber == newRoom.RoomNumber))
-                return Conflict($"A surgery room with RoomNumber {newRoom.RoomNumber} already exists.");
+            if (newRoom == null)
+            {
+                return BadRequest(new { success = false, message = "Room details are required." });
+            }
 
-            _dbContext.SurgeryRoom.Add(newRoom);
-            await _dbContext.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetSurgeryRoomByRoomNumber), new { roomNumber = newRoom.RoomNumber }, newRoom);
+            try
+            {
+                // Call the AddAsync method to add the room
+                var createdRoom = await _surgeryRoomServiceProvider.AddAsync(newRoom);
+                return Ok(new { success = true, message = "Surgery room created successfully.", data = createdRoom });
+            }
+            catch (ArgumentException ex)
+            {
+                return Conflict(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "An error occurred while creating the surgery room.", details = ex.Message });
+            }
         }
 
         // PUT: api/SurgeryRoom/{roomNumber}
@@ -107,6 +141,43 @@ namespace Healthcare.Api.Controllers
             await _dbContext.SaveChangesAsync();
 
             return NoContent();
+        }
+        
+        [HttpGet("getDailyTimeSlots")]
+        public async Task<IActionResult> GetDailyTimeSlots([FromQuery] DateTime date, [FromQuery] string requestId, [FromQuery] string roomNumber)
+        {
+            try
+            {
+                var (availableTimeSlots, requirements, staffBySpecialization) = await _surgeryRoomService.GetAvailableTimeSlotsAsync(date, requestId, roomNumber);
+
+                if (!availableTimeSlots.Any())
+                {
+                    return NotFound("No available time slots found for the specified date and duration.");
+                }
+
+                return Ok(new
+                {
+                    TimeSlots = availableTimeSlots.Select(slot => new
+                    {
+                        Start = slot.Start.ToString("yyyy-MM-dd HH:mm"),
+                        End = slot.End.ToString("yyyy-MM-dd HH:mm")
+                    }),
+                    Requirements = requirements.Select(req => new
+                    {
+                        Specialization = req.Specialization,
+                        NeededPersonnel = req.NeededPersonnel
+                    }),
+                    StaffBySpecialization = staffBySpecialization.Select(kvp => new
+                    {
+                        Specialization = kvp.Key,
+                        StaffIds = kvp.Value
+                    })
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while fetching time slots: {ex.Message}");
+            }
         }
 
         // POST: api/SurgeryRoom/refresh
