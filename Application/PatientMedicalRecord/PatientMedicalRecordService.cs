@@ -33,9 +33,9 @@ public class PatientMedicalRecordService{
         var json = JsonSerializer.Serialize(payload);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        _logger.LogInformation("Sending POST request to Node.js backend. URL: {Url}, Body: {Body}", url, json);
+        _logger.LogInformation("Sending PUT request to Node.js backend. URL: {Url}, Body: {Body}", url, json);
 
-        var response = await _httpClient.PostAsync(url, content);
+        var response = await _httpClient.PutAsync(url, content); // Use PutAsync for a PUT request
 
         if (response.IsSuccessStatusCode)
         {
@@ -52,10 +52,11 @@ public class PatientMedicalRecordService{
     }
     catch (Exception ex)
     {
-        _logger.LogError(ex, "An error occurred while sending POST request to Node.js backend.");
+        _logger.LogError(ex, "An error occurred while sending PUT request to Node.js backend.");
         throw;
     }
 }
+
 
 
 

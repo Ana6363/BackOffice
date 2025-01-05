@@ -24,8 +24,7 @@ public async Task<IActionResult> UpdatePatientMedicalRecord([FromBody] PatientMe
     if (patientMedicalRecord == null ||
         string.IsNullOrEmpty(patientMedicalRecord.RecordNumber) ||
         patientMedicalRecord.Allergies == null || !patientMedicalRecord.Allergies.Any() ||
-        patientMedicalRecord.MedicalConditions == null || !patientMedicalRecord.MedicalConditions.Any() ||
-        string.IsNullOrEmpty(patientMedicalRecord.FullName))
+        patientMedicalRecord.MedicalConditions == null || !patientMedicalRecord.MedicalConditions.Any())
     {
         _logger.LogWarning("Invalid patient medical record data received.");
         return BadRequest("Invalid patient medical record data. Ensure all required fields are provided.");
