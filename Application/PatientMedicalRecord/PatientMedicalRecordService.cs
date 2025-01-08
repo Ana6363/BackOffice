@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -24,18 +25,20 @@ public class PatientMedicalRecordService{
     {
         var url = $"{_nodeJsBackendUrl}/patient-medical-records";
 
-        // Wrap the DTO in a "records" array
+        // Send a flat payload instead of wrapping it in "records"
         var payload = new
         {
-            records = new[] { patientMedicalRecordDto }
+            recordNumber = patientMedicalRecordDto.RecordNumber,
+            allergies = patientMedicalRecordDto.Allergies,
+            medicalConditions = patientMedicalRecordDto.MedicalConditions
         };
 
         var json = JsonSerializer.Serialize(payload);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        _logger.LogInformation("Sending POST request to Node.js backend. URL: {Url}, Body: {Body}", url, json);
+        _logger.LogInformation("Sending PUT request to Node.js backend. URL: {Url}, Body: {Body}", url, json);
 
-        var response = await _httpClient.PostAsync(url, content);
+        var response = await _httpClient.PutAsync(url, content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -52,11 +55,46 @@ public class PatientMedicalRecordService{
     }
     catch (Exception ex)
     {
-        _logger.LogError(ex, "An error occurred while sending POST request to Node.js backend.");
+        _logger.LogError(ex, "An error occurred while sending PUT request to Node.js backend.");
         throw;
     }
 }
 
+public async Task<PatientMedicalRecordDto> GetPatientMedicalRecordByRecordNumberAsync(string recordNumber)
+{
+    try
+    {
+        var url = $"{_nodeJsBackendUrl}/patient-medical-records/{recordNumber}";
+
+        var response = await _httpClient.GetAsync(url);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                _logger.LogWarning($"Patient medical record with recordNumber {recordNumber} not found.");
+                return null;
+            }
+
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            _logger.LogError($"Failed to fetch patient medical record. Status: {response.StatusCode}, Response: {errorMessage}");
+            throw new Exception($"Failed to fetch patient medical record. Status: {response.StatusCode}");
+        }
+
+        var jsonResponse = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<ResponseWrapper<PatientMedicalRecordDto>>(jsonResponse, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        return result?.Data;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, $"An error occurred while fetching patient medical record with recordNumber: {recordNumber}");
+        throw;
+    }
+}
 
 
     public async Task<IEnumerable<PatientMedicalRecordDto>> GetAllPatientMedicalRecordsAsync()
@@ -144,6 +182,40 @@ public class PatientMedicalRecordService{
     catch (Exception ex)
     {
         _logger.LogError(ex, "An error occurred while syncing patient records to the Node.js backend.");
+        throw;
+    }
+}
+ public async Task<byte[]> GetPatientMedicalRecordForDownloadAsync(string recordNumber)
+{
+    try
+    {
+        var url = $"{_nodeJsBackendUrl}/patient-medical-records/{recordNumber}";
+        _logger.LogInformation("Sending GET request to Node.js backend. URL: {Url}", url);
+        var response = await _httpClient.GetAsync(url);
+        if (response.IsSuccessStatusCode)
+        {
+            var responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogInformation("Patient medical record fetched successfully from Node.js backend. Response: {ResponseBody}", responseBody);
+            var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseBody);
+            if (jsonResponse.TryGetProperty("data", out var patientMedicalRecordJson))
+            {
+                // Converter para JSON e retornar como bytes para o download
+                var jsonContent = patientMedicalRecordJson.GetRawText();
+                return Encoding.UTF8.GetBytes(jsonContent);  // Retorna os dados como um arquivo JSON (bytes)
+            }
+            throw new JsonException("Failed to parse patient medical record from JSON response.");
+        }
+        else
+        {
+            var responseBody = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Failed to get patient medical record. Status: {StatusCode}, Response: {ResponseBody}",
+                response.StatusCode, responseBody);
+            throw new HttpRequestException($"Failed to get patient medical record: {response.StatusCode} - {responseBody}");
+        }
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "An error occurred while sending GET request to Node.js backend.");
         throw;
     }
 }

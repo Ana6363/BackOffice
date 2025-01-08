@@ -11,6 +11,4 @@ using System.Text.Json.Serialization;
         [JsonPropertyName("medicalConditions")]
         public List<string> MedicalConditions { get; set; }
 
-        [JsonPropertyName("fullName")]
-        public string FullName { get; set; }
     }

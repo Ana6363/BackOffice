@@ -24,8 +24,7 @@ public async Task<IActionResult> UpdatePatientMedicalRecord([FromBody] PatientMe
     if (patientMedicalRecord == null ||
         string.IsNullOrEmpty(patientMedicalRecord.RecordNumber) ||
         patientMedicalRecord.Allergies == null || !patientMedicalRecord.Allergies.Any() ||
-        patientMedicalRecord.MedicalConditions == null || !patientMedicalRecord.MedicalConditions.Any() ||
-        string.IsNullOrEmpty(patientMedicalRecord.FullName))
+        patientMedicalRecord.MedicalConditions == null || !patientMedicalRecord.MedicalConditions.Any())
     {
         _logger.LogWarning("Invalid patient medical record data received.");
         return BadRequest("Invalid patient medical record data. Ensure all required fields are provided.");
@@ -49,6 +48,35 @@ public async Task<IActionResult> UpdatePatientMedicalRecord([FromBody] PatientMe
     {
         _logger.LogError(ex, "An error occurred while updating the patient medical record.");
         return StatusCode(500, new { message = "An error occurred while updating the patient medical record." });
+    }
+}
+
+
+[HttpGet]
+[Route("dowload/{recordNumber}")]
+public async Task<IActionResult> GetPatientMedicalRecordByRecordNumber(string recordNumber)
+{
+    try
+    {
+        if (string.IsNullOrEmpty(recordNumber))
+        {
+            return BadRequest(new { message = "Record number is required." });
+        }
+
+        // Call the Node.js backend to fetch the record by recordNumber
+        var patientMedicalRecord = await _patientMedicalRecordService.GetPatientMedicalRecordByRecordNumberAsync(recordNumber);
+
+        if (patientMedicalRecord == null)
+        {
+            return NotFound(new { message = "Patient medical record not found." });
+        }
+
+        return Ok(new { message = "Patient medical record fetched successfully.", data = patientMedicalRecord });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, $"An error occurred while fetching the patient medical record for recordNumber: {recordNumber}.");
+        return StatusCode(500, new { message = "An error occurred while fetching the patient medical record." });
     }
 }
 
@@ -108,5 +136,21 @@ public async Task<IActionResult> SyncPatientRecordsToNodeJs()
         return StatusCode(500, new { message = "An error occurred while syncing patient records.", details = ex.Message });
     }
 }
+[HttpGet("{recordNumber}/download")]
+    public async Task<IActionResult> DownloadPatientMedicalRecord(string recordNumber)
+    {
+        try
+        {
+            // Chama o serviço para obter os bytes do arquivo JSON
+            var fileBytes = await _patientMedicalRecordService.GetPatientMedicalRecordForDownloadAsync(recordNumber);
+            // Retorna o arquivo JSON para o download
+            return File(fileBytes, "application/json", $"{recordNumber}_patient_medical_record.json");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while fetching the patient medical record.");
+            return StatusCode(500, new { message = "An error occurred while fetching the patient medical record." });
+        }
+    }
 
 }
