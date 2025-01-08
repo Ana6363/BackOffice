@@ -46,7 +46,7 @@ namespace BackOffice.Controllers
                 {
                     var token = _jwtTokenService.GenerateToken(result.Email, result.Role);
                     Console.WriteLine(token);
-                    var redirect = $"http://hospitalz.site/auth/callback?token={token}";
+                    var redirect = $"https://hospitalz.site/auth/callback?token={token}";
                     Console.WriteLine(redirect); // Log the redirect URL
                     return Redirect(redirect);
                 }
