@@ -28,7 +28,7 @@ namespace BackOffice.Controllers
         public IActionResult Login()
         {
             string clientId = _configuration["GoogleIAM:ClientId"];
-            string redirectUri = "https://api-dotnet.hospitalz.site/api/v1/auth/callback";
+            string redirectUri = "https://api-dot.hospitalz.site/api/v1/auth/callback";
             string authorizationUrl = $"https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={clientId}&redirect_uri={redirectUri}&scope=email&access_type=offline";
 
 
